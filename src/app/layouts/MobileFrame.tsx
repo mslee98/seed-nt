@@ -10,7 +10,7 @@ export function MobileFrame({ children, shadow = true }: MobileFrameProps) {
     <main
       id="frameMain"
       className={[
-        'relative flex min-h-dvh w-full min-w-[var(--app-frame-min-width)] max-w-[var(--app-frame-max-width)] flex-col overflow-hidden bg-bg-layer-default',
+        'relative flex min-h-dvh w-full min-w-[var(--app-frame-min-width)] max-w-[var(--app-frame-max-width)] flex-col overflow-hidden bg-bg-neutral-weak',
         shadow ? 'shadow-[0_0_8px_rgba(0,0,0,0.16)]' : '',
       ]
         .filter(Boolean)

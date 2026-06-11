@@ -31,7 +31,6 @@ const NotFoundActivity: ActivityComponentType<'NotFound'> = () => {
             align="center"
             justify="center"
             gap="spacingY.componentDefault"
-            bg="bg.layerDefault"
             px="spacingX.globalGutter"
           >
             <Text textStyle="screenTitle" color="fg.neutral">

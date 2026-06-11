@@ -48,7 +48,7 @@ export interface BottomNavigationProps {
 export function BottomNavigation({ children }: BottomNavigationProps) {
   return (
     <nav
-      className="flex h-[var(--app-bottom-navigation-height)] border-t border-stroke-neutral-weak bg-bg-layer-default"
+      className="flex h-[var(--app-bottom-navigation-height)] border-t border-stroke-neutral-weak bg-bg-layer-default shadow-[0_-4px_12px_rgba(0,0,0,0.04)]"
       aria-label="하단 탐색"
     >
       {children}
