@@ -7,6 +7,7 @@ import { stackflow } from '@stackflow/react'
 import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
+import TradeConfirmActivity from '../activities/TradeConfirmActivity'
 import { config } from './config'
 
 function detectTheme(): SeedPluginOptions['theme'] {
@@ -19,6 +20,7 @@ export const { Stack, actions } = stackflow({
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,
+    TradeConfirm: TradeConfirmActivity,
     NotFound: NotFoundActivity,
   },
   plugins: [
