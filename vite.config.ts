@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import { seedDesignPlugin } from '@seed-design/vite-plugin'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import svgr from 'vite-plugin-svgr'
 
 // PWA theme_color/background_color: 라이트 모드 --seed-color-bg-layer-default (palette-gray-00) 기준
 const PWA_LAYER_DEFAULT = '#ffffff'
@@ -10,8 +11,9 @@ const PWA_LAYER_DEFAULT = '#ffffff'
 export default defineConfig({
   plugins: [
     react(),
+    svgr(),
     seedDesignPlugin({
-      colorMode: 'system',
+      colorMode: 'light-only',
       fontScaling: true,
       injectColorSchemeTag: true,
     }),
