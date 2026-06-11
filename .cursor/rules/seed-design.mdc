@@ -1,0 +1,77 @@
+---
+description: SEED Design 디자인 시스템 통합 가이드 — 셋업, 컴포넌트, 파운데이션, CLI, 마이그레이션
+alwaysApply: true
+---
+
+# SEED Design
+
+당근의 디자인 시스템 SEED Design 관련 작업 시 이 룰을 따릅니다. 상세 가이드는 `.agents/skills/seed-design/` 참조 파일을 읽습니다.
+
+## 작업 순서
+
+1. **프로젝트 상태 파악**
+   - `seed-design.json` 존재 여부
+   - `package.json`의 `@seed-design/react`, `@seed-design/css` 버전
+   - 번들러 (`vite.config`, `rsbuild.config`, `webpack.config`)
+   - `seed-design/` 스니펫 디렉토리 존재 여부
+   - lock 파일로 패키지 매니저 감지 (bun/pnpm/yarn/npm)
+
+2. **상황별 분기**
+   - 처음 셋업 → `.agents/skills/seed-design/references/getting-started.md`
+   - 컴포넌트 → `.agents/skills/seed-design/references/components.md`
+   - 색상/타이포/스페이싱/테마 → `.agents/skills/seed-design/references/foundation.md`
+   - CLI 명령어 → `.agents/skills/seed-design/references/usage.md`
+   - 버전 호환/마이그레이션 → `.agents/skills/seed-design/references/migration.md`
+   - 업그레이드 진단 → `.agents/skills/seed-design/references/upgrade.md`
+
+3. **최신 정보 조회** — llms.txt를 WebFetch로 읽거나 CLI `docs` 사용
+
+## 핵심 CLI
+
+```bash
+npx @seed-design/cli@latest init
+npx @seed-design/cli@latest add ui:action-button
+npx @seed-design/cli@latest add-all ui
+npx @seed-design/cli@latest compat
+npx @seed-design/cli@latest docs {component-name}
+npx @seed-design/cli@latest docs react/updates/changelog/{pkg}/{ver} --raw
+```
+
+## 셋업 요약
+
+```bash
+npm install @seed-design/react @seed-design/css
+npx @seed-design/cli@latest init
+```
+
+- 엔트리: `import "@seed-design/css/base.css"`
+- tsconfig paths: `"seed-design/*": ["./seed-design/*"]`
+- Vite: `@seed-design/vite-plugin` 설치 후 `plugins: [seedDesign()]`
+- 테마: `<html data-seed-color-mode="system" data-seed-user-color-scheme="light">`
+
+## 컴포넌트 사용
+
+```tsx
+import { ActionButton } from "seed-design/ui/action-button";
+```
+
+레지스트리: `ui` (핵심 UI), `block` (복합 패턴), `breeze` (유틸), `lib` (저수준)
+
+## 파운데이션 원칙
+
+- **색상**: 역할 기반(`--seed-color-fg-*`, `--seed-color-bg-*`) 우선. 팔레트는 예외 시만
+- **타이포**: t1~t10 스케일, `--seed-font-size-t{n}` 사용
+- 인덱스: https://seed-design.io/react/llms.txt, https://seed-design.io/docs/llms.txt
+
+## 마이그레이션
+
+1. `compat`으로 호환성 확인
+2. `--baseUrl`로 버전 맞는 스니펫 설치
+3. 충돌 시: `overwrite` / `backup` / `skip` — 커스텀 변경이 크면 `backup` 권장
+
+## 업그레이드 진단
+
+- `package.json`이 버전의 source of truth
+- 패키지/버전 불명확 시 추측하지 말고 사용자에게 확인
+- changelog fetch 후 프로젝트 영향도 grep 분석
+- Breaking Changes 있으면 수정 후 업그레이드
