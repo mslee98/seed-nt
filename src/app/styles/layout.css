@@ -7,4 +7,12 @@
   --app-bottom-navigation-height: 64px;
   --app-fixed-bottom-min-height: 88px;
   --sticky-header-height: 64px;
+  --sticky-header-height-compact: 48px;
+  --app-content-bottom-padding: calc(
+    var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) + 16px
+  );
+  --home-body-bottom-padding: calc(
+    var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) +
+      var(--seed-dimension-x6)
+  );
 }

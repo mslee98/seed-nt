@@ -31,7 +31,6 @@ const DetailActivity: ActivityComponentType<'Detail'> = () => {
           <VStack
             minHeight="full"
             gap="spacingY.betweenText"
-            bg="bg.layerDefault"
             px="spacingX.globalGutter"
             pb="spacingY.screenBottom"
             pt="spacingY.navToTitle"

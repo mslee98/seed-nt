@@ -21,7 +21,6 @@ const TABS = [
     match: (pathname: string) => pathname === '/',
     activity: 'Home' as const,
     params: {},
-    replace: true,
   },
   {
     id: 'transactions',
@@ -30,16 +29,14 @@ const TABS = [
     match: (pathname: string) => pathname.startsWith('/detail/transactions'),
     activity: 'Detail' as const,
     params: { id: 'transactions' },
-    replace: false,
   },
   {
     id: 'profile',
-    label: '내정보',
+    label: 'MY',
     icon: <IconPersonCircleLine />,
     match: (pathname: string) => pathname.startsWith('/detail/profile'),
     activity: 'Detail' as const,
     params: { id: 'profile' },
-    replace: false,
   },
 ]
 
@@ -60,11 +57,8 @@ export function GlobalBottomNavigation() {
               icon={tab.icon}
               active={active}
               onClick={() => {
-                if (tab.replace) {
-                  actions.replace(tab.activity, tab.params)
-                  return
-                }
-                actions.push(tab.activity, tab.params)
+                if (active) return
+                actions.replace(tab.activity, tab.params, { animate: false })
               }}
             />
           )

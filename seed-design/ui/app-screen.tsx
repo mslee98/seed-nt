@@ -47,11 +47,18 @@ export interface AppScreenContentProps extends SeedAppScreen.LayerProps {
   onPtrRefresh?: () => Promise<void>;
 }
 
+const APP_SCREEN_LAYER_BG = "var(--seed-color-bg-neutral-weak)";
+
 export const AppScreenContent = forwardRef<HTMLDivElement, AppScreenContentProps>(
-  ({ children, ptr, onPtrReady, onPtrRefresh, ...otherProps }, ref) => {
+  ({ children, ptr, onPtrReady, onPtrRefresh, style, ...otherProps }, ref) => {
+    const layerStyle = {
+      backgroundColor: APP_SCREEN_LAYER_BG,
+      ...style,
+    };
+
     if (!ptr) {
       return (
-        <SeedAppScreen.Layer ref={ref} {...otherProps}>
+        <SeedAppScreen.Layer ref={ref} style={layerStyle} {...otherProps}>
           {children}
         </SeedAppScreen.Layer>
       );
@@ -59,7 +66,7 @@ export const AppScreenContent = forwardRef<HTMLDivElement, AppScreenContentProps
 
     return (
       <PullToRefreshRoot asChild onPtrReady={onPtrReady} onPtrRefresh={onPtrRefresh}>
-        <SeedAppScreen.Layer ref={ref} {...otherProps}>
+        <SeedAppScreen.Layer ref={ref} style={layerStyle} {...otherProps}>
           <PullToRefreshIndicator />
           <PullToRefreshContent asChild>{children}</PullToRefreshContent>
         </SeedAppScreen.Layer>
