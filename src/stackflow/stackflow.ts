@@ -4,8 +4,6 @@ import { historySyncPlugin } from '@stackflow/plugin-history-sync'
 import { webRendererPlugin } from '@stackflow/plugin-renderer-web'
 import { stackflow } from '@stackflow/react'
 
-import AlertDialogActivity from '../activities/AlertDialogActivity'
-import BottomSheetActivity from '../activities/BottomSheetActivity'
 import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
@@ -16,13 +14,11 @@ function detectTheme(): SeedPluginOptions['theme'] {
   return /android/i.test(navigator.userAgent) ? 'android' : 'cupertino'
 }
 
-export const { Stack } = stackflow({
+export const { Stack, actions } = stackflow({
   config,
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,
-    BottomSheet: BottomSheetActivity,
-    AlertDialog: AlertDialogActivity,
     NotFound: NotFoundActivity,
   },
   plugins: [

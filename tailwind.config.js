@@ -8,7 +8,11 @@ export default {
     './seed-design/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        desktop: '1024px',
+      },
+    },
   },
   plugins: [seedPlugin],
 }

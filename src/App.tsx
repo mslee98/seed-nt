@@ -1,5 +1,10 @@
 import type { SeedPluginOptions } from '@seed-design/stackflow'
 
+import { AppShell } from './app/layouts/AppShell'
+import { DesktopSidePanel } from './app/layouts/DesktopSidePanel'
+import { GlobalBottomNavigation } from './app/layouts/GlobalBottomNavigation'
+import { LayoutProvider } from './app/layouts/LayoutContext'
+import { MobileFrame } from './app/layouts/MobileFrame'
 import { Stack } from './stackflow/stackflow'
 
 function detectTheme(): SeedPluginOptions['theme'] {
@@ -8,5 +13,17 @@ function detectTheme(): SeedPluginOptions['theme'] {
 }
 
 export default function App() {
-  return <Stack initialContext={{ theme: detectTheme() }} />
+  return (
+    <AppShell sidePanel={<DesktopSidePanel />}>
+      <LayoutProvider>
+        <MobileFrame>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <Stack initialContext={{ theme: detectTheme() }} />
+          </div>
+          <GlobalBottomNavigation />
+          <div id="app-frame-portal" />
+        </MobileFrame>
+      </LayoutProvider>
+    </AppShell>
+  )
 }

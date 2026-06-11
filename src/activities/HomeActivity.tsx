@@ -1,3 +1,4 @@
+import { useActivityZIndexBase } from '@seed-design/stackflow'
 import type { ActivityComponentType } from '@stackflow/react'
 import { useFlow } from '@stackflow/react'
 import {
@@ -7,9 +8,18 @@ import {
   IconMagnifyingglassLine,
   IconPersonCircleLine,
 } from '@karrotmarket/react-monochrome-icon'
-import { HStack, Icon, Skeleton, Text, VStack } from '@seed-design/react'
+import { HStack, Icon, ResponsivePair, Skeleton, Text, VStack } from '@seed-design/react'
 import { useState } from 'react'
 import { ActionButton } from 'seed-design/ui/action-button'
+import {
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogRoot,
+  AlertDialogTitle,
+} from 'seed-design/ui/alert-dialog'
 import {
   AppBar,
   AppBarIconButton,
@@ -17,7 +27,14 @@ import {
   AppBarMain,
   AppBarRight,
 } from 'seed-design/ui/app-bar'
+import { ScreenLayout } from '../app/layouts/ScreenLayout'
 import { AppScreen, AppScreenContent } from 'seed-design/ui/app-screen'
+import {
+  BottomSheetBody,
+  BottomSheetContent,
+  BottomSheetFooter,
+  BottomSheetRoot,
+} from 'seed-design/ui/bottom-sheet'
 import { List, ListButtonItem, ListDivider } from 'seed-design/ui/list'
 import { ListHeader } from 'seed-design/ui/list-header'
 import { PageBanner, PageBannerButton } from 'seed-design/ui/page-banner'
@@ -94,27 +111,34 @@ const AnimationDemo = () => {
 
 const HomeActivity: ActivityComponentType<'Home'> = () => {
   const { push } = useFlow()
+  const layerIndex = useActivityZIndexBase({ activityOffset: 1 })
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <SnackbarProvider>
       <AppScreen>
-        <AppBar>
-          <AppBarLeft />
-          <AppBarMain title="내 근처" />
-          <AppBarRight>
-            <AppBarIconButton aria-label="알림">
-              <IconBellLine />
-            </AppBarIconButton>
-          </AppBarRight>
-        </AppBar>
-
-        <AppScreenContent>
-          <VStack
-            minHeight="full"
-            bg="bg.layerBasement"
-            gap="spacingY.componentDefault"
-            pb="spacingY.screenBottom"
-          >
+        <ScreenLayout
+          background="basement"
+          navigation={
+            <AppBar>
+              <AppBarLeft />
+              <AppBarMain title="내 근처" />
+              <AppBarRight>
+                <AppBarIconButton aria-label="알림">
+                  <IconBellLine />
+                </AppBarIconButton>
+              </AppBarRight>
+            </AppBar>
+          }
+        >
+          <AppScreenContent>
+            <VStack
+              minHeight="full"
+              bg="bg.layerBasement"
+              gap="spacingY.componentDefault"
+              pb="spacingY.screenBottom"
+            >
             <PageBanner
               tone="informative"
               variant="weak"
@@ -167,7 +191,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                   title="바텀시트"
                   detail="슬라이드 업 애니메이션"
                   suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('BottomSheet', {})}
+                  onClick={() => setSheetOpen(true)}
                 />
                 <ListDivider />
                 <ListButtonItem
@@ -175,7 +199,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                   title="알림창"
                   detail="페이드 인/아웃 다이얼로그"
                   suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('AlertDialog', {})}
+                  onClick={() => setDialogOpen(true)}
                 />
               </List>
             </VStack>
@@ -185,9 +209,56 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                 글쓰기
               </ActionButton>
             </VStack>
-          </VStack>
-        </AppScreenContent>
+            </VStack>
+          </AppScreenContent>
+        </ScreenLayout>
       </AppScreen>
+
+      <BottomSheetRoot open={sheetOpen} onOpenChange={setSheetOpen}>
+        <BottomSheetContent
+          title="필터"
+          description="보고 싶은 소식 유형을 선택해 주세요."
+          showHandle
+          layerIndex={layerIndex}
+        >
+          <BottomSheetBody>
+            <VStack gap="spacingY.betweenText">
+              <Text textStyle="t4Regular" color="fg.neutralMuted">
+                중고거래, 동네생활, 알바 등 관심 카테고리를 골라볼 수 있어요.
+              </Text>
+              <Text textStyle="t4Regular" color="fg.neutralSubtle">
+                아래로 드래그하면 닫힙니다.
+              </Text>
+            </VStack>
+          </BottomSheetBody>
+          <BottomSheetFooter>
+            <ActionButton onClick={() => setSheetOpen(false)}>확인</ActionButton>
+          </BottomSheetFooter>
+        </BottomSheetContent>
+      </BottomSheetRoot>
+
+      <AlertDialogRoot open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent layerIndex={layerIndex}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>알림을 켤까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              새 댓글과 채팅 메시지를 놓치지 않도록 알림을 받을 수 있어요.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <VStack gap="spacingY.betweenText">
+              <ResponsivePair gap="x2">
+                <AlertDialogAction asChild>
+                  <ActionButton>확인</ActionButton>
+                </AlertDialogAction>
+                <ActionButton variant="neutralWeak" onClick={() => setDialogOpen(false)}>
+                  취소
+                </ActionButton>
+              </ResponsivePair>
+            </VStack>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
     </SnackbarProvider>
   )
 }

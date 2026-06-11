@@ -1,0 +1,10 @@
+:root {
+  --app-frame-min-width: 360px;
+  --app-frame-max-width: 616px;
+  --app-desktop-side-panel-width: 360px;
+  --app-desktop-side-panel-gap: 16px;
+  --app-navigation-height: 64px;
+  --app-bottom-navigation-height: 64px;
+  --app-fixed-bottom-min-height: 88px;
+  --sticky-header-height: 64px;
+}

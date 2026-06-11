@@ -7,8 +7,6 @@ declare module '@stackflow/config' {
       id: string
     }
     NotFound: {}
-    BottomSheet: {}
-    AlertDialog: {}
   }
 }
 
@@ -21,14 +19,6 @@ export const config = defineConfig({
     {
       name: 'Detail',
       route: '/detail/:id',
-    },
-    {
-      name: 'BottomSheet',
-      route: '/sheet',
-    },
-    {
-      name: 'AlertDialog',
-      route: '/dialog',
     },
     {
       name: 'NotFound',
