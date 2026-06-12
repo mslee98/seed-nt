@@ -35,8 +35,15 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
     <AppScreen layerOffsetTop="safeArea">
       <ScreenLayout>
         <AppScreenContent>
-          <HomeHeader activeTrade={viewModel.activeTrade} />
-          <VStack className="home-body -mt-x6 pb-[var(--home-body-bottom-padding)]">
+          <HomeHeader
+            activeTrade={viewModel.activeTrade}
+            unreadNotificationCount={viewModel.unreadNotificationCount}
+          />
+          <VStack
+            position="relative"
+            bleedTop="x6"
+            style={{ paddingBottom: 'var(--home-body-bottom-padding)' }}
+          >
             <VStack px="spacingX.globalGutter" gap="x4">
               <HomeBalanceCard
                 coinBalance={viewModel.wallet.coinBalance}

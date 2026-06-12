@@ -13,7 +13,13 @@ export function HomeBalanceCard({ coinBalance, estimatedKrwValue }: HomeBalanceC
   const hasBalance = coinBalance > 0
 
   return (
-    <VStack p="x3" className="home-card home-card--quiet">
+    <VStack
+      p="x3"
+      bg="bg.layerDefault"
+      borderWidth="1"
+      borderColor="stroke.neutralWeak"
+      borderRadius="r5"
+    >
       {hasBalance ? (
         <List width="full">
           <ListItem

@@ -1,4 +1,12 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react'
 
 import { ACTIVITIES_WITH_BOTTOM_NAV } from '../../shared/constants/app-layout'
 import { config } from '../../stackflow/config'
@@ -53,26 +61,43 @@ function getPathnameSnapshot() {
 interface LayoutContextValue {
   bottomNavVisible: boolean
   pathname: string
+  overlayOpen: boolean
+  registerOverlay: () => () => void
 }
 
 const LayoutContext = createContext<LayoutContextValue>({
   bottomNavVisible: false,
   pathname: '/',
+  overlayOpen: false,
+  registerOverlay: () => () => {},
 })
 
 export function LayoutProvider({ children }: { children: ReactNode }) {
+  const [overlayCount, setOverlayCount] = useState(0)
   const pathname = useSyncExternalStore(
     subscribePathname,
     getPathnameSnapshot,
     () => '/',
   )
   const bottomNavVisible = isBottomNavVisible(pathname)
+  const overlayOpen = overlayCount > 0
 
-  return (
-    <LayoutContext.Provider value={{ bottomNavVisible, pathname }}>
-      {children}
-    </LayoutContext.Provider>
+  const registerOverlay = useCallback(() => {
+    setOverlayCount((count) => count + 1)
+    return () => setOverlayCount((count) => Math.max(0, count - 1))
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      bottomNavVisible,
+      pathname,
+      overlayOpen,
+      registerOverlay,
+    }),
+    [bottomNavVisible, pathname, overlayOpen, registerOverlay],
   )
+
+  return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>
 }
 
 export function useLayout() {

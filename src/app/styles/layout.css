@@ -8,6 +8,10 @@
   --app-fixed-bottom-min-height: 88px;
   --sticky-header-height: 64px;
   --sticky-header-height-compact: 48px;
+  /* SEED layer(2) ~ bottom sheet step(7) 사이: 콘텐츠 위, 모달 아래 */
+  --app-chrome-z-index: 3;
+  --app-sticky-header-z-index: 4;
+  --app-sticky-footer-z-index: 4;
   --app-content-bottom-padding: calc(
     var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) + 16px
   );

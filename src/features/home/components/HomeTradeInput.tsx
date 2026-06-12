@@ -1,4 +1,4 @@
-import { HStack, Text, VStack } from '@seed-design/react'
+import { Box, HStack, Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { Chip } from 'seed-design/ui/chip'
 import { PageBanner, PageBannerButton } from 'seed-design/ui/page-banner'
@@ -55,10 +55,22 @@ export function HomeTradeInput({
     side === 'SELL' && amountKrw ? getSplitRecommendation(amountKrw) : null
 
   return (
-    <VStack className="home-card home-card--primary">
+    <VStack
+      bg="bg.layerDefault"
+      borderWidth="1"
+      borderColor="stroke.neutralWeak"
+      borderRadius="r5"
+      boxShadow="s2"
+    >
       <VStack p="x5" gap="spacingY.componentDefault">
           <HStack align="center" gap="x2">
-            <span className="size-[7px] shrink-0 rounded-full bg-bg-brand-solid" />
+            <Box
+              width="7px"
+              height="7px"
+              flexShrink={0}
+              borderRadius="full"
+              bg="bg.brandSolid"
+            />
             <Text textStyle="t5Bold" color="fg.neutral">
               거래할 금액
             </Text>
@@ -127,7 +139,7 @@ export function HomeTradeInput({
             />
           )}
 
-          <VStack className="mt-x1">
+          <VStack pt="x1">
             <ActionButton
               size="large"
               variant="brandSolid"

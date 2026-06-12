@@ -41,12 +41,15 @@ const TABS = [
 ]
 
 export function GlobalBottomNavigation() {
-  const { bottomNavVisible, pathname } = useLayout()
+  const { bottomNavVisible, overlayOpen, pathname } = useLayout()
 
-  if (!bottomNavVisible) return null
+  if (!bottomNavVisible || overlayOpen) return null
 
   return (
-    <div className="sticky bottom-0 z-[80] shrink-0">
+    <div
+      className="sticky bottom-0 shrink-0"
+      style={{ zIndex: 'var(--app-chrome-z-index)' }}
+    >
       <BottomNavigation>
         {TABS.map((tab) => {
           const active = tab.match(pathname)

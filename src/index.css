@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light only;
+  }
+
   html,
   body,
   #root {
@@ -11,6 +15,12 @@
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+  }
+
+  html,
+  body {
+    background-color: var(--seed-color-bg-layer-default);
+    color: var(--seed-color-fg-neutral);
   }
 
   body {

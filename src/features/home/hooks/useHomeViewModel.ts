@@ -6,13 +6,14 @@ const MOCK_SCENARIO: 'default' | 'activeTrade' = 'default'
 const BASE_MOCK: HomeViewModel = {
   user: {
     id: 'user-1',
-    nickname: '누비유저',
+    nickname: 'Brit유저',
     isVerified: true,
   },
   wallet: {
     coinBalance: 120,
     estimatedKrwValue: 120_000,
   },
+  unreadNotificationCount: 2,
   recentTrades: [],
 }
 

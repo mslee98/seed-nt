@@ -20,6 +20,7 @@ export interface HomeViewModel {
     coinBalance: number
     estimatedKrwValue: number
   }
+  unreadNotificationCount: number
   activeTrade?: {
     id: string
     role: 'BUYER' | 'SELLER'

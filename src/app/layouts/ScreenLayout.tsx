@@ -35,8 +35,8 @@ export function ScreenLayout({
     <div className={`flex min-h-full flex-col ${bgClass}`}>
       {navigation && (
         <header
-          className={`sticky top-0 z-[100] shrink-0 ${navigationBgClass}`}
-          style={{ height: headerHeight }}
+          className={`sticky top-0 shrink-0 ${navigationBgClass}`}
+          style={{ height: headerHeight, zIndex: 'var(--app-sticky-header-z-index)' }}
         >
           {navigation}
         </header>
@@ -48,8 +48,11 @@ export function ScreenLayout({
 
       {fixedBottom && (
         <footer
-          className="sticky bottom-0 z-[90] shrink-0 bg-bg-layer-default"
-          style={{ minHeight: 'var(--app-fixed-bottom-min-height)' }}
+          className="sticky bottom-0 shrink-0 bg-bg-layer-default"
+          style={{
+            minHeight: 'var(--app-fixed-bottom-min-height)',
+            zIndex: 'var(--app-sticky-footer-z-index)',
+          }}
         >
           {fixedBottom}
         </footer>
