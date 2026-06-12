@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useState } from 'react'
+
 import { useAuthStatus } from '../../auth/stores/authSession.store'
 import type { HomeViewModel } from '../types'
 
@@ -28,10 +30,7 @@ const ACTIVE_TRADE_MOCK: HomeViewModel['activeTrade'] = {
   updatedAt: new Date().toISOString(),
 }
 
-export function useHomeViewModel(): HomeViewModel {
-  const authStatus = useAuthStatus()
-  const isVerified = authStatus === 'authenticated'
-
+function createHomeViewModel(isVerified: boolean): HomeViewModel {
   if (MOCK_SCENARIO === 'activeTrade') {
     return {
       ...BASE_MOCK,
@@ -44,4 +43,26 @@ export function useHomeViewModel(): HomeViewModel {
     ...BASE_MOCK,
     user: { ...BASE_MOCK.user, isVerified },
   }
+}
+
+async function fetchHomeViewModel(isVerified: boolean): Promise<HomeViewModel> {
+  await new Promise((resolve) => window.setTimeout(resolve, 600))
+  return createHomeViewModel(isVerified)
+}
+
+export function useHomeViewModel(): HomeViewModel & { refresh: () => Promise<void> } {
+  const authStatus = useAuthStatus()
+  const isVerified = authStatus === 'authenticated'
+  const [data, setData] = useState(() => createHomeViewModel(isVerified))
+
+  useEffect(() => {
+    setData(createHomeViewModel(isVerified))
+  }, [isVerified])
+
+  const refresh = useCallback(async () => {
+    const next = await fetchHomeViewModel(isVerified)
+    setData(next)
+  }, [isVerified])
+
+  return { ...data, refresh }
 }

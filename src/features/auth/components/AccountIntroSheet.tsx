@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
-import { Box, Portal, VStack } from '@seed-design/react'
+import { Box, Portal, Text, VStack } from '@seed-design/react'
 
 import { ActionButton } from 'seed-design/ui/action-button'
 import {
@@ -9,7 +9,7 @@ import {
   BottomSheetFooter,
   BottomSheetRoot,
 } from 'seed-design/ui/bottom-sheet'
-import { List, ListItem } from 'seed-design/ui/list'
+import { List, ListDivider, ListItem } from 'seed-design/ui/list'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
 import { LottiePlayer } from './LottiePlayer'
@@ -39,7 +39,7 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
       <Portal container={portalContainerRef}>
         <BottomSheetContent
           title="본인확인이 끝났어요"
-          description="원활한 거래를 위해 계좌 정보를 등록해 주세요. 입금 확인, 환전, 환불에 사용할 계좌예요."
+          description="계좌 등록 전 아래 안내를 확인해 주세요."
           layerIndex={layerIndex}
           showHandle
         >
@@ -48,11 +48,19 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
               <Box py="x2">
                 <LottiePlayer src="/lotties/check-blue-spot.json" />
               </Box>
-              <List width="full">
-                {INTRO_ITEMS.map((item) => (
-                  <ListItem key={item} title={item} />
-                ))}
-              </List>
+              <VStack gap="x2" width="full">
+                <Text textStyle="t4Regular" color="fg.neutralMuted">
+                  등록하는 계좌는 아래와 같이 사용돼요.
+                </Text>
+                <List width="full" aria-label="계좌 등록 안내" role="list">
+                  {INTRO_ITEMS.map((item, index) => (
+                    <VStack key={item} gap="x0" width="full">
+                      {index > 0 && <ListDivider />}
+                      <ListItem title={item} aria-readonly />
+                    </VStack>
+                  ))}
+                </List>
+              </VStack>
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
@@ -64,7 +72,7 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
                 onConfirm()
               }}
             >
-              계좌 등록하기
+              확인했어요
             </ActionButton>
           </BottomSheetFooter>
         </BottomSheetContent>

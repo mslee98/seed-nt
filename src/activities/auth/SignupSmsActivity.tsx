@@ -21,7 +21,7 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
   const [code, setCode] = useState('')
   const [remaining, setRemaining] = useState(TIMER_SECONDS)
   const [isVerifying, setIsVerifying] = useState(false)
-  const [accountSheetOpen, setAccountSheetOpen] = useState(false)
+  const [introSheetOpen, setIntroSheetOpen] = useState(false)
 
   const hasVerifiedRef = useRef(false)
   const hasNavigatedRef = useRef(false)
@@ -37,9 +37,15 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
 
   useEffect(() => {
     if (!isActive) {
-      setAccountSheetOpen(false)
+      setIntroSheetOpen(false)
     }
   }, [isActive])
+
+  useEffect(() => {
+    if (isActive && hasVerifiedRef.current && !hasNavigatedRef.current && !introSheetOpen) {
+      setIntroSheetOpen(true)
+    }
+  }, [isActive, introSheetOpen])
 
   const handleVerify = useCallback(async (smsCode: string) => {
     if (hasVerifiedRef.current || isVerifyingRef.current) return
@@ -49,7 +55,7 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
     try {
       await verifySmsCode(draft.phone, smsCode)
       hasVerifiedRef.current = true
-      setAccountSheetOpen(true)
+      setIntroSheetOpen(true)
     } finally {
       isVerifyingRef.current = false
       setIsVerifying(false)
@@ -65,21 +71,21 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
     await sendSmsCode(draft.phone)
     hasVerifiedRef.current = false
     hasNavigatedRef.current = false
-    setAccountSheetOpen(false)
+    setIntroSheetOpen(false)
     setCode('')
     setRemaining(TIMER_SECONDS)
   }
 
-  const handleAccountSheetOpenChange = (open: boolean) => {
+  const handleIntroSheetOpenChange = (open: boolean) => {
     if (hasNavigatedRef.current) return
-    setAccountSheetOpen(open)
+    setIntroSheetOpen(open)
   }
 
-  const handleAccountConfirm = () => {
+  const handleIntroConfirm = () => {
     if (hasNavigatedRef.current) return
 
     hasNavigatedRef.current = true
-    setAccountSheetOpen(false)
+    setIntroSheetOpen(false)
     push('SignupAccount', { step: 'bank' })
   }
 
@@ -126,9 +132,9 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
 
       {isActive && (
         <AccountIntroSheet
-          open={accountSheetOpen}
-          onOpenChange={handleAccountSheetOpenChange}
-          onConfirm={handleAccountConfirm}
+          open={introSheetOpen}
+          onOpenChange={handleIntroSheetOpenChange}
+          onConfirm={handleIntroConfirm}
         />
       )}
     </>

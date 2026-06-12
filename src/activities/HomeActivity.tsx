@@ -33,36 +33,38 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
   return (
     <AppScreen layerOffsetTop="safeArea">
       <ScreenLayout>
-        <AppScreenContent>
-          <HomeHeader
-            activeTrade={viewModel.activeTrade}
-            unreadNotificationCount={viewModel.unreadNotificationCount}
-          />
-          <VStack
-            position="relative"
-            bleedTop="x6"
-            style={{ paddingBottom: 'var(--home-body-bottom-padding)' }}
-          >
-            <VStack px="spacingX.globalGutter" gap="x4">
-              <HomeBalanceCard
-                coinBalance={viewModel.wallet.coinBalance}
-                estimatedKrwValue={viewModel.wallet.estimatedKrwValue}
-              />
-              <HomeTradeInput
-                side={tradeInput.side}
-                amountKrw={tradeInput.amountKrw}
-                amountInput={tradeInput.amountInput}
-                amountError={tradeInput.amountError}
-                helperText={tradeInput.helperText}
-                isSubmitDisabled={tradeInput.isSubmitDisabled}
-                onSideChange={tradeInput.setSide}
-                onAmountInputChange={tradeInput.handleAmountInputChange}
-                onQuickAmountSelect={tradeInput.handleQuickAmountSelect}
-                onSubmit={handleSubmit}
-              />
-            </VStack>
-            <VStack px="spacingX.globalGutter" pt="x6">
-              <HomeSafetyBanner />
+        <AppScreenContent ptr onPtrReady={() => {}} onPtrRefresh={viewModel.refresh}>
+          <VStack gap="x0">
+            <HomeHeader
+              activeTrade={viewModel.activeTrade}
+              unreadNotificationCount={viewModel.unreadNotificationCount}
+            />
+            <VStack
+              position="relative"
+              bleedTop="x6"
+              style={{ paddingBottom: 'var(--home-body-bottom-padding)' }}
+            >
+              <VStack px="spacingX.globalGutter" gap="x4">
+                <HomeBalanceCard
+                  coinBalance={viewModel.wallet.coinBalance}
+                  estimatedKrwValue={viewModel.wallet.estimatedKrwValue}
+                />
+                <HomeTradeInput
+                  side={tradeInput.side}
+                  amountKrw={tradeInput.amountKrw}
+                  amountInput={tradeInput.amountInput}
+                  amountError={tradeInput.amountError}
+                  helperText={tradeInput.helperText}
+                  isSubmitDisabled={tradeInput.isSubmitDisabled}
+                  onSideChange={tradeInput.setSide}
+                  onAmountInputChange={tradeInput.handleAmountInputChange}
+                  onQuickAmountSelect={tradeInput.handleQuickAmountSelect}
+                  onSubmit={handleSubmit}
+                />
+              </VStack>
+              <VStack px="spacingX.globalGutter" pt="x6">
+                <HomeSafetyBanner />
+              </VStack>
             </VStack>
           </VStack>
         </AppScreenContent>
