@@ -10,6 +10,7 @@ import {
   BottomNavigationSafeArea,
 } from 'seed-design/ui/bottom-navigation'
 
+import { isAuthenticated } from '../../features/auth/stores/authSession.store'
 import { actions } from '../../stackflow/stackflow'
 import { useLayout } from './LayoutContext'
 
@@ -61,6 +62,10 @@ export function GlobalBottomNavigation() {
               active={active}
               onClick={() => {
                 if (active) return
+                if (tab.id !== 'home' && !isAuthenticated()) {
+                  actions.push('SignupIdentity', {})
+                  return
+                }
                 actions.replace(tab.activity, tab.params, { animate: false })
               }}
             />

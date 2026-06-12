@@ -8,7 +8,6 @@ import {
   AppBarMain,
   AppBarRight,
 } from 'seed-design/ui/app-bar'
-import { ScreenLayout } from '../app/layouts/ScreenLayout'
 import { AppScreen, AppScreenContent } from 'seed-design/ui/app-screen'
 
 const DetailActivity: ActivityComponentType<'Detail'> = () => {
@@ -16,25 +15,22 @@ const DetailActivity: ActivityComponentType<'Detail'> = () => {
 
   return (
     <AppScreen>
-      <ScreenLayout
-        navigation={
-          <AppBar>
-            <AppBarLeft>
-              <AppBarBackButton />
-            </AppBarLeft>
-            <AppBarMain>상세</AppBarMain>
-            <AppBarRight />
-          </AppBar>
-        }
-      >
-        <AppScreenContent>
-          <VStack
-            minHeight="full"
-            gap="spacingY.betweenText"
-            px="spacingX.globalGutter"
-            pb="spacingY.screenBottom"
-            pt="spacingY.navToTitle"
-          >
+      <AppBar>
+        <AppBarLeft>
+          <AppBarBackButton />
+        </AppBarLeft>
+        <AppBarMain>상세</AppBarMain>
+        <AppBarRight />
+      </AppBar>
+
+      <AppScreenContent>
+        <VStack
+          minHeight="full"
+          gap="spacingY.betweenText"
+          px="spacingX.globalGutter"
+          pb="spacingY.screenBottom"
+          pt="spacingY.navToTitle"
+        >
           <Text textStyle="screenTitle" color="fg.neutral">
             {id === 'write' ? '새 글 작성' : '게시글 상세'}
           </Text>
@@ -61,9 +57,8 @@ const DetailActivity: ActivityComponentType<'Detail'> = () => {
               /detail/{id}
             </Text>
           </Text>
-          </VStack>
-        </AppScreenContent>
-      </ScreenLayout>
+        </VStack>
+      </AppScreenContent>
     </AppScreen>
   )
 }

@@ -1,13 +1,15 @@
+import { useAuthStatus } from '../../auth/stores/authSession.store'
 import type { HomeViewModel } from '../types'
 
 /** 'default' | 'activeTrade' — 개발용 시나리오 전환 */
 const MOCK_SCENARIO: 'default' | 'activeTrade' = 'default'
 
-const BASE_MOCK: HomeViewModel = {
+const BASE_MOCK: Omit<HomeViewModel, 'user'> & {
+  user: Omit<HomeViewModel['user'], 'isVerified'>
+} = {
   user: {
     id: 'user-1',
     nickname: 'Brit유저',
-    isVerified: true,
   },
   wallet: {
     coinBalance: 120,
@@ -27,12 +29,19 @@ const ACTIVE_TRADE_MOCK: HomeViewModel['activeTrade'] = {
 }
 
 export function useHomeViewModel(): HomeViewModel {
+  const authStatus = useAuthStatus()
+  const isVerified = authStatus === 'authenticated'
+
   if (MOCK_SCENARIO === 'activeTrade') {
     return {
       ...BASE_MOCK,
       activeTrade: ACTIVE_TRADE_MOCK,
+      user: { ...BASE_MOCK.user, isVerified },
     }
   }
 
-  return BASE_MOCK
+  return {
+    ...BASE_MOCK,
+    user: { ...BASE_MOCK.user, isVerified },
+  }
 }

@@ -1,4 +1,5 @@
 import type { SeedPluginOptions } from '@seed-design/stackflow'
+import { SnackbarProvider } from 'seed-design/ui/snackbar'
 
 import { AppShell } from './app/layouts/AppShell'
 import { DesktopSidePanel } from './app/layouts/DesktopSidePanel'
@@ -14,16 +15,18 @@ function detectTheme(): SeedPluginOptions['theme'] {
 
 export default function App() {
   return (
-    <AppShell sidePanel={<DesktopSidePanel />}>
-      <LayoutProvider>
-        <MobileFrame>
-          <div className="flex min-h-0 flex-1 flex-col">
-            <Stack initialContext={{ theme: detectTheme() }} />
-          </div>
-          <GlobalBottomNavigation />
-          <div id="app-frame-portal" />
-        </MobileFrame>
-      </LayoutProvider>
-    </AppShell>
+    <SnackbarProvider>
+      <AppShell sidePanel={<DesktopSidePanel />}>
+        <LayoutProvider>
+          <MobileFrame>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <Stack initialContext={{ theme: detectTheme() }} />
+            </div>
+            <GlobalBottomNavigation />
+            <div id="app-frame-portal" />
+          </MobileFrame>
+        </LayoutProvider>
+      </AppShell>
+    </SnackbarProvider>
   )
 }

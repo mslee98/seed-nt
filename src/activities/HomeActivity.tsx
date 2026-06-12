@@ -8,26 +8,25 @@ import { HomeBalanceCard } from '../features/home/components/HomeBalanceCard'
 import { HomeHeader } from '../features/home/components/HomeHeader'
 import { HomeSafetyBanner } from '../features/home/components/HomeSafetyBanner'
 import { HomeTradeInput } from '../features/home/components/HomeTradeInput'
+import { useRequireAuth } from '../features/auth/hooks/useRequireAuth'
 import { useHomeViewModel } from '../features/home/hooks/useHomeViewModel'
 import { useTradeInputState } from '../features/home/hooks/useTradeInputState'
 
 const HomeActivity: ActivityComponentType<'Home'> = () => {
   const { push } = useFlow()
+  const requireAuth = useRequireAuth()
   const viewModel = useHomeViewModel()
   const tradeInput = useTradeInputState({ coinBalance: viewModel.wallet.coinBalance })
 
   const handleSubmit = () => {
-    if (!viewModel.user.isVerified) {
-      window.alert('안전한 거래를 위해 인증이 필요해요.')
-      return
-    }
-
     if (tradeInput.isSubmitDisabled || !tradeInput.amountKrw) return
 
-    push('TradeConfirm', {
-      side: tradeInput.side,
-      amountKrw: String(tradeInput.amountKrw),
-      splitMode: tradeInput.splitMode,
+    requireAuth(() => {
+      push('TradeConfirm', {
+        side: tradeInput.side,
+        amountKrw: String(tradeInput.amountKrw),
+        splitMode: tradeInput.splitMode,
+      })
     })
   }
 
