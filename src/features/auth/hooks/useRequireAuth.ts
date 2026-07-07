@@ -1,19 +1,21 @@
 import { useFlow } from '@stackflow/react'
 import { useCallback } from 'react'
 
-import { isAuthenticated } from '../stores/authSession.store'
+import type { AuthRequiredReason } from '../constants/authRequiredCopy'
+import { useAuthRequiredPrompt } from './useAuthRequiredPrompt'
 
-export function useRequireAuth() {
+export function useRequireAuth(reason: AuthRequiredReason = 'trade') {
   const { push } = useFlow()
+  const { promptAuth, authRequiredDialog } = useAuthRequiredPrompt({
+    onNavigateToSignup: () => push('SignupIdentity', {}),
+  })
 
-  return useCallback(
+  const requireAuth = useCallback(
     (action: () => void) => {
-      if (isAuthenticated()) {
-        action()
-        return
-      }
-      push('SignupIdentity', {})
+      promptAuth(action, reason)
     },
-    [push],
+    [promptAuth, reason],
   )
+
+  return { requireAuth, authRequiredDialog }
 }

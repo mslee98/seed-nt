@@ -2,11 +2,11 @@ import type { ActivityComponentType } from '@stackflow/react'
 import { useFlow } from '@stackflow/react'
 import { useState, type MouseEvent } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
-import { showAuthSnackbar } from '../../features/auth/utils/showAuthSnackbar'
+import { showSnackbar } from '../../shared/utils/showSnackbar'
 import { ActionButton } from 'seed-design/ui/action-button'
 
 import { sendSmsCode } from '../../features/auth/api/auth.api'
-import { AuthActivityLayout } from '../../features/auth/components/AuthActivityLayout'
+import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
 import {
   getIdentityCtaLabel,
   SignupProgressiveForm,
@@ -66,7 +66,7 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
       setIsSubmitting(true)
       try {
         await sendSmsCode(draft.phone)
-        showAuthSnackbar(snackbar, '인증번호가 전송되었어요')
+        showSnackbar(snackbar, '인증번호가 전송되었어요')
         push('SignupSms', { phone: formatPhoneInput(draft.phone) })
       } finally {
         setIsSubmitting(false)
@@ -79,7 +79,7 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
 
   return (
     <>
-      <AuthActivityLayout
+      <ActivityScreenLayout
         title="가입하기"
         onBack={handleBack}
         fixedBottom={
@@ -109,7 +109,7 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
           onSubmit={() => void goNext()}
           canSubmit={canGoNext}
         />
-      </AuthActivityLayout>
+      </ActivityScreenLayout>
 
       <SignupExitAlertDialog
         open={exitDialogOpen}

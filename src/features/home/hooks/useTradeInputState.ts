@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 
 import { TRADE_LIMITS } from '../constants'
 import { krwToCoin } from '../utils/formatAmount'
@@ -15,15 +15,15 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   const [amountInput, setAmountInput] = useState('')
 
   const splitMode: SplitMode = useMemo(() => {
-    if (side !== 'SELL' || !amountKrw) return 'NONE'
+    if (!amountKrw) return 'NONE'
     return getSplitRecommendation(amountKrw) ? 'AUTO' : 'NONE'
-  }, [side, amountKrw])
+  }, [amountKrw])
 
   const amountError = useMemo(() => {
     if (amountKrw === null) return null
 
     if (amountKrw < TRADE_LIMITS.minAmount) {
-      return `${TRADE_LIMITS.minAmount.toLocaleString('ko-KR')}원 이상부터 거래할 수 있어요.`
+      return `${TRADE_LIMITS.minAmount.toLocaleString('ko-KR')}원 이상부터 거래할 수 있어요`
     }
 
     if (amountKrw > TRADE_LIMITS.maxAmount) {
@@ -31,7 +31,7 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     }
 
     if (side === 'SELL' && krwToCoin(amountKrw) > coinBalance) {
-      return '보유한 코인보다 많이 판매할 수 없어요.'
+      return '보유한 코인보다 많이 판매할 수 없어요'
     }
 
     return null
@@ -42,13 +42,13 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
 
     if (!amountKrw) {
       return side === 'BUY'
-        ? '금액을 입력하면 예상 코인을 보여드려요.'
-        : '금액을 입력하면 판매할 코인을 보여드려요.'
+        ? '금액을 입력하면 예상 코인을 보여드릴게요'
+        : '금액을 입력하면 판매할 코인을 보여드릴게요'
     }
 
     const coinAmount = krwToCoin(amountKrw)
     if (side === 'BUY') {
-      return `예상 수령 코인 ${coinAmount} MS`
+      return `예상 코인 ${coinAmount} MS`
     }
     return `판매할 코인 ${coinAmount} MS`
   }, [amountKrw, amountError, side])

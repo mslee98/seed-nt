@@ -8,7 +8,10 @@ import {
   type ReactNode,
 } from 'react'
 
-import { ACTIVITIES_WITH_BOTTOM_NAV } from '../../shared/constants/app-layout'
+import {
+  ACTIVITIES_WITH_BOTTOM_NAV,
+  DETAIL_BOTTOM_NAV_PATHS,
+} from '../../shared/constants/app-layout'
 import { config } from '../../stackflow/config'
 
 function matchRoute(route: string, pathname: string): boolean {
@@ -29,9 +32,16 @@ function getActivityFromPathname(pathname: string): string | null {
 function isBottomNavVisible(pathname: string): boolean {
   const activity = getActivityFromPathname(pathname)
   if (!activity) return false
+
+  if (activity === 'Detail') {
+    return DETAIL_BOTTOM_NAV_PATHS.includes(pathname)
+  }
+
   return (ACTIVITIES_WITH_BOTTOM_NAV as readonly string[]).includes(activity)
 }
 
+// GlobalBottomNavigation은 Stack 밖에 있어 useStack/useFlow를 쓸 수 없음.
+// historySyncPlugin이 갱신하는 URL과 bottom nav 표시를 맞추려 pathname을 직접 구독한다.
 function subscribePathname(onStoreChange: () => void) {
   window.addEventListener('popstate', onStoreChange)
 

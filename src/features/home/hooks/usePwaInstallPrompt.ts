@@ -5,11 +5,8 @@ import {
   clearDeferredPrompt,
   getDeferredPrompt,
   getPwaInstallPromptSnapshot,
-  initPwaInstallPromptListener,
   subscribePwaInstallPrompt,
 } from '../utils/pwaInstallPromptStore'
-
-initPwaInstallPromptListener()
 
 export type { BeforeInstallPromptEvent } from '../utils/pwaInstallPromptStore'
 

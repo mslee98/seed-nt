@@ -13,6 +13,9 @@ declare module '@stackflow/config' {
       amountKrw: string
       splitMode?: string
     }
+    Trade: {
+      tradeId: string
+    }
     SignupIdentity: {}
     SignupSms: {
       phone: string
@@ -41,6 +44,10 @@ export const config = defineConfig({
     {
       name: 'TradeConfirm',
       route: '/trade/confirm',
+    },
+    {
+      name: 'Trade',
+      route: '/trade/:tradeId',
     },
     {
       name: 'SignupIdentity',

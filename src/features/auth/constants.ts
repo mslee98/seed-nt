@@ -90,23 +90,3 @@ export const IDENTITY_STEP_COPY: Record<SignupIdentityStep, IdentityStepCopy> = 
     placeholder: '010-0000-0000',
   },
 }
-
-export interface BankOption {
-  code: string
-  name: string
-  iconKey: string
-}
-
-/** @deprecated Institution 그리드·검색 데이터는 `data/institutions.ts`를 사용하세요. */
-export const BANKS: BankOption[] = [
-  { code: '088', name: '신한은행', iconKey: 'shinhan-bank' },
-  { code: '004', name: 'KB국민은행', iconKey: 'kb-bank' },
-  { code: '020', name: '우리은행', iconKey: 'woori-bank' },
-  { code: '081', name: '하나은행', iconKey: 'hana-bank' },
-  { code: '011', name: 'NH농협은행', iconKey: 'nh-bank' },
-  { code: '090', name: '카카오뱅크', iconKey: 'kakao-bank' },
-  { code: '092', name: '토스뱅크', iconKey: 'toss-bank' },
-  { code: '089', name: '케이뱅크', iconKey: 'kbank-bank' },
-  { code: '003', name: 'IBK기업은행', iconKey: 'ibk-bank' },
-  { code: '031', name: 'DGB대구은행', iconKey: 'dgb-bank' },
-]

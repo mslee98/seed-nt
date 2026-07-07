@@ -15,6 +15,7 @@
   --app-content-bottom-padding: calc(
     var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) + 16px
   );
+  --home-matching-dock-z-index: 4;
   --home-body-bottom-padding: calc(
     var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) +
       var(--seed-dimension-x6)

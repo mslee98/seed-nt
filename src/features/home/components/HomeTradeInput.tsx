@@ -24,6 +24,7 @@ interface HomeTradeInputProps {
   onAmountInputChange: (value: string) => void
   onQuickAmountSelect: (amount: number) => void
   onSubmit: () => void
+  onSplitModeClick?: () => void
 }
 
 function formatQuickAmountLabel(amount: number): string {
@@ -44,6 +45,7 @@ export function HomeTradeInput({
   onAmountInputChange,
   onQuickAmountSelect,
   onSubmit,
+  onSplitModeClick,
 }: HomeTradeInputProps) {
   const ctaLabel = !amountKrw
     ? '금액을 입력해 주세요'
@@ -51,8 +53,11 @@ export function HomeTradeInput({
       ? `${formatAmount(amountKrw)} 구매하기`
       : `${formatAmount(amountKrw)} 판매 등록하기`
 
-  const splitRecommendation =
-    side === 'SELL' && amountKrw ? getSplitRecommendation(amountKrw) : null
+  const splitRecommendation = amountKrw ? getSplitRecommendation(amountKrw) : null
+  const splitBannerTitle =
+    side === 'BUY'
+      ? '큰 금액은 나눠서 더 빨리 구매할 수 있어요'
+      : '큰 금액은 나눠서 더 빨리 판매할 수 있어요'
 
   return (
     <VStack
@@ -127,12 +132,10 @@ export function HomeTradeInput({
             <PageBanner
               tone="warning"
               variant="weak"
-              title="큰 금액은 나눠서 더 빨리 판매할 수 있어요"
+              title={splitBannerTitle}
               description={`예상 분할: ${formatAmountNumber(splitRecommendation.unitAmount)}원 × ${splitRecommendation.count}건`}
               suffix={
-                <PageBannerButton
-                  onClick={() => window.alert('분할 방식 설정은 준비 중이에요.')}
-                >
+                <PageBannerButton onClick={onSplitModeClick}>
                   분할 방식 바꾸기
                 </PageBannerButton>
               }

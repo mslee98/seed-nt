@@ -1,0 +1,6 @@
+.global-active-trade-banner {
+  flex-shrink: 0;
+  z-index: var(--app-chrome-z-index);
+  border-bottom: 1px solid var(--seed-color-stroke-neutral-weak);
+  background-color: var(--seed-color-bg-layer-default);
+}

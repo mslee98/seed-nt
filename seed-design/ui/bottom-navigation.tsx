@@ -3,13 +3,14 @@
  * SEED registry에 bottom-navigation 스니펫이 없어 프로젝트에서 자체 구현합니다.
  **/
 
-import { Icon, Text, VStack } from '@seed-design/react'
+import { Icon, NotificationBadge, NotificationBadgePositioner, Text, VStack } from '@seed-design/react'
 import type { ReactNode } from 'react'
 
 export interface BottomNavigationItemProps {
   label: string
   icon: ReactNode
   active?: boolean
+  badge?: string
   onClick?: () => void
 }
 
@@ -17,20 +18,30 @@ export function BottomNavigationItem({
   label,
   icon,
   active = false,
+  badge,
   onClick,
 }: BottomNavigationItemProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-1 flex-col items-center justify-center gap-x0_5 border-none bg-transparent py-x2"
+      className="relative flex flex-1 flex-col items-center justify-center gap-x0_5 border-none bg-transparent py-x2"
       aria-current={active ? 'page' : undefined}
     >
-      <Icon
-        svg={icon}
-        size="x6"
-        color={active ? 'fg.brand' : 'fg.neutralSubtle'}
-      />
+      <span className="relative inline-flex">
+        <Icon
+          svg={icon}
+          size="x6"
+          color={active ? 'fg.brand' : 'fg.neutralSubtle'}
+        />
+        {badge && (
+          <NotificationBadgePositioner size="large" attach="icon">
+            <NotificationBadge size="large" aria-label={badge}>
+              {badge}
+            </NotificationBadge>
+          </NotificationBadgePositioner>
+        )}
+      </span>
       <Text
         textStyle="t2Medium"
         color={active ? 'fg.brand' : 'fg.neutralSubtle'}

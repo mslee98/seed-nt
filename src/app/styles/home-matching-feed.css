@@ -1,0 +1,48 @@
+.matching-feed {
+  width: 100%;
+}
+
+.matching-candidate-item--enter {
+  animation: matching-candidate-enter 0.28s cubic-bezier(0.2, 0.1, 0.21, 0.99);
+}
+
+.matching-candidate-item--auto-matching {
+  animation: matching-exact-pulse 1.5s ease-in-out infinite;
+}
+
+.matching-candidate-item--locked {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.matching-candidate-item--pending {
+  opacity: 1;
+}
+
+@keyframes matching-candidate-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes matching-exact-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matching-candidate-item--enter,
+  .matching-candidate-item--auto-matching {
+    animation: none;
+  }
+}

@@ -1,4 +1,5 @@
-export const MS_TO_KRW = 1_000
+/** 1 MS = 1원 (1:1) */
+export const MS_TO_KRW = 1
 
 export const TRADE_LIMITS = {
   minAmount: 10_000,

@@ -42,4 +42,29 @@
     -webkit-user-drag: none;
     user-drag: none;
   }
+
+  @keyframes pin-field-cursor-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .pin-field-cursor {
+    animation: pin-field-cursor-blink 1s step-end infinite;
+  }
+
+  .text-link-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .text-link-button:disabled {
+    cursor: not-allowed;
+  }
 }

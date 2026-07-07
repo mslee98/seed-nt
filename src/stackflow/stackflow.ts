@@ -1,5 +1,4 @@
 import { seedPlugin } from '@seed-design/stackflow'
-import type { SeedPluginOptions } from '@seed-design/stackflow'
 import { historySyncPlugin } from '@stackflow/plugin-history-sync'
 import { basicRendererPlugin } from '@stackflow/plugin-renderer-basic'
 import { stackflow } from '@stackflow/react'
@@ -12,20 +11,19 @@ import SignupSmsActivity from '../activities/auth/SignupSmsActivity'
 import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
+import TradeActivity from '../activities/TradeActivity'
 import TradeConfirmActivity from '../activities/TradeConfirmActivity'
+import { detectTheme } from '../shared/utils/detectTheme'
 import { config } from './config'
 
-function detectTheme(): SeedPluginOptions['theme'] {
-  if (typeof navigator === 'undefined') return 'cupertino'
-  return /android/i.test(navigator.userAgent) ? 'android' : 'cupertino'
-}
-
+// Navigation: Activity 내부는 useFlow(), Stack 외부 크롬(GlobalBottomNavigation, SignupComplete stack pop)은 actions.
 export const { Stack, actions } = stackflow({
   config,
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,
     TradeConfirm: TradeConfirmActivity,
+    Trade: TradeActivity,
     SignupIdentity: SignupIdentityActivity,
     SignupSms: SignupSmsActivity,
     SignupAccount: SignupAccountActivity,

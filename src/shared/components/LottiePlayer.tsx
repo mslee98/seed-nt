@@ -2,6 +2,8 @@ import LottieImport from 'lottie-react'
 import type { LottieComponentProps } from 'lottie-react'
 import { useEffect, useState, type ComponentType } from 'react'
 
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
+
 const Lottie = (
   'default' in LottieImport ? LottieImport.default : LottieImport
 ) as ComponentType<LottieComponentProps>
@@ -11,6 +13,7 @@ interface LottiePlayerProps {
   className?: string
   loop?: boolean
   autoplay?: boolean
+  size?: number
 }
 
 export function LottiePlayer({
@@ -18,7 +21,9 @@ export function LottiePlayer({
   className,
   loop = false,
   autoplay = true,
+  size = 80,
 }: LottiePlayerProps) {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [animationData, setAnimationData] = useState<object | null>(null)
 
   useEffect(() => {
@@ -38,13 +43,16 @@ export function LottiePlayer({
 
   if (!animationData) return null
 
+  const shouldLoop = prefersReducedMotion ? false : loop
+  const shouldAutoplay = prefersReducedMotion ? false : autoplay
+
   return (
     <Lottie
       animationData={animationData}
-      loop={loop}
-      autoplay={autoplay}
+      loop={shouldLoop}
+      autoplay={shouldAutoplay}
       className={className}
-      style={{ width: 80, height: 80 }}
+      style={{ width: size, height: size }}
     />
   )
 }

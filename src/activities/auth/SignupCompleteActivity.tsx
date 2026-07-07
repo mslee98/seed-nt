@@ -4,11 +4,13 @@ import { Box, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { ResultSection } from 'seed-design/ui/result-section'
 
-import { AuthActivityLayout } from '../../features/auth/components/AuthActivityLayout'
-import { LottiePlayer } from '../../features/auth/components/LottiePlayer'
+import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
+import { LottiePlayer } from '../../shared/components/LottiePlayer'
 import { setAuthStatus } from '../../features/auth/stores/authSession.store'
 import { resetSignupDraft } from '../../features/auth/stores/signupDraft.store'
 import { actions } from '../../stackflow/stackflow'
+
+const SIGNUP_COMPLETE_LOTTIE = '/lotties/Success.json'
 
 const SignupCompleteActivity: ActivityComponentType<'SignupComplete'> = () => {
   const { activities } = useStack()
@@ -18,13 +20,14 @@ const SignupCompleteActivity: ActivityComponentType<'SignupComplete'> = () => {
     resetSignupDraft()
 
     const popCount = Math.max(0, activities.length - 1)
-    for (let i = 0; i < popCount; i += 1) {
-      actions.pop({ animate: i === popCount - 1 })
+    if (popCount > 0) {
+      actions.pop(popCount, { animate: false })
     }
+    actions.replace('Home', {}, { animate: true })
   }
 
   return (
-    <AuthActivityLayout
+    <ActivityScreenLayout
       showAppBar={false}
       appScreenProps={{ preventSwipeBack: true, transitionStyle: 'fadeIn' }}
       fixedBottom={
@@ -37,14 +40,14 @@ const SignupCompleteActivity: ActivityComponentType<'SignupComplete'> = () => {
         <ResultSection
           asset={
             <Box pb="x4" display="flex" justifyContent="center">
-              <LottiePlayer src="/lotties/check-blue-spot.json" />
+              <LottiePlayer src={SIGNUP_COMPLETE_LOTTIE} size={240} />
             </Box>
           }
-          title="누비에 오신 걸 환영해요"
+          title="Brit에 오신 걸 환영해요"
           description="이제 원하는 거래를 쉽고 안전하게 시작할 수 있어요."
         />
       </VStack>
-    </AuthActivityLayout>
+    </ActivityScreenLayout>
   )
 }
 

@@ -9,12 +9,12 @@ import { PageBanner } from 'seed-design/ui/page-banner'
 import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
 
 import { verifyAccount } from '../../features/auth/api/auth.api'
-import { AuthActivityLayout } from '../../features/auth/components/AuthActivityLayout'
+import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
 import { InstitutionSelectPanel } from '../../features/auth/components/institution/InstitutionSelectPanel'
 import type { Institution } from '../../features/auth/data/institutions'
 import { useSignupForm } from '../../features/auth/hooks/useSignupForm'
 import { updateSignupDraft } from '../../features/auth/stores/signupDraft.store'
-import { showAuthSnackbar } from '../../features/auth/utils/showAuthSnackbar'
+import { showSnackbar } from '../../shared/utils/showSnackbar'
 
 const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
   const { step = 'bank' } = useActivityParams<'SignupAccount'>()
@@ -46,7 +46,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
         bankCode: draft.bankCode,
         accountNumber: draft.accountNumber,
       })
-      showAuthSnackbar(snackbar, '계좌가 확인되었어요')
+      showSnackbar(snackbar, '계좌가 확인되었어요')
       push('SignupPin', { step: 'create' })
     } finally {
       setIsVerifying(false)
@@ -63,14 +63,14 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
 
   if (step === 'bank') {
     return (
-      <AuthActivityLayout title="금융기관 선택" onBack={handleBack}>
+      <ActivityScreenLayout title="금융기관 선택" onBack={handleBack}>
         <InstitutionSelectPanel onSelect={handleInstitutionSelect} />
-      </AuthActivityLayout>
+      </ActivityScreenLayout>
     )
   }
 
   return (
-    <AuthActivityLayout
+    <ActivityScreenLayout
       title="계좌 등록"
       onBack={handleBack}
       fixedBottom={
@@ -128,7 +128,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
           description="계좌는 거래 취소, 환불, 환전에 사용돼요."
         />
       </VStack>
-    </AuthActivityLayout>
+    </ActivityScreenLayout>
   )
 }
 

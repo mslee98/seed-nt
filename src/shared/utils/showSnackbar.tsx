@@ -3,7 +3,7 @@ import { Snackbar, type useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 type SnackbarAdapter = ReturnType<typeof useSnackbarAdapter>
 
-export function showAuthSnackbar(
+export function showSnackbar(
   adapter: SnackbarAdapter,
   message: string,
   variant: 'positive' | 'critical' | 'default' = 'positive',

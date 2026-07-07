@@ -1,5 +1,5 @@
 import { useActivityZIndexBase } from '@seed-design/stackflow'
-import { Portal } from '@seed-design/react'
+import { Portal, ResponsivePair } from '@seed-design/react'
 
 import {
   AlertDialogAction,
@@ -35,18 +35,20 @@ export function SignupExitAlertDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction variant="neutralWeak" onClick={() => onOpenChange(false)}>
-              계속 입력하기
-            </AlertDialogAction>
-            <AlertDialogAction
-              variant="criticalSolid"
-              onClick={() => {
-                onConfirmExit()
-                onOpenChange(false)
-              }}
-            >
-              가입 그만두기
-            </AlertDialogAction>
+            <ResponsivePair gap="x2" width="full">
+              <AlertDialogAction variant="neutralWeak" onClick={() => onOpenChange(false)}>
+                닫기
+              </AlertDialogAction>
+              <AlertDialogAction
+                variant="criticalSolid"
+                onClick={() => {
+                  onConfirmExit()
+                  onOpenChange(false)
+                }}
+              >
+                그만두기
+              </AlertDialogAction>
+            </ResponsivePair>
           </AlertDialogFooter>
         </AlertDialogContent>
       </Portal>

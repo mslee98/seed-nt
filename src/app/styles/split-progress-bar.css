@@ -1,0 +1,8 @@
+.split-progress-bar {
+  width: 100%;
+}
+
+.split-progress-bar__segments {
+  display: flex;
+  width: 100%;
+}

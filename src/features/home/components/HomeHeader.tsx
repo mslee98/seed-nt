@@ -1,4 +1,3 @@
-import { useFlow } from '@stackflow/react'
 import { IconBellLine } from '@karrotmarket/react-monochrome-icon'
 import {
   Badge,
@@ -21,6 +20,8 @@ import { HomeInstallBanner } from './HomeInstallBanner'
 interface HomeHeaderProps {
   activeTrade?: HomeViewModel['activeTrade']
   unreadNotificationCount?: number
+  onActiveTradeClick?: () => void
+  compact?: boolean
 }
 
 function formatNotificationBadgeLabel(count: number): string {
@@ -28,15 +29,19 @@ function formatNotificationBadgeLabel(count: number): string {
   return String(count)
 }
 
-export function HomeHeader({ activeTrade, unreadNotificationCount = 0 }: HomeHeaderProps) {
-  const { push } = useFlow()
+export function HomeHeader({
+  activeTrade,
+  unreadNotificationCount = 0,
+  onActiveTradeClick,
+  compact = false,
+}: HomeHeaderProps) {
   const hasUnreadNotification = unreadNotificationCount > 0
   const showCountBadge = unreadNotificationCount > 1
 
   return (
     <section className="home-header">
       <HomeInstallBanner />
-      <VStack px="spacingX.globalGutter" pb="x10" gap="x5">
+      <VStack px="spacingX.globalGutter" pb={compact ? 'x4' : 'x10'} gap={compact ? 'x0' : 'x5'}>
         <HStack justify="space-between" align="center" height="56px">
           <LogoBrit
             className="home-header__logo"
@@ -75,17 +80,19 @@ export function HomeHeader({ activeTrade, unreadNotificationCount = 0 }: HomeHea
           </Box>
         </HStack>
 
-        <VStack gap="spacingY.betweenText">
-          <HStack align="center" gap="x2">
-            <IconCoinDollarSyncFill width={40} height={40} aria-hidden />
-            <Text textStyle="screenTitle" color="fg.neutral">
-              필요한 만큼{'\n'}쉽게 거래해요
+        {!compact && (
+          <VStack gap="spacingY.betweenText">
+            <HStack align="center" gap="x2">
+              <IconCoinDollarSyncFill width={40} height={40} aria-hidden />
+              <Text textStyle="screenTitle" color="fg.neutral">
+                필요한 만큼{'\n'}쉽게 거래해요
+              </Text>
+            </HStack>
+            <Text textStyle="t5Regular" color="fg.neutralMuted">
+              비슷한 금액의 상대와 연결해드릴게요.
             </Text>
-          </HStack>
-          <Text textStyle="t5Regular" color="fg.neutralMuted">
-            비슷한 금액의 상대와 연결해드릴게요.
-          </Text>
-        </VStack>
+          </VStack>
+        )}
 
         {activeTrade && (
           <Box
@@ -101,7 +108,7 @@ export function HomeHeader({ activeTrade, unreadNotificationCount = 0 }: HomeHea
             borderRadius="r3"
             bg="bg.layerDefault"
             style={{ textAlign: 'left' }}
-            onClick={() => push('Detail', { id: activeTrade.id })}
+            onClick={() => onActiveTradeClick?.()}
           >
             <Badge tone="warning" variant="weak" size="medium">
               {getTradeStatusCopy(activeTrade.status).badge}

@@ -12,7 +12,7 @@ import {
 import { List, ListDivider, ListItem } from 'seed-design/ui/list'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
-import { LottiePlayer } from './LottiePlayer'
+import { LottiePlayer } from '../../../shared/components/LottiePlayer'
 
 interface AccountIntroSheetProps {
   open: boolean

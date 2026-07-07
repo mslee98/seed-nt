@@ -9,7 +9,7 @@ import {
 } from 'seed-design/ui/app-bar'
 import { AppScreen, AppScreenContent, type AppScreenProps } from 'seed-design/ui/app-screen'
 
-interface AuthActivityLayoutProps {
+interface ActivityScreenLayoutProps {
   title?: string
   onBack?: (e: MouseEvent<HTMLButtonElement>) => void
   fixedBottom?: ReactNode
@@ -18,14 +18,14 @@ interface AuthActivityLayoutProps {
   children: ReactNode
 }
 
-export function AuthActivityLayout({
+export function ActivityScreenLayout({
   title = '',
   onBack,
   fixedBottom,
   appScreenProps,
   showAppBar = true,
   children,
-}: AuthActivityLayoutProps) {
+}: ActivityScreenLayoutProps) {
   return (
     <AppScreen {...appScreenProps}>
       {showAppBar && (

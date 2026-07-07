@@ -13,6 +13,7 @@ import type { FinanceCategory, Institution } from '../../data/institutions'
 import { FINANCE_CATEGORY_LABELS, getFeaturedInstitutions } from '../../data/institutions'
 import { InstitutionGrid } from './InstitutionGrid'
 import { InstitutionNotFoundSheet } from './InstitutionNotFoundSheet'
+import { TextLinkButton } from '../../../../shared/components/TextLinkButton'
 
 const FINANCE_CATEGORIES: FinanceCategory[] = ['bank', 'securities', 'insurance']
 
@@ -81,14 +82,9 @@ export function InstitutionSelectPanel({ onSelect }: InstitutionSelectPanelProps
                 />
 
                 <VStack px="spacingX.globalGutter" pb="x6" align="center">
-                  <button
-                    type="button"
-                    onClick={() => setNotFoundSheetOpen(true)}
-                    className="cursor-pointer border-none bg-transparent text-fg-brand"
-                    style={{ fontSize: 'var(--seed-font-size-t4)' }}
-                  >
+                  <TextLinkButton onClick={() => setNotFoundSheetOpen(true)}>
                     찾는 기관이 없어요
-                  </button>
+                  </TextLinkButton>
                 </VStack>
               </TabsContent>
             ))}

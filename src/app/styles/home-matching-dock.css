@@ -1,0 +1,9 @@
+.home-matching-dock {
+  flex-shrink: 0;
+  z-index: var(--home-matching-dock-z-index);
+}
+
+.home-matching-dock--order {
+  padding-top: var(--seed-dimension-x2);
+  padding-bottom: var(--seed-dimension-x2);
+}
