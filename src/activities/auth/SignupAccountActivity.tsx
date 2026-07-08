@@ -11,6 +11,7 @@ import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
 import { verifyAccount } from '../../features/auth/api/auth.api'
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
 import { InstitutionSelectPanel } from '../../features/auth/components/institution/InstitutionSelectPanel'
+import { SignupProgressHeader } from '../../features/auth/components/SignupProgressBar'
 import type { Institution } from '../../features/auth/data/institutions'
 import { useSignupForm } from '../../features/auth/hooks/useSignupForm'
 import { updateSignupDraft } from '../../features/auth/stores/signupDraft.store'
@@ -63,7 +64,11 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
 
   if (step === 'bank') {
     return (
-      <ActivityScreenLayout title="금융기관 선택" onBack={handleBack}>
+      <ActivityScreenLayout
+        title="금융기관 선택"
+        onBack={handleBack}
+        progress={<SignupProgressHeader type="account" step="bank" />}
+      >
         <InstitutionSelectPanel onSelect={handleInstitutionSelect} />
       </ActivityScreenLayout>
     )
@@ -73,6 +78,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
     <ActivityScreenLayout
       title="계좌 등록"
       onBack={handleBack}
+      progress={<SignupProgressHeader type="account" step="accountNumber" />}
       fixedBottom={
         <ActionButton
           size="large"

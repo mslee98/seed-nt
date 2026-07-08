@@ -1,3 +1,5 @@
+export const SIGNUP_IDENTITY_FORM_ID = 'signup-identity-form'
+
 export type CarrierCode = 'SKT' | 'KT' | 'LGU' | 'SKT_MVNO' | 'KT_MVNO' | 'LGU_MVNO'
 
 export const CARRIERS: Array<{ code: CarrierCode; label: string }> = [
@@ -73,7 +75,7 @@ export const IDENTITY_STEP_COPY: Record<SignupIdentityStep, IdentityStepCopy> = 
     screenSubtitle: '앞 7자리를 입력해 주세요.',
     fieldLabel: '주민등록번호(앞 7자리)',
     fieldDescription: '생년월일과 성별코드를 입력하세요.',
-    placeholder: '000000-0',
+    placeholder: '000000',
   },
   carrier: {
     screenTitle: '통신사',

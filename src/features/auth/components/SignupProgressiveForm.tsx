@@ -1,7 +1,7 @@
-import { Text, VStack } from '@seed-design/react'
+import { VStack } from '@seed-design/react'
 
 import type { SignupIdentityStep } from '../constants'
-import { CTA_LABEL_BY_IDENTITY_STEP, IDENTITY_STEP_INDEX } from '../constants'
+import { CTA_LABEL_BY_IDENTITY_STEP } from '../constants'
 import { ActiveStepInput } from './ActiveStepInput'
 import type { CarrierCode } from '../constants'
 
@@ -34,10 +34,6 @@ export function SignupProgressiveForm({
 }: SignupProgressiveFormProps) {
   return (
     <VStack px="spacingX.globalGutter" py="x4" gap="x6">
-      <Text textStyle="t4Regular" color="fg.neutralMuted">
-        {IDENTITY_STEP_INDEX[activeStep]} / 4
-      </Text>
-
       <ActiveStepInput
         activeStep={activeStep}
         name={name}

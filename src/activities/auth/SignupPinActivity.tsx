@@ -3,11 +3,13 @@ import { Text, VStack } from '@seed-design/react'
 
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
 import { NumericKeypad } from '../../features/auth/components/NumericKeypad'
+import { SignupProgressHeader } from '../../features/auth/components/SignupProgressBar'
 import { PinField } from 'seed-design/ui/pin-field'
 import { useSignupPinFlow } from '../../features/auth/hooks/useSignupPinFlow'
 
 const SignupPinActivity: ActivityComponentType<'SignupPin'> = () => {
   const {
+    step,
     pinLength,
     currentValue,
     isSubmitting,
@@ -18,7 +20,11 @@ const SignupPinActivity: ActivityComponentType<'SignupPin'> = () => {
   } = useSignupPinFlow()
 
   return (
-    <ActivityScreenLayout title="비밀번호 설정" onBack={handleStepBack}>
+    <ActivityScreenLayout
+      title="비밀번호 설정"
+      onBack={handleStepBack}
+      progress={<SignupProgressHeader type="pin" step={step} />}
+    >
       <VStack px="spacingX.globalGutter" py="x4" gap="x6" flexGrow>
         <VStack gap="spacingY.betweenText">
           <Text textStyle="t6Bold" color="fg.neutral">

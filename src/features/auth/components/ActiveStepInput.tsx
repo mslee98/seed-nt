@@ -1,13 +1,19 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
 import { Text, VStack } from '@seed-design/react'
 import { motion } from 'motion/react'
 import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
 import { FieldButton } from 'seed-design/ui/field-button'
+import { SplitRrnFirst7Field } from 'seed-design/ui/split-rrn-first7-field'
 
 import type { SignupIdentityStep } from '../constants'
-import { CARRIERS, getIdentityStepIndex, IDENTITY_STEP_COPY, isIdentityStepRevealed } from '../constants'
+import {
+  CARRIERS,
+  getIdentityStepIndex,
+  IDENTITY_STEP_COPY,
+  isIdentityStepRevealed,
+  SIGNUP_IDENTITY_FORM_ID,
+} from '../constants'
 import { formatPhoneInput } from '../utils/formatPhone'
-import { formatRrnInput } from '../utils/formatRrn'
 import { CarrierSelectSheet } from './CarrierSelectSheet'
 import type { CarrierCode } from '../constants'
 
@@ -60,6 +66,7 @@ export function ActiveStepInput({
   const nameInputRef = useRef<HTMLInputElement>(null)
   const rrnInputRef = useRef<HTMLInputElement>(null)
   const phoneInputRef = useRef<HTMLInputElement>(null)
+  const carrierButtonRef = useRef<HTMLButtonElement>(null)
   const [carrierSheetOpen, setCarrierSheetOpen] = useState(false)
   const prevActiveStepRef = useRef(activeStep)
 
@@ -70,6 +77,10 @@ export function ActiveStepInput({
     e.preventDefault()
     if (canSubmit) onSubmit?.()
   }
+
+  const handleRrnGenderComplete = useCallback(() => {
+    onSubmit?.()
+  }, [onSubmit])
 
   useEffect(() => {
     const prev = prevActiveStepRef.current
@@ -87,10 +98,13 @@ export function ActiveStepInput({
       phone: phoneInputRef,
     }
 
-    if (activeStep !== 'carrier') {
-      const ref = focusMap[activeStep]
-      requestAnimationFrame(() => ref?.current?.focus())
-    }
+    requestAnimationFrame(() => {
+      if (activeStep === 'carrier') {
+        carrierButtonRef.current?.focus()
+        return
+      }
+      focusMap[activeStep]?.current?.focus()
+    })
 
     prevActiveStepRef.current = activeStep
   }, [activeStep])
@@ -105,25 +119,28 @@ export function ActiveStepInput({
     const copy = IDENTITY_STEP_COPY[step]
     const animate = isStepActive(step) && step !== 'name'
     const showFieldDescription = isStepActive(step)
+    const locked = isStepLocked(step)
 
     switch (step) {
       case 'phone':
         return (
           <RevealedField key="phone" animate={animate}>
-            <VStack as="form" onSubmit={handleFormSubmit}>
-              <TextField
-                label={copy.fieldLabel}
-                description={showFieldDescription ? copy.fieldDescription : undefined}
-                value={formatPhoneInput(phone)}
-                onValueChange={({ value }) => onPhoneChange(value)}
-              >
-                <TextFieldInput
-                  ref={phoneInputRef}
-                  placeholder={copy.placeholder}
-                  inputMode="tel"
-                />
-              </TextField>
-            </VStack>
+            <TextField
+              label={copy.fieldLabel}
+              description={showFieldDescription ? copy.fieldDescription : undefined}
+              value={formatPhoneInput(phone)}
+              onValueChange={({ value }) => onPhoneChange(value)}
+            >
+              <TextFieldInput
+                ref={phoneInputRef}
+                placeholder={copy.placeholder}
+                inputMode="tel"
+                enterKeyHint="done"
+                maxLength={13}
+                readOnly={locked}
+                tabIndex={locked ? -1 : 0}
+              />
+            </TextField>
           </RevealedField>
         )
 
@@ -131,12 +148,15 @@ export function ActiveStepInput({
         return (
           <RevealedField key="carrier" animate={animate}>
             <FieldButton
+              ref={carrierButtonRef}
               label={copy.fieldLabel}
               description={showFieldDescription ? copy.fieldDescription : undefined}
               buttonProps={{
                 'aria-label': copy.fieldLabel,
+                type: 'button',
                 onClick: () => setCarrierSheetOpen(true),
-                disabled: isStepLocked('carrier'),
+                disabled: locked,
+                tabIndex: locked ? -1 : 0,
               }}
             >
               {carrierLabel || copy.placeholder}
@@ -153,45 +173,39 @@ export function ActiveStepInput({
       case 'rrn':
         return (
           <RevealedField key="rrn" animate={animate}>
-            <VStack as="form" gap="x4" onSubmit={handleFormSubmit}>
-              <TextField
-                variant="underline"
-                label={copy.fieldLabel}
-                description={showFieldDescription ? copy.fieldDescription : undefined}
-                value={formatRrnInput(rrnFront7)}
-                onValueChange={({ value }) => onRrnChange(value)}
-                readOnly={isStepLocked('rrn')}
-              >
-                <TextFieldInput
-                  ref={rrnInputRef}
-                  placeholder={copy.placeholder}
-                  inputMode="numeric"
-                  readOnly={isStepLocked('rrn')}
-                />
-              </TextField>
-            </VStack>
+            <SplitRrnFirst7Field
+              ref={rrnInputRef}
+              label={copy.fieldLabel}
+              description={showFieldDescription ? copy.fieldDescription : undefined}
+              value={rrnFront7}
+              onValueChange={onRrnChange}
+              onGenderComplete={isStepActive('rrn') ? handleRrnGenderComplete : undefined}
+              readOnly={locked}
+              birthPlaceholder="000000"
+              genderPlaceholder="0"
+            />
           </RevealedField>
         )
 
       case 'name':
         return (
           <RevealedField key="name" animate={false}>
-            <VStack as="form" onSubmit={handleFormSubmit}>
-              <TextField
-                variant="underline"
-                label={copy.fieldLabel}
-                description={showFieldDescription ? copy.fieldDescription : undefined}
-                value={name}
-                onValueChange={({ value }) => onNameChange(value)}
-                readOnly={isStepLocked('name')}
-              >
-                <TextFieldInput
-                  ref={nameInputRef}
-                  placeholder={copy.placeholder}
-                  readOnly={isStepLocked('name')}
-                />
-              </TextField>
-            </VStack>
+            <TextField
+              variant="underline"
+              label={copy.fieldLabel}
+              description={showFieldDescription ? copy.fieldDescription : undefined}
+              value={name}
+              onValueChange={({ value }) => onNameChange(value)}
+              readOnly={locked}
+            >
+              <TextFieldInput
+                ref={nameInputRef}
+                placeholder={copy.placeholder}
+                enterKeyHint="next"
+                readOnly={locked}
+                tabIndex={locked ? -1 : 0}
+              />
+            </TextField>
           </RevealedField>
         )
 
@@ -211,7 +225,14 @@ export function ActiveStepInput({
         </Text>
       </VStack>
 
-      <VStack gap="x4">{FIELD_STACK_ORDER.map((step) => renderFieldSection(step))}</VStack>
+      <VStack
+        as="form"
+        id={SIGNUP_IDENTITY_FORM_ID}
+        gap="x4"
+        onSubmit={handleFormSubmit}
+      >
+        {FIELD_STACK_ORDER.map((step) => renderFieldSection(step))}
+      </VStack>
     </VStack>
   )
 }

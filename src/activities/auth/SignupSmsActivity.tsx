@@ -3,6 +3,7 @@ import { Text, VStack } from '@seed-design/react'
 
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
 import { AccountIntroSheet } from '../../features/auth/components/AccountIntroSheet'
+import { SignupProgressHeader } from '../../features/auth/components/SignupProgressBar'
 import { NumericKeypad } from '../../features/auth/components/NumericKeypad'
 import { PinField } from 'seed-design/ui/pin-field'
 import { useSignupSmsVerification } from '../../features/auth/hooks/useSignupSmsVerification'
@@ -26,7 +27,10 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
 
   return (
     <>
-      <ActivityScreenLayout title="휴대폰 인증">
+      <ActivityScreenLayout
+        title="휴대폰 인증"
+        progress={<SignupProgressHeader type="sms" />}
+      >
         <VStack px="spacingX.globalGutter" py="x4" gap="x6">
           <VStack gap="spacingY.betweenText">
             <Text textStyle="t6Bold" color="fg.neutral">

@@ -12,10 +12,12 @@ import {
   SignupProgressiveForm,
 } from '../../features/auth/components/SignupProgressiveForm'
 import { SignupExitAlertDialog } from '../../features/auth/components/SignupExitAlertDialog'
+import { SignupProgressHeader } from '../../features/auth/components/SignupProgressBar'
 import type { CarrierCode, SignupIdentityStep } from '../../features/auth/constants'
 import {
   NEXT_IDENTITY_STEP,
   PREV_IDENTITY_STEP,
+  SIGNUP_IDENTITY_FORM_ID,
 } from '../../features/auth/constants'
 import { canProceedIdentityStep, useSignupForm } from '../../features/auth/hooks/useSignupForm'
 import { resetSignupDraft } from '../../features/auth/stores/signupDraft.store'
@@ -82,14 +84,16 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
       <ActivityScreenLayout
         title="가입하기"
         onBack={handleBack}
+        progress={<SignupProgressHeader type="identity" step={activeStep} />}
         fixedBottom={
           showBottomCta ? (
             <ActionButton
+              type="submit"
+              form={SIGNUP_IDENTITY_FORM_ID}
               size="large"
               variant="brandSolid"
               disabled={!canGoNext}
               loading={isSubmitting}
-              onClick={() => void goNext()}
             >
               {getIdentityCtaLabel(activeStep)}
             </ActionButton>

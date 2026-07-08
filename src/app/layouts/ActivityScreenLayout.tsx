@@ -13,6 +13,7 @@ interface ActivityScreenLayoutProps {
   title?: string
   onBack?: (e: MouseEvent<HTMLButtonElement>) => void
   fixedBottom?: ReactNode
+  progress?: ReactNode
   appScreenProps?: AppScreenProps
   showAppBar?: boolean
   children: ReactNode
@@ -22,6 +23,7 @@ export function ActivityScreenLayout({
   title = '',
   onBack,
   fixedBottom,
+  progress,
   appScreenProps,
   showAppBar = true,
   children,
@@ -39,8 +41,14 @@ export function ActivityScreenLayout({
       )}
 
       <AppScreenContent>
-        <VStack minHeight="full" justify="space-between">
-          <VStack flexGrow style={{ minHeight: 0 }}>
+        <VStack minHeight="full">
+          {progress && (
+            <VStack px="spacingX.globalGutter" pt="x2" pb="x3" shrink={0}>
+              {progress}
+            </VStack>
+          )}
+
+          <VStack flexGrow style={{ minHeight: 0, overflow: 'auto' }}>
             {children}
           </VStack>
 
