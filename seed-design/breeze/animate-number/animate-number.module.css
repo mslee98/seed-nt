@@ -23,11 +23,14 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  width: 1ch;
+  vertical-align: top;
 }
 
 .number {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1ch;
   display: flex;
   align-items: center;

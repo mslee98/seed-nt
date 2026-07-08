@@ -1,15 +1,23 @@
 import { HStack, Text, VStack } from '@seed-design/react'
-import AnimateNumber from 'seed-design/breeze/animate-number/animate-number'
 import { List, ListItem } from 'seed-design/ui/list'
 
-import { formatAmount } from '../utils/formatAmount'
+import { AnimatedAmount } from '../../../shared/ui/AnimatedAmount'
 
 interface HomeBalanceCardProps {
   coinBalance: number
   estimatedKrwValue: number
+  startCoinBalance?: number
+  startEstimatedKrwValue?: number
+  replayKey?: string | number
 }
 
-export function HomeBalanceCard({ coinBalance, estimatedKrwValue }: HomeBalanceCardProps) {
+export function HomeBalanceCard({
+  coinBalance,
+  estimatedKrwValue,
+  startCoinBalance,
+  startEstimatedKrwValue,
+  replayKey,
+}: HomeBalanceCardProps) {
   const hasBalance = coinBalance > 0
 
   return (
@@ -30,16 +38,20 @@ export function HomeBalanceCard({ coinBalance, estimatedKrwValue }: HomeBalanceC
             }
             suffix={
               <HStack align="center" gap="x1">
-                <AnimateNumber
+                <AnimatedAmount
                   value={coinBalance}
-                  fontSize="1.25rem"
-                  fontWeight="700"
-                  color="var(--seed-color-fg-neutral)"
-                  showComma={coinBalance >= 1_000}
+                  startValue={startCoinBalance ?? coinBalance}
+                  replayKey={replayKey}
+                  locale="ko-KR"
+                  useGrouping
+                  numberTextStyle="t5Bold"
+                  textColor="fg.neutral"
+                  fontSize={20}
+                  fontWeight={700}
                   className="tabular-nums"
                 />
                 <Text textStyle="t5Bold" color="fg.neutral">
-                  MS
+                  Coin
                 </Text>
               </HStack>
             }
@@ -51,9 +63,20 @@ export function HomeBalanceCard({ coinBalance, estimatedKrwValue }: HomeBalanceC
               </Text>
             }
             suffix={
-              <Text textStyle="t5Medium" color="fg.neutral" className="tabular-nums">
-                {formatAmount(estimatedKrwValue)}
-              </Text>
+              <AnimatedAmount
+                value={estimatedKrwValue}
+                startValue={startEstimatedKrwValue ?? estimatedKrwValue}
+                replayKey={replayKey}
+                suffix="원"
+                locale="ko-KR"
+                useGrouping
+                numberTextStyle="t5Medium"
+                suffixTextStyle="t5Medium"
+                textColor="fg.neutral"
+                fontSize={17}
+                fontWeight={500}
+                className="tabular-nums"
+              />
             }
           />
         </List>

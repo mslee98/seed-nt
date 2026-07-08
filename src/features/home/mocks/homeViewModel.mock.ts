@@ -1,18 +1,15 @@
+import { getHomeWallet } from '../stores/homeWallet.store'
 import type { HomeViewModel } from '../types'
 
 /** 'default' | 'activeTrade' — 개발용 시나리오 전환 */
 export const MOCK_SCENARIO: 'default' | 'activeTrade' = 'default'
 
-const BASE_MOCK: Omit<HomeViewModel, 'user'> & {
+const BASE_MOCK: Omit<HomeViewModel, 'user' | 'wallet'> & {
   user: Omit<HomeViewModel['user'], 'isVerified'>
 } = {
   user: {
     id: 'user-1',
     nickname: 'Brit유저',
-  },
-  wallet: {
-    coinBalance: 2_000_000,
-    estimatedKrwValue: 2_000_000,
   },
   unreadNotificationCount: 2,
   recentTrades: [],
@@ -28,9 +25,12 @@ const ACTIVE_TRADE_MOCK: HomeViewModel['activeTrade'] = {
 }
 
 export function createHomeViewModel(isVerified: boolean): HomeViewModel {
+  const wallet = getHomeWallet()
+
   if (MOCK_SCENARIO === 'activeTrade') {
     return {
       ...BASE_MOCK,
+      wallet,
       activeTrade: ACTIVE_TRADE_MOCK,
       user: { ...BASE_MOCK.user, isVerified },
     }
@@ -38,6 +38,7 @@ export function createHomeViewModel(isVerified: boolean): HomeViewModel {
 
   return {
     ...BASE_MOCK,
+    wallet,
     user: { ...BASE_MOCK.user, isVerified },
   }
 }

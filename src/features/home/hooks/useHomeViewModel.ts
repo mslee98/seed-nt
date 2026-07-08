@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 import { useAuthStatus } from '../../auth/stores/authSession.store'
 import { createHomeViewModel, fetchHomeViewModel } from '../mocks/homeViewModel.mock'
+import { getHomeWallet, subscribeHomeWallet } from '../stores/homeWallet.store'
 import type { HomeViewModel } from '../types'
 
-export function useHomeViewModel(): HomeViewModel & { refresh: () => Promise<void> } {
+export function useHomeViewModel(): HomeViewModel & {
+  refresh: () => Promise<void>
+} {
   const authStatus = useAuthStatus()
   const isVerified = authStatus === 'authenticated'
   const [data, setData] = useState(() => createHomeViewModel(isVerified))
+
+  const wallet = useSyncExternalStore(subscribeHomeWallet, getHomeWallet, () => ({
+    coinBalance: 2_000_000,
+    estimatedKrwValue: 2_000_000,
+  }))
 
   useEffect(() => {
     setData(createHomeViewModel(isVerified))
@@ -18,5 +27,5 @@ export function useHomeViewModel(): HomeViewModel & { refresh: () => Promise<voi
     setData(next)
   }, [isVerified])
 
-  return { ...data, refresh }
+  return { ...data, wallet, refresh }
 }

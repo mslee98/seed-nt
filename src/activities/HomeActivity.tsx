@@ -1,4 +1,5 @@
 import type { ActivityComponentType } from '@stackflow/react'
+import { useActivity } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { VStack } from '@seed-design/react'
 import { AppScreen, AppScreenContent } from 'seed-design/ui/app-screen'
@@ -33,6 +34,7 @@ import {
 } from '../features/trade/stores/tradeSession.store'
 import { getTradeUiPhase } from '../features/trade/utils/getTradeUiPhase'
 import { showSnackbar } from '../shared/utils/showSnackbar'
+import { useAmountReplay } from '../shared/hooks/useAmountReplay'
 
 const DOCK_STATUSES = ['MATCHING', 'PAYMENT_PENDING', 'PAYMENT_REPORTED'] as const
 
@@ -41,6 +43,7 @@ function shouldShowTradeDock(status: string | undefined): boolean {
 }
 
 const HomeActivity: ActivityComponentType<'Home'> = () => {
+  const { isActive } = useActivity()
   const { requireAuth, authRequiredDialog } = useRequireAuth('trade')
   const snackbar = useSnackbarAdapter()
   const viewModel = useHomeViewModel()
@@ -48,10 +51,12 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
   const splitGroup = useActiveSplitGroup()
   const matchingSession = useMatchingSession()
   const tradeInput = useTradeInputState({ coinBalance: viewModel.wallet.coinBalance })
+  const { replayKey: balanceReplayKey, triggerReplay: triggerBalanceReplay } = useAmountReplay()
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [paymentOpen, setPaymentOpen] = useState(false)
   const prevCompletedLegsRef = useRef(splitGroup?.completedLegs ?? 0)
+  const prevTradeStatusRef = useRef(activeTrade?.status)
 
   const hasBlockingTrade = activeTrade !== null && !isTerminalStatus(activeTrade.status)
   const showTradeDock = activeTrade !== null && shouldShowTradeDock(activeTrade.status)
@@ -95,6 +100,32 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
       showSnackbar(snackbar, '취소하지 못했어요.')
     }
   }, [activeTrade, snackbar])
+
+  const handlePtrRefresh = useCallback(async () => {
+    await viewModel.refresh()
+    // 매칭 중에는 독/피드가 핵심 모션이므로 잔액 replay를 돌리지 않아요.
+    if (!showMatchingFeed) {
+      triggerBalanceReplay()
+    }
+  }, [showMatchingFeed, triggerBalanceReplay, viewModel])
+
+  const refreshBalance = useCallback(async () => {
+    await viewModel.refresh()
+    if (!showMatchingFeed) {
+      triggerBalanceReplay()
+    }
+  }, [showMatchingFeed, triggerBalanceReplay, viewModel])
+
+  useEffect(() => {
+    const prevStatus = prevTradeStatusRef.current
+    const nextStatus = activeTrade?.status
+
+    if (prevStatus !== 'COMPLETED' && nextStatus === 'COMPLETED' && isActive) {
+      void refreshBalance()
+    }
+
+    prevTradeStatusRef.current = nextStatus
+  }, [activeTrade?.status, isActive, refreshBalance])
 
   useEffect(() => {
     setOnTradeMatched((tradeId) => {
@@ -162,7 +193,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
               className="min-h-0 flex-1 overflow-y-auto"
               ptr
               onPtrReady={() => {}}
-              onPtrRefresh={viewModel.refresh}
+              onPtrRefresh={handlePtrRefresh}
             >
               <VStack gap="x0">
                 <HomeHeader
@@ -194,6 +225,9 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                     <HomeBalanceCard
                       coinBalance={viewModel.wallet.coinBalance}
                       estimatedKrwValue={viewModel.wallet.estimatedKrwValue}
+                      startCoinBalance={0}
+                      startEstimatedKrwValue={0}
+                      replayKey={balanceReplayKey}
                     />
                     {showMatchingFeed && activeTrade ? (
                       <HomeTradeInputSummary

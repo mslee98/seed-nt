@@ -1,4 +1,5 @@
 ﻿import { krwToCoin } from '../../home/utils/formatAmount'
+import { applyCompletedTrade } from '../../home/stores/homeWallet.store'
 import { PAYMENT_DEADLINE_MINUTES } from '../constants'
 import {
   clearMatchingSession,
@@ -326,6 +327,8 @@ export async function confirmPayment(tradeId: string, version: number): Promise<
     advanceSplitAfterLegComplete(completedTradeId)
   }
 
+  applyCompletedTrade({ side: activeTrade!.side, coinAmount: activeTrade!.coinAmount })
+
   return activeTrade
 }
 
@@ -360,6 +363,8 @@ export async function devForceCompletePayment(tradeId: string): Promise<TradeRec
   if (activeSplitGroup) {
     advanceSplitAfterLegComplete(completedTradeId)
   }
+
+  applyCompletedTrade({ side: activeTrade.side, coinAmount: activeTrade.coinAmount })
 
   return activeTrade
 }

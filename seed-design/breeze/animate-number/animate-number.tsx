@@ -2,77 +2,100 @@
  * @file breeze:animate-number
  **/
 
-import { AnimatePresence, useSpring, useTransform } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import * as m from "motion/react-m";
 import * as React from "react";
 import styles from "./animate-number.module.css";
 
 // 상수로 정의하여 매번 재생성 방지
 const DIGIT_NUMBERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
-const SPRING_CONFIG = { stiffness: 300, damping: 30 } as const;
-const ANIMATION_CONFIG = { duration: 0.3, ease: "easeInOut" } as const;
+const SPRING_CONFIG = { stiffness: 120, damping: 18 } as const;
 
 interface DigitProps {
   place: number;
   value: number;
   height: number;
+  startValue: number;
+  replayKey?: string | number;
 }
 
-// 개별 숫자 컴포넌트
-const SingleNumber = React.memo(
-  ({
-    animatedValue,
-    number,
-    height,
-  }: {
-    animatedValue: ReturnType<typeof useSpring>;
-    number: number;
-    height: number;
-  }) => {
-    const y = useTransform(animatedValue, (latest: number) => {
-      const placeValue = latest % 10;
-      const offset = (10 + number - placeValue) % 10;
-      let yPosition = offset * height;
-      if (offset > 5) {
-        yPosition -= 10 * height;
-      }
-      return yPosition;
-    });
-
-    return (
-      <m.span
-        className={styles.number}
-        style={{
-          y,
-          height: `${height}px`,
-          lineHeight: `${height}px`,
-        }}
-      >
-        {number}
-      </m.span>
-    );
-  },
-);
-
-// 최적화된 Digit 컴포넌트
-const Digit = React.memo(({ place, value, height }: DigitProps) => {
-  const absValue = Math.abs(value);
-  const digitValue = Math.floor(absValue / place) % 10;
-  const animatedValue = useSpring(digitValue, SPRING_CONFIG);
-
-  React.useEffect(() => {
-    animatedValue.set(digitValue);
-  }, [animatedValue, digitValue]);
+function SingleNumber({
+  animatedValue,
+  number,
+  height,
+}: {
+  animatedValue: MotionValue<number>;
+  number: number;
+  height: number;
+}) {
+  const y = useTransform(animatedValue, (latest: number) => {
+    const placeValue = latest % 10;
+    const offset = (10 + number - placeValue) % 10;
+    let yPosition = offset * height;
+    if (offset > 5) {
+      yPosition -= 10 * height;
+    }
+    return yPosition;
+  });
 
   return (
-    <m.div
+    <motion.span
+      className={styles.number}
+      style={{
+        y,
+        display: "block",
+        height: `${height}px`,
+        lineHeight: `${height}px`,
+      }}
+    >
+      {number}
+    </motion.span>
+  );
+}
+
+// 최적화된 Digit 컴포넌트
+const Digit = React.memo(({ place, value, height, startValue, replayKey }: DigitProps) => {
+  const absValue = Math.abs(value);
+  const digitValue = Math.floor(absValue / place) % 10;
+  const absStartValue = Math.abs(startValue);
+  const startDigitValue = Math.floor(absStartValue / place) % 10;
+  // 값 변경 애니메이션은 digitValue 기준. startValue는 replayKey 변경 시에만 사용.
+  const source = useMotionValue(digitValue);
+  const animatedValue = useSpring(source, SPRING_CONFIG);
+  const prevReplayKeyRef = React.useRef(replayKey);
+
+  React.useLayoutEffect(() => {
+    let frameId: number | null = null;
+
+    if (prevReplayKeyRef.current !== replayKey) {
+      source.set(startDigitValue);
+      frameId = requestAnimationFrame(() => {
+        source.set(digitValue);
+      });
+    } else {
+      source.set(digitValue);
+    }
+
+    prevReplayKeyRef.current = replayKey;
+
+    return () => {
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }, [digitValue, replayKey, source, startDigitValue]);
+
+  return (
+    <div
       className={styles.digit}
       style={{ height: `${height}px` }}
-      layout
-      initial={{ width: 0, opacity: 0, x: -20, scale: 0.8 }}
-      animate={{ width: "1ch", opacity: 1, x: 0, scale: 1 }}
-      exit={{ width: 0, opacity: 0, x: -20, scale: 0.8 }}
-      transition={ANIMATION_CONFIG}
       aria-hidden="true"
     >
       {DIGIT_NUMBERS.map((num) => (
@@ -83,7 +106,7 @@ const Digit = React.memo(({ place, value, height }: DigitProps) => {
           height={height}
         />
       ))}
-    </m.div>
+    </div>
   );
 });
 
@@ -92,6 +115,15 @@ export interface AnimateNumberProps {
    * 표시할 숫자 값
    */
   value: number;
+  /**
+   * replay 시 시작 숫자 값
+   * @default value
+   */
+  startValue?: number;
+  /**
+   * 키가 변경되면 숫자 애니메이션 재생
+   */
+  replayKey?: string | number;
 
   /**
    * 폰트 크기
@@ -142,6 +174,8 @@ export interface AnimateNumberProps {
 
 export default function AnimateNumber({
   value,
+  startValue = value,
+  replayKey,
   fontSize = 48,
   fontWeight = "bold",
   color = "currentColor",
@@ -199,15 +233,14 @@ export default function AnimateNumber({
           ...maskStyle,
         }}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="sync">
           {value < 0 && (
             <m.span
               key="minus"
               className={styles.minus}
-              layout
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               aria-hidden="true"
             >
@@ -222,15 +255,21 @@ export default function AnimateNumber({
               (displayPlaces.length - index - 1) % 3 === 0;
 
             return [
-              <Digit key={`digit-${place}`} place={place} value={value} height={height} />,
+              <Digit
+                key={`digit-${place}`}
+                place={place}
+                value={value}
+                startValue={startValue}
+                replayKey={replayKey}
+                height={height}
+              />,
               showCommaAfter && (
                 <m.span
                   key={`comma-${place}`}
                   className={styles.comma}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   aria-hidden="true"
                 >
