@@ -1,7 +1,7 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 
 import { TRADE_LIMITS } from '../constants'
-import { krwToCoin } from '../utils/formatAmount'
+import { krwToCoin, formatCoinUnit } from '../utils/formatAmount'
 import { getSplitRecommendation } from '../utils/splitRecommendation'
 import type { SplitMode, TradeSide } from '../types'
 
@@ -9,15 +9,33 @@ interface UseTradeInputStateOptions {
   coinBalance: number
 }
 
+/**
+ * 홈 거래 입력 상태.
+ * SELL + 100만 원 이상일 때만 `splitSellEnabled` 토글을 노출합니다 (기본 켜짐).
+ */
 export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   const [side, setSide] = useState<TradeSide>('BUY')
   const [amountKrw, setAmountKrw] = useState<number | null>(null)
   const [amountInput, setAmountInput] = useState('')
+  const [splitSellEnabled, setSplitSellEnabled] = useState(true)
+
+  const splitRecommendation = useMemo(
+    () => (amountKrw ? getSplitRecommendation(amountKrw) : null),
+    [amountKrw],
+  )
+
+  const showSplitSellToggle = side === 'SELL' && splitRecommendation !== null
 
   const splitMode: SplitMode = useMemo(() => {
-    if (!amountKrw) return 'NONE'
-    return getSplitRecommendation(amountKrw) ? 'AUTO' : 'NONE'
-  }, [amountKrw])
+    if (!showSplitSellToggle) return 'NONE'
+    return splitSellEnabled ? 'AUTO' : 'NONE'
+  }, [showSplitSellToggle, splitSellEnabled])
+
+  useEffect(() => {
+    if (!showSplitSellToggle) {
+      setSplitSellEnabled(true)
+    }
+  }, [showSplitSellToggle])
 
   const amountError = useMemo(() => {
     if (amountKrw === null) return null
@@ -48,9 +66,9 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
 
     const coinAmount = krwToCoin(amountKrw)
     if (side === 'BUY') {
-      return `예상 코인 ${coinAmount} MS`
+      return `예상 코인 ${formatCoinUnit(coinAmount)}`
     }
-    return `판매할 코인 ${coinAmount} MS`
+    return `판매할 코인 ${formatCoinUnit(coinAmount)}`
   }, [amountKrw, amountError, side])
 
   const isSubmitDisabled = !amountKrw || !!amountError
@@ -78,6 +96,10 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     amountKrw,
     amountInput,
     splitMode,
+    splitSellEnabled,
+    setSplitSellEnabled,
+    showSplitSellToggle,
+    splitRecommendation,
     amountError,
     helperText,
     isSubmitDisabled,

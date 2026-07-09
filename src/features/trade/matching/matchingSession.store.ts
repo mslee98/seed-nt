@@ -1,42 +1,45 @@
 import {
   MATCH_APPROVAL_TIMEOUT_MS,
   MATCH_COUNTERPARTY_ACCEPT_DELAY_MS,
-  MATCHING_SIMULATION_MS,
+  MATCH_NEAR_AUTO_PROPOSE_MS,
 } from '../constants'
 import { createMockCandidates } from './matchingSession.mock'
-import type { MatchingCandidate, MatchingMode, MatchingSession } from './types'
+import type { MatchingCandidate, MatchingSession, MatchingSuggestionReason } from './types'
+import {
+  getClosestNearCandidate,
+  hasExactCandidate,
+  sortCandidatesForReveal,
+} from './utils/matchingPhase'
 
 type Listener = () => void
 
 type MatchConfirmedHandler = (payload: { tradeId: string; amountKrw: number }) => void
-type ExactModeTimeoutHandler = (tradeId: string) => void
 
 const REVEAL_INTERVAL_MS = 1500
 
 const listeners = new Set<Listener>()
 let session: MatchingSession | null = null
-let exactModeTimerId: ReturnType<typeof setTimeout> | null = null
 let revealIntervalId: ReturnType<typeof setInterval> | null = null
+let nearAutoProposeTimerId: ReturnType<typeof setTimeout> | null = null
 let approvalTimeoutId: ReturnType<typeof setTimeout> | null = null
 let counterpartyAcceptTimerId: ReturnType<typeof setTimeout> | null = null
 let onMatchConfirmed: MatchConfirmedHandler | null = null
-let onExactMatchTimeout: ExactModeTimeoutHandler | null = null
 
 function notify() {
   listeners.forEach((listener) => listener())
-}
-
-function clearExactModeTimer() {
-  if (exactModeTimerId !== null) {
-    clearTimeout(exactModeTimerId)
-    exactModeTimerId = null
-  }
 }
 
 function clearRevealInterval() {
   if (revealIntervalId !== null) {
     clearInterval(revealIntervalId)
     revealIntervalId = null
+  }
+}
+
+function clearNearAutoProposeTimer() {
+  if (nearAutoProposeTimerId !== null) {
+    clearTimeout(nearAutoProposeTimerId)
+    nearAutoProposeTimerId = null
   }
 }
 
@@ -53,10 +56,10 @@ function clearApprovalTimers() {
 
 function clearRevealTimers() {
   clearRevealInterval()
+  clearNearAutoProposeTimer()
 }
 
 function clearAllTimers() {
-  clearExactModeTimer()
   clearRevealTimers()
   clearApprovalTimers()
 }
@@ -65,26 +68,45 @@ function isQueueLocked(): boolean {
   return session?.phase === 'PENDING_APPROVAL'
 }
 
-function scheduleExactModeMatch(tradeId: string) {
-  clearExactModeTimer()
-  exactModeTimerId = setTimeout(() => {
-    onExactMatchTimeout?.(tradeId)
-  }, MATCHING_SIMULATION_MS)
+function setSuggestion(candidateId: string, reason: MatchingSuggestionReason) {
+  if (!session) return
+  session = {
+    ...session,
+    suggestion: { candidateId, reason },
+  }
+  notify()
 }
 
-function getNextCandidateToReveal(): MatchingCandidate | null {
-  if (!session) return null
+function getRevealQueue(): MatchingCandidate[] {
+  if (!session) return []
   const revealed = new Set(session.revealedCandidateIds)
   const dismissed = new Set(session.dismissedCandidateIds)
-  return (
-    session.candidates.find(
-      (candidate) => !revealed.has(candidate.id) && !dismissed.has(candidate.id),
-    ) ?? null
+  return sortCandidatesForReveal(session.candidates, session.requestedAmountKrw).filter(
+    (candidate) => !revealed.has(candidate.id) && !dismissed.has(candidate.id),
   )
 }
 
+function getNextCandidateToReveal(): MatchingCandidate | null {
+  return getRevealQueue()[0] ?? null
+}
+
+function scheduleNearAutoPropose() {
+  if (!session || hasExactCandidate(session.candidates)) return
+
+  clearNearAutoProposeTimer()
+  nearAutoProposeTimerId = setTimeout(() => {
+    nearAutoProposeTimerId = null
+    if (!session || isQueueLocked()) return
+
+    const closestNear = getClosestNearCandidate(session.candidates, session.requestedAmountKrw)
+    if (!closestNear) return
+
+    setSuggestion(closestNear.id, 'NEAR_TIMEOUT')
+  }, MATCH_NEAR_AUTO_PROPOSE_MS)
+}
+
 function revealNextCandidate() {
-  if (!session || session.mode !== 'FLEXIBLE' || isQueueLocked()) return
+  if (!session || isQueueLocked()) return
 
   const next = getNextCandidateToReveal()
   if (!next) {
@@ -98,19 +120,25 @@ function revealNextCandidate() {
   }
   notify()
 
+  if (next.matchType === 'EXACT') {
+    clearRevealTimers()
+    setSuggestion(next.id, 'EXACT_REVEALED')
+    return
+  }
+
   if (!getNextCandidateToReveal()) {
     clearRevealInterval()
   }
 }
 
 function startRevealSequence() {
-  if (!session || session.mode !== 'FLEXIBLE' || isQueueLocked()) return
+  if (!session || isQueueLocked()) return
 
   clearRevealInterval()
   revealNextCandidate()
 
   revealIntervalId = setInterval(() => {
-    if (!session || session.mode !== 'FLEXIBLE' || isQueueLocked()) {
+    if (!session || isQueueLocked()) {
       clearRevealInterval()
       return
     }
@@ -125,14 +153,12 @@ function resumeBrowsing() {
     ...session,
     phase: 'BROWSING',
     pendingMatch: null,
+    suggestion: null,
   }
   notify()
 
-  if (session.mode === 'FLEXIBLE') {
-    startRevealSequence()
-  } else {
-    scheduleExactModeMatch(session.tradeId)
-  }
+  startRevealSequence()
+  scheduleNearAutoPropose()
 }
 
 function dismissCandidate(candidateId: string) {
@@ -195,24 +221,6 @@ function releasePendingMatch(_reason: 'timeout' | 'withdraw' | 'reject') {
   resumeBrowsing()
 }
 
-function handleExactModeTimeout(tradeId: string) {
-  if (!session || session.tradeId !== tradeId || session.mode !== 'EXACT') return
-  if (isQueueLocked()) return
-
-  const exact = session.candidates.find((c) => c.matchType === 'EXACT')
-  if (!exact) return
-
-  if (!session.revealedCandidateIds.includes(exact.id)) {
-    session = {
-      ...session,
-      revealedCandidateIds: [...session.revealedCandidateIds, exact.id],
-    }
-    notify()
-  }
-
-  proposeMatch(exact.id)
-}
-
 export function setOnMatchConfirmed(handler: MatchConfirmedHandler | null) {
   onMatchConfirmed = handler
 }
@@ -220,10 +228,6 @@ export function setOnMatchConfirmed(handler: MatchConfirmedHandler | null) {
 /** @deprecated use setOnMatchConfirmed */
 export function setOnCandidateAccepted(handler: MatchConfirmedHandler | null) {
   setOnMatchConfirmed(handler)
-}
-
-export function setOnExactMatchTimeout(handler: ExactModeTimeoutHandler | null) {
-  onExactMatchTimeout = handler
 }
 
 export function subscribeMatchingSession(listener: Listener): () => void {
@@ -235,10 +239,6 @@ export function getMatchingSession(): MatchingSession | null {
   return session
 }
 
-export function getMatchingMode(): MatchingMode | null {
-  return session?.mode ?? null
-}
-
 export function getRevealedCandidates(): MatchingCandidate[] {
   if (!session) return []
   const revealed = new Set(session.revealedCandidateIds)
@@ -248,52 +248,32 @@ export function getRevealedCandidates(): MatchingCandidate[] {
   )
 }
 
+export function consumeSuggestion() {
+  if (!session?.suggestion) return
+  session = { ...session, suggestion: null }
+  notify()
+}
+
 export function startMatchingSession(input: {
   tradeId: string
   amountKrw: number
-  mode?: MatchingMode
 }): MatchingSession {
   clearAllTimers()
-  const mode = input.mode ?? 'FLEXIBLE'
   session = {
     tradeId: input.tradeId,
     requestedAmountKrw: input.amountKrw,
-    mode,
     phase: 'BROWSING',
     candidates: createMockCandidates(input.amountKrw),
     revealedCandidateIds: [],
     dismissedCandidateIds: [],
     pendingMatch: null,
+    suggestion: null,
     startedAt: new Date().toISOString(),
   }
-  if (mode === 'EXACT') {
-    scheduleExactModeMatch(input.tradeId)
-  } else {
-    startRevealSequence()
-  }
+  startRevealSequence()
+  scheduleNearAutoPropose()
   notify()
   return session
-}
-
-export function setMatchingMode(mode: MatchingMode) {
-  if (!session || isQueueLocked()) return
-
-  clearAllTimers()
-  session = {
-    ...session,
-    mode,
-    revealedCandidateIds: [],
-    dismissedCandidateIds: [],
-    phase: 'BROWSING',
-    pendingMatch: null,
-  }
-
-  if (mode === 'EXACT') {
-    scheduleExactModeMatch(session.tradeId)
-  } else {
-    startRevealSequence()
-  }
-  notify()
 }
 
 export function proposeMatch(candidateId: string) {
@@ -303,17 +283,15 @@ export function proposeMatch(candidateId: string) {
   if (!candidate || session.dismissedCandidateIds.includes(candidateId)) return
 
   clearRevealTimers()
-  clearExactModeTimer()
-
-  const now = new Date().toISOString()
   session = {
     ...session,
     phase: 'PENDING_APPROVAL',
+    suggestion: null,
     pendingMatch: {
       candidateId,
-      proposedAt: now,
+      proposedAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + MATCH_APPROVAL_TIMEOUT_MS).toISOString(),
-      myApprovedAt: now,
+      myApprovedAt: new Date().toISOString(),
     },
   }
   notify()
@@ -338,18 +316,28 @@ export function clearMatchingSession() {
 
 /** prefers-reduced-motion: stagger 없이 전체 공개 */
 export function revealAllCandidates() {
-  if (!session || session.mode !== 'FLEXIBLE' || isQueueLocked()) return
+  if (!session || isQueueLocked()) return
 
-  clearRevealInterval()
+  clearRevealTimers()
 
   const dismissed = new Set(session.dismissedCandidateIds)
+  const toReveal = sortCandidatesForReveal(session.candidates, session.requestedAmountKrw).filter(
+    (candidate) => !dismissed.has(candidate.id),
+  )
+  const exact = toReveal.find((candidate) => candidate.matchType === 'EXACT')
+
   session = {
     ...session,
-    revealedCandidateIds: session.candidates
-      .filter((candidate) => !dismissed.has(candidate.id))
-      .map((candidate) => candidate.id),
+    revealedCandidateIds: toReveal.map((candidate) => candidate.id),
   }
   notify()
-}
 
-setOnExactMatchTimeout(handleExactModeTimeout)
+  if (exact) {
+    setSuggestion(exact.id, 'EXACT_REVEALED')
+  } else {
+    const closestNear = getClosestNearCandidate(session.candidates, session.requestedAmountKrw)
+    if (closestNear) {
+      setSuggestion(closestNear.id, 'NEAR_TIMEOUT')
+    }
+  }
+}

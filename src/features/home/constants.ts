@@ -1,5 +1,8 @@
-/** 1 MS = 1원 (1:1) */
-export const MS_TO_KRW = 1
+/** 1 Coin = 1원 (1:1) */
+export const COIN_TO_KRW = 1
+
+/** @deprecated COIN_TO_KRW 사용 */
+export const MS_TO_KRW = COIN_TO_KRW
 
 export const TRADE_LIMITS = {
   minAmount: 10_000,

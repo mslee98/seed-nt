@@ -1,7 +1,7 @@
 import { Badge, Text, VStack } from '@seed-design/react'
 import { List, ListItem } from 'seed-design/ui/list'
 
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
 import { getTradeStatusCopy } from '../../home/utils/tradeStatusCopy'
 import type { TradeStatus } from '../../home/types'
 import { useTransactionsViewModel } from '../hooks/useTransactionsViewModel'
@@ -33,7 +33,7 @@ function getTransactionLabel(item: TransactionItem): { badge: string; title: str
     return {
       badge: COMPLETED_STATUS_LABEL[item.status],
       title: `${sideLabel} ${formatAmount(item.amountKrw)}`,
-      detail: `${formatDate(item.completedAt)} · ${item.coinAmount} MS`,
+      detail: `${formatDate(item.completedAt)} · ${formatCoinUnit(item.coinAmount)}`,
     }
   }
 
@@ -41,7 +41,7 @@ function getTransactionLabel(item: TransactionItem): { badge: string; title: str
   return {
     badge: copy.badge,
     title: copy.title,
-    detail: `${formatAmount(item.amountKrw)} · ${item.coinAmount} MS`,
+    detail: `${formatAmount(item.amountKrw)} · ${formatCoinUnit(item.coinAmount)}`,
   }
 }
 

@@ -1,7 +1,7 @@
 import { Badge, Text, VStack } from '@seed-design/react'
 import { List, ListItem } from 'seed-design/ui/list'
 
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
 import { useProfileViewModel } from '../hooks/useProfileViewModel'
 
 export function ProfileScreen() {
@@ -51,7 +51,7 @@ export function ProfileScreen() {
             보유 코인
           </Text>
           <Text textStyle="t5Bold" color="fg.neutral" className="tabular-nums">
-            {profile.coinBalance} MS
+            {formatCoinUnit(profile.coinBalance)}
           </Text>
           <Text textStyle="t4Regular" color="fg.neutralSubtle" className="tabular-nums">
             약 {formatAmount(profile.estimatedKrwValue)}

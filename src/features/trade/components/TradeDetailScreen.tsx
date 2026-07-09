@@ -1,7 +1,7 @@
 import { Badge, Text, VStack } from '@seed-design/react'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
 import { getTradeStatusCopy } from '../../home/utils/tradeStatusCopy'
 import type { TradeStatus } from '../../home/types'
 import { getMockTransactionById } from '../../transactions/mocks/transactions.mock'
@@ -53,7 +53,7 @@ export function TradeDetailScreen({ tradeId }: TradeDetailScreenProps) {
           {formatAmount(trade.amountKrw)} {sideLabel}
         </Text>
         <Text textStyle="t5Regular" color="fg.neutralMuted" className="tabular-nums">
-          {trade.coinAmount} MS
+          {formatCoinUnit(trade.coinAmount)}
         </Text>
       </VStack>
 

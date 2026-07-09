@@ -1,7 +1,7 @@
-import { krwToCoin } from '../../home/utils/formatAmount'
+import { formatCoinAmount } from '../../home/utils/formatAmount'
 import type { MatchingCandidate } from './types'
 
-const NICKNAMES = ['브릿유저', '코인마스터', 'MS트레이더', '안전거래왕', '빠른매칭']
+const NICKNAMES = ['브릿유저', '코인마스터', '코인트레이더', '안전거래왕', '빠른매칭']
 
 const NEAR_OFFSETS = [-10_000, 20_000, -30_000]
 
@@ -17,6 +17,11 @@ function pickTradeCount(index: number): number {
   return 12 + index * 17
 }
 
+function pickMannerTemperature(index: number): number {
+  const values = [36.5, 37.2, 38.0, 39.1, 36.8]
+  return values[index % values.length]
+}
+
 export function createMockCandidates(requestedAmountKrw: number): MatchingCandidate[] {
   const exact: MatchingCandidate = {
     id: `candidate-exact-${requestedAmountKrw}`,
@@ -24,6 +29,7 @@ export function createMockCandidates(requestedAmountKrw: number): MatchingCandid
     amountKrw: requestedAmountKrw,
     rating: pickRating(0),
     tradeCount: pickTradeCount(0),
+    mannerTemperature: pickMannerTemperature(0),
     matchType: 'EXACT',
   }
 
@@ -40,13 +46,19 @@ export function createMockCandidates(requestedAmountKrw: number): MatchingCandid
       amountKrw,
       rating: pickRating(index + 1),
       tradeCount: pickTradeCount(index + 1),
+      mannerTemperature: pickMannerTemperature(index + 1),
       matchType: 'NEAR',
     })
   })
 
-  return [exact, ...nearCandidates]
+  const sortedNear = [...nearCandidates].sort(
+    (a, b) =>
+      Math.abs(a.amountKrw - requestedAmountKrw) - Math.abs(b.amountKrw - requestedAmountKrw),
+  )
+
+  return [exact, ...sortedNear]
 }
 
 export function formatCandidateCoin(amountKrw: number): string {
-  return `${krwToCoin(amountKrw)} MS`
+  return formatCoinAmount(amountKrw)
 }

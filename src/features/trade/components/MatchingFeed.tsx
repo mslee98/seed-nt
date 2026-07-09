@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFlow } from '@stackflow/react'
-import { motion } from 'motion/react'
-import { Badge, HStack, Text, VStack } from '@seed-design/react'
+import { Badge, HStack, ScrollFog, Text, VStack } from '@seed-design/react'
+import { PageBanner } from 'seed-design/ui/page-banner'
 
 import { TextLinkButton } from '../../../shared/components/TextLinkButton'
 import { usePrefersReducedMotion } from '../../../shared/hooks/usePrefersReducedMotion'
@@ -12,48 +12,34 @@ import {
   useMatchingSessionActions,
 } from '../matching/hooks/useMatchingSession'
 import { revealAllCandidates } from '../matching/matchingSession.store'
-import { getVisibleRevealedCandidates, isQueueLocked } from '../matching/utils/matchingPhase'
 import type { MatchingCandidate } from '../matching/types'
+import {
+  getVisibleRevealedCandidates,
+  hasRevealedExact,
+  isQueueLocked,
+} from '../matching/utils/matchingPhase'
 import type { TradeRecord } from '../types'
-import { getMatchingCopy } from '../utils/matchingCopy'
-import { MatchingAcceptBottomSheet } from './MatchingAcceptBottomSheet'
-import { MatchingCandidateCard } from './MatchingCandidateCard'
+import { getMatchingHeroCopy } from '../utils/matchingCopy'
+import { MatchingCandidateList } from './MatchingCandidateList'
 import { PushEnableCard } from './PushEnableCard'
 import { TradeMotion } from './TradeMotion'
 import { WhileYouWaitSection } from './WhileYouWaitSection'
 
+const SCROLL_FOG_CANDIDATE_THRESHOLD = 5
+
 interface MatchingFeedProps {
   trade: TradeRecord
+  onNavigateAway?: () => void
+  onSelectCandidate?: (candidate: MatchingCandidate) => void
 }
 
-function RevealedCard({ children, animate }: { children: ReactNode; animate: boolean }) {
-  if (!animate) {
-    return <>{children}</>
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: [0.2, 0.1, 0.21, 0.99] }}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-export function MatchingFeed({ trade }: MatchingFeedProps) {
+export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: MatchingFeedProps) {
   const { push } = useFlow()
   const matchingSession = useMatchingSession()
-  const { proposeMatch, withdrawProposal, setMatchingMode } = useMatchingSessionActions()
+  const { withdrawProposal } = useMatchingSessionActions()
   const { eligibility, canShowWhileYouWait, requestPermission } = usePushNotification()
   const prefersReducedMotion = usePrefersReducedMotion()
-  const [selectedCandidate, setSelectedCandidate] = useState<MatchingCandidate | null>(null)
-  const [acceptOpen, setAcceptOpen] = useState(false)
 
-  const mode = matchingSession?.mode ?? 'FLEXIBLE'
-  const matchingCopy = getMatchingCopy(trade)
-  const isExactMode = mode === 'EXACT'
   const queueLocked = isQueueLocked(matchingSession)
   const pendingCandidateId = matchingSession?.pendingMatch?.candidateId ?? null
 
@@ -62,117 +48,128 @@ export function MatchingFeed({ trade }: MatchingFeedProps) {
     [matchingSession],
   )
 
+  const hasExact = hasRevealedExact(matchingSession)
+  const heroCopy = getMatchingHeroCopy({
+    queueLocked,
+    revealedCount: revealedCandidates.length,
+    hasExact,
+    role: trade.role,
+  })
+
+  const showSectionHeader = queueLocked || revealedCandidates.length > 0
+  const showScrollFog = revealedCandidates.length >= SCROLL_FOG_CANDIDATE_THRESHOLD
+
   const handleStoreClick = () => {
+    onNavigateAway?.()
     push('Detail', { id: 'store' })
   }
 
   const handleCommunityClick = () => {
+    onNavigateAway?.()
     push('Detail', { id: 'community' })
   }
 
-  const handleSelectCandidate = (candidate: MatchingCandidate) => {
-    if (queueLocked) return
-    setSelectedCandidate(candidate)
-    setAcceptOpen(true)
-  }
-
-  const handleConfirmPropose = (candidateId: string) => {
-    proposeMatch(candidateId)
-    setSelectedCandidate(null)
-  }
-
-  const toggleMode = () => {
-    if (queueLocked) return
-    setMatchingMode(isExactMode ? 'FLEXIBLE' : 'EXACT')
-  }
-
   useEffect(() => {
-    if (!prefersReducedMotion || !matchingSession || matchingSession.mode !== 'FLEXIBLE') {
+    if (!prefersReducedMotion || !matchingSession) {
       return
     }
     if (queueLocked) return
     revealAllCandidates()
-  }, [prefersReducedMotion, matchingSession?.tradeId, matchingSession?.mode, queueLocked])
+  }, [prefersReducedMotion, matchingSession?.tradeId, queueLocked])
 
   const statusBadgeLabel = queueLocked ? '승인 대기 중' : '매칭 중'
 
-  return (
-    <>
-      <VStack gap="x4" width="full" className="matching-feed">
-        <HStack gap="x3" align="center">
-          <TradeMotion variant="matching" size={48} />
-          <VStack gap="x1" flexGrow style={{ minWidth: 0 }}>
-            <Badge tone="warning" variant="weak" size="medium">
-              {statusBadgeLabel}
-            </Badge>
-            <Text textStyle="t5Bold" color="fg.neutral">
-              {queueLocked ? '상대 승인을 기다리고 있어요' : matchingCopy.title}
-            </Text>
-            <Text textStyle="t4Regular" color="fg.neutralSubtle" className="tabular-nums">
-              {formatAmount(trade.amountKrw)}
-            </Text>
-          </VStack>
-        </HStack>
+  const primarySection = (
+    <VStack gap="x4" width="full">
+      {queueLocked && (
+        <PageBanner
+          tone="informative"
+          variant="weak"
+          title="승인되면 입금 단계로 넘어가요"
+          description="잠시만 기다려 주세요."
+        />
+      )}
 
-        {isExactMode && !queueLocked ? (
-          <Text textStyle="t4Regular" color="fg.neutralSubtle">
-            정확히 {formatAmount(trade.amountKrw)}만 기다릴게요.
+      {showSectionHeader && (
+        <HStack justify="space-between" width="full">
+          <Text textStyle="t4Bold" color="fg.neutral">
+            {queueLocked ? '제안한 상대' : '찾은 상대'}
           </Text>
-        ) : (
-          <VStack gap="x3" width="full">
-            {!queueLocked && revealedCandidates.length === 0 && (
-              <Text textStyle="t4Regular" color="fg.neutralMuted">
-                상대를 찾고 있어요...
-              </Text>
-            )}
-            {revealedCandidates.map((candidate) => {
-              const variant =
-                pendingCandidateId === candidate.id
-                  ? 'pending'
-                  : queueLocked
-                    ? 'locked'
-                    : 'default'
+          {!queueLocked && (
+            <Text textStyle="t4Regular" color="fg.neutralMuted">
+              {revealedCandidates.length}명
+            </Text>
+          )}
+        </HStack>
+      )}
 
-              return (
-                <RevealedCard key={candidate.id} animate={!prefersReducedMotion}>
-                  <MatchingCandidateCard
-                    candidate={candidate}
-                    variant={variant}
-                    animate={!prefersReducedMotion}
-                    onSelect={handleSelectCandidate}
-                  />
-                </RevealedCard>
-              )
-            })}
-          </VStack>
-        )}
+      {!queueLocked && revealedCandidates.length === 0 ? (
+        <Text textStyle="t4Regular" color="fg.neutralMuted">
+          상대를 찾고 있어요...
+        </Text>
+      ) : (
+        <MatchingCandidateList
+          candidates={revealedCandidates}
+          requestedAmountKrw={trade.amountKrw}
+          pendingCandidateId={pendingCandidateId}
+          queueLocked={queueLocked}
+          animate={!prefersReducedMotion}
+          onSelectCandidate={queueLocked ? undefined : onSelectCandidate}
+        />
+      )}
 
-        {queueLocked ? (
-          <TextLinkButton onClick={withdrawProposal}>제안 취소</TextLinkButton>
-        ) : (
-          <TextLinkButton onClick={toggleMode}>
-            {isExactMode ? '비슷한 금액도 괜찮아요' : '정확한 금액만 기다릴게요'}
-          </TextLinkButton>
-        )}
+      {queueLocked && <TextLinkButton onClick={withdrawProposal}>제안 취소</TextLinkButton>}
+    </VStack>
+  )
 
-        {!queueLocked && canShowWhileYouWait && (
-          <WhileYouWaitSection
-            onStoreClick={handleStoreClick}
-            onCommunityClick={handleCommunityClick}
-          />
-        )}
+  const secondarySection = (
+    <>
+      {!queueLocked && canShowWhileYouWait && (
+        <WhileYouWaitSection
+          onStoreClick={handleStoreClick}
+          onCommunityClick={handleCommunityClick}
+        />
+      )}
 
-        {!queueLocked && !canShowWhileYouWait && (
-          <PushEnableCard eligibility={eligibility} onRequestPermission={requestPermission} />
-        )}
+      {!queueLocked && !canShowWhileYouWait && (
+        <PushEnableCard eligibility={eligibility} onRequestPermission={requestPermission} />
+      )}
+    </>
+  )
+
+  return (
+    <VStack gap="x4" width="full" className="matching-feed" flexGrow minHeight="full">
+      <VStack gap="x3" align="center" width="full" flexShrink={0}>
+        <TradeMotion
+          variant={queueLocked ? 'waitingConfirm' : 'matching'}
+          size={48}
+        />
+        <VStack gap="x1" align="center" width="full">
+          <Badge tone="warning" variant="weak" size="medium">
+            {statusBadgeLabel}
+          </Badge>
+          <Text textStyle="t5Bold" color="fg.neutral">
+            {heroCopy.title}
+          </Text>
+          {heroCopy.description && (
+            <Text textStyle="t4Regular" color="fg.neutralSubtle">
+              {heroCopy.description}
+            </Text>
+          )}
+          <Text textStyle="t4Regular" color="fg.neutralMuted" className="tabular-nums">
+            {formatAmount(trade.amountKrw)}
+          </Text>
+        </VStack>
       </VStack>
 
-      <MatchingAcceptBottomSheet
-        open={acceptOpen}
-        onOpenChange={setAcceptOpen}
-        candidate={selectedCandidate}
-        onConfirm={handleConfirmPropose}
-      />
-    </>
+      <div className="matching-feed-scroll-host">
+        <ScrollFog placement={showScrollFog ? ['bottom'] : []}>
+          <VStack gap="x6" width="full" pb="spacingY.screenBottom">
+            {primarySection}
+            {secondarySection}
+          </VStack>
+        </ScrollFog>
+      </div>
+    </VStack>
   )
 }

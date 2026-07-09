@@ -4,7 +4,7 @@ import { PageBanner } from 'seed-design/ui/page-banner'
 const COPY = {
   store: {
     title: 'Brit 스토어',
-    description: '기프티콘·상품권을 MS로 구매할 수 있어요. (준비 중)',
+    description: '기프티콘·상품권을 Coin으로 구매할 수 있어요. (준비 중)',
     banner: '매칭이 완료되면 알림으로 알려드릴게요.',
   },
   community: {

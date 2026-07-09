@@ -396,9 +396,11 @@ XADD events:user:{userId}  *  type TRADE_BOUND  splitGroupId  ...  focusLeg  2
 | 이벤트 | 수신 | 채널 | 페이로드 |
 |--------|------|------|----------|
 | `MATCHING_QUEUED` | 본인 | (UI only) | orderId, legIndex |
+| `MATCHING_SUGGESTION` | 본인 | attention / snackbar (Home) / banner | candidateId, tradeId, reason |
 | `PROPOSAL_RECEIVED` | 상대 | Push / 배너 | proposeId, nickname |
 | `TRADE_BOUND` | 양쪽 | Push / 배너 / SSE | splitGroupId, focusLeg, tradeId |
 | `PAYMENT_REPORTED` | 판매자 | Push | tradeId, amountKrw |
+| `PAYMENT_REPORTED_ACK` | 구매자 | snackbar / attention | tradeId, amountKrw |
 | `TRADE_COMPLETED` | 양쪽 | Push | tradeId, wallet snapshot |
 | `TRADE_EXPIRED` | 양쪽 | Push | tradeId, reason |
 | `DISPUTE_OPENED` | 양쪽 | Push / 배너 | disputeId, tradeId |

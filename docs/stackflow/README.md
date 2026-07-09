@@ -42,7 +42,7 @@ flowchart LR
 | `Home` | `/` | — |
 | `Detail` | `/detail/:id` | `id: string` |
 | `TradeConfirm` | `/trade/confirm` | `side`, `amountKrw`, `splitMode?` |
-| `Trade` | `/trade/:tradeId` | `tradeId: string` |
+| `Trade` | `/trade` | `tradeId?`, `splitGroupId?`, `focusLeg?` |
 | `SignupIdentity` | `/auth/signup/identity` | — |
 | `SignupSms` | `/auth/signup/sms` | `phone: string` |
 | `SignupAccount` | `/auth/signup/account` | `step?: SignupAccountStep` |
@@ -51,6 +51,14 @@ flowchart LR
 | `NotFound` | `/404` | — |
 
 가입 플로우 상세: [docs/domains/auth.md](../domains/auth.md)
+
+### Trade 라우트 예시
+
+홈에서 거래 확인 후 `useHomeScreen`이 `push('Trade', params)`로 이동합니다.
+
+- 분할 판매: `/trade?splitGroupId=split-xxx`
+- 단건 거래: `/trade?tradeId=trade-xxx`
+- leg 딥링크: `/trade?splitGroupId=split-xxx&focusLeg=2`
 
 ## Activity 내부 vs Stack 밖
 

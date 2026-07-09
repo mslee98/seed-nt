@@ -2,7 +2,12 @@ import type { SplitMode, TradeSide, TradeStatus } from '../home/types'
 
 export type TradeRole = 'BUYER' | 'SELLER'
 
-export type TradeAction = 'REPORT_PAYMENT' | 'CONFIRM_PAYMENT' | 'CANCEL' | 'CONTINUE'
+export type TradeAction =
+  | 'REPORT_PAYMENT'
+  | 'CONFIRM_PAYMENT'
+  | 'DENY_PAYMENT'
+  | 'CANCEL'
+  | 'CONTINUE'
 
 export type SplitLegStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
 
@@ -57,4 +62,9 @@ export interface CreateTradeOrderInput {
   side: TradeSide
   amountKrw: number
   splitMode?: SplitMode
+}
+
+export interface CreateTradeOrderResult {
+  trade: TradeRecord
+  splitGroupId?: string
 }

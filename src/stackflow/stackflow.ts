@@ -16,9 +16,15 @@ import TradeConfirmActivity from '../activities/TradeConfirmActivity'
 import { detectTheme } from '../shared/utils/detectTheme'
 import { config } from './config'
 
-// Navigation: Activity 내부는 useFlow(), Stack 외부 크롬(GlobalBottomNavigation, SignupComplete stack pop)은 actions.
-export const { Stack, actions } = stackflow({
-  config,
+/**
+ * Stackflow bootstrap.
+ *
+ * - Activity 내부 네비: `useFlow()` (push / pop / replace)
+ * - Stack 밖 크롬: `actions` (GlobalBottomNavigation, SignupComplete 등)
+ *
+ * @see docs/stackflow/README.md
+ */
+export const { Stack, actions } = stackflow({  config,
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,

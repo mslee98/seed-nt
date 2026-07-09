@@ -5,17 +5,13 @@ import { AnimatedAmount } from '../../../shared/ui/AnimatedAmount'
 
 interface HomeBalanceCardProps {
   coinBalance: number
-  estimatedKrwValue: number
   startCoinBalance?: number
-  startEstimatedKrwValue?: number
   replayKey?: string | number
 }
 
 export function HomeBalanceCard({
   coinBalance,
-  estimatedKrwValue,
   startCoinBalance,
-  startEstimatedKrwValue,
   replayKey,
 }: HomeBalanceCardProps) {
   const hasBalance = coinBalance > 0
@@ -54,29 +50,6 @@ export function HomeBalanceCard({
                   Coin
                 </Text>
               </HStack>
-            }
-          />
-          <ListItem
-            title={
-              <Text textStyle="t5Regular" color="fg.neutralMuted">
-                보유 금액
-              </Text>
-            }
-            suffix={
-              <AnimatedAmount
-                value={estimatedKrwValue}
-                startValue={startEstimatedKrwValue ?? estimatedKrwValue}
-                replayKey={replayKey}
-                suffix="원"
-                locale="ko-KR"
-                useGrouping
-                numberTextStyle="t5Medium"
-                suffixTextStyle="t5Medium"
-                textColor="fg.neutral"
-                fontSize={17}
-                fontWeight={500}
-                className="tabular-nums"
-              />
             }
           />
         </List>

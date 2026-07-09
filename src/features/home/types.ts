@@ -4,6 +4,7 @@ export type TradeStatus =
   | 'MATCHING'
   | 'PAYMENT_PENDING'
   | 'PAYMENT_REPORTED'
+  | 'DISPUTED'
   | 'COMPLETED'
   | 'CANCELLED'
   | 'EXPIRED'

@@ -3,6 +3,7 @@ import { useCallback, useSyncExternalStore } from 'react'
 import {
   cancelTrade,
   confirmPayment,
+  denyPayment,
   devForceCompletePayment,
   getTradeDetail,
   reportPayment,
@@ -24,30 +25,43 @@ export function useTradeDetail(tradeId: string) {
 
   const trade = useSyncExternalStore(subscribe, getSnapshot, () => null)
 
+  /** 액션 시점에 store 최신 version을 읽어 stale closure / TRADE_STATE_CONFLICT 방지 */
+  const resolveLiveTrade = useCallback(() => {
+    const current = getTradeDetail(tradeId)
+    if (!current) throw new Error('TRADE_NOT_FOUND')
+    return current
+  }, [tradeId])
+
   const reportPaymentAction = useCallback(async () => {
-    if (!trade) return null
-    return reportPayment(trade.id, trade.version)
-  }, [trade])
+    const current = resolveLiveTrade()
+    return reportPayment(current.id, current.version)
+  }, [resolveLiveTrade])
 
   const confirmPaymentAction = useCallback(async () => {
-    if (!trade) return null
-    return confirmPayment(trade.id, trade.version)
-  }, [trade])
+    const current = resolveLiveTrade()
+    return confirmPayment(current.id, current.version)
+  }, [resolveLiveTrade])
 
   const cancelAction = useCallback(async () => {
-    if (!trade) return null
-    return cancelTrade(trade.id, trade.version)
-  }, [trade])
+    const current = resolveLiveTrade()
+    return cancelTrade(current.id, current.version)
+  }, [resolveLiveTrade])
 
   const devForceCompletePaymentAction = useCallback(async () => {
-    if (!trade) return null
-    return devForceCompletePayment(trade.id)
-  }, [trade])
+    const current = resolveLiveTrade()
+    return devForceCompletePayment(current.id)
+  }, [resolveLiveTrade])
+
+  const denyPaymentAction = useCallback(async () => {
+    const current = resolveLiveTrade()
+    return denyPayment(current.id, current.version)
+  }, [resolveLiveTrade])
 
   return {
     trade,
     reportPayment: reportPaymentAction,
     confirmPayment: confirmPaymentAction,
+    denyPayment: denyPaymentAction,
     cancelTrade: cancelAction,
     devForceCompletePayment: devForceCompletePaymentAction,
   }

@@ -79,25 +79,62 @@ export async function requestPushPermission(): Promise<PushEligibility> {
   return 'default'
 }
 
-/** mock: 매칭 완료 push (실서비스에서는 SW + 서버 push) */
-export function showTradeMatchedNotification(tradeId: string, amountLabel: string) {
+export const TRADE_PUSH_OPEN_EVENT = 'brit:open-trade-payment'
+
+function dispatchTradePushOpen(tradeId: string) {
+  window.focus()
+  window.dispatchEvent(new CustomEvent(TRADE_PUSH_OPEN_EVENT, { detail: { tradeId } }))
+}
+
+function showBrowserNotification(
+  title: string,
+  options: { body: string; tag: string; tradeId: string },
+) {
   if (!isNotificationApiAvailable() || Notification.permission !== 'granted') {
     return
   }
 
   try {
-    const notification = new Notification('매칭됐어요', {
-      body: `${amountLabel} 거래를 이어서 진행해 주세요.`,
-      tag: `trade-matched-${tradeId}`,
+    const notification = new Notification(title, {
+      body: options.body,
+      tag: options.tag,
     })
     notification.onclick = () => {
-      window.focus()
-      window.dispatchEvent(
-        new CustomEvent('brit:open-trade-payment', { detail: { tradeId } }),
-      )
+      dispatchTradePushOpen(options.tradeId)
       notification.close()
     }
   } catch {
     // iOS PWA 등 환경별 제한 — in-app 폴백으로 처리
   }
+}
+
+/** mock: 매칭 완료 push — 구매자 입금 유도 (실서비스에서는 SW + 서버 push) */
+export function showTradeMatchedNotification(tradeId: string, amountLabel: string) {
+  showBrowserNotification('매칭됐어요', {
+    body: `${amountLabel} 거래를 이어서 진행해 주세요.`,
+    tag: `trade-matched-${tradeId}`,
+    tradeId,
+  })
+}
+
+/** mock: 매칭 완료 push — 판매자 입금 대기 */
+export function showSellerMatchedNotification(tradeId: string, amountLabel: string) {
+  showBrowserNotification('구매자를 찾았어요', {
+    body: `${amountLabel} · 구매자 입금을 기다려 주세요.`,
+    tag: `trade-seller-matched-${tradeId}`,
+    tradeId,
+  })
+}
+
+/** mock: 입금 신고 push — 판매자 확인 유도 */
+export function showPaymentReportedNotification(
+  tradeId: string,
+  amountLabel: string,
+  reporterLabel = '구매자',
+) {
+  showBrowserNotification('입금 확인이 필요해요', {
+    body: `${reporterLabel}님이 ${amountLabel} 입금했다고 했어요.`,
+    tag: `trade-reported-${tradeId}`,
+    tradeId,
+  })
 }

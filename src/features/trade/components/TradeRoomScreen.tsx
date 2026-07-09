@@ -1,40 +1,61 @@
 import { VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 
-import { TradeRoomPanel } from './TradeRoomPanel'
+import type { MatchingCandidate } from '../matching/types'
 import type { TradeDetailViewModel } from '../types'
+import { TradeLegMatchingScreen } from './TradeLegMatchingScreen'
+import { TradeRoomPanel } from './TradeRoomPanel'
 
 interface TradeRoomScreenProps {
   trade: TradeDetailViewModel
-  onReportPayment: () => Promise<unknown>
-  onConfirmPayment: () => Promise<unknown>
-  onCancel: () => Promise<unknown>
+  onContinueTrade?: () => void
   onGoHome: () => void
+  onSelectMatchingCandidate?: (candidate: MatchingCandidate) => void
+}
+
+function getContinueTradeLabel(trade: TradeDetailViewModel): string | null {
+  if (trade.status === 'PAYMENT_PENDING' && trade.role === 'BUYER') return '입금하기'
+  if (trade.status === 'PAYMENT_REPORTED' && trade.role === 'SELLER') return '입금 확인하기'
+  if (trade.status === 'DISPUTED') return '분쟁 안내 보기'
+  return null
 }
 
 export function TradeRoomScreen({
   trade,
-  onReportPayment,
-  onConfirmPayment,
-  onCancel,
+  onContinueTrade,
   onGoHome,
+  onSelectMatchingCandidate,
 }: TradeRoomScreenProps) {
+  if (trade.status === 'MATCHING') {
+    return (
+      <TradeLegMatchingScreen
+        trade={trade}
+        onSelectCandidate={onSelectMatchingCandidate}
+      />
+    )
+  }
+
   if (trade.status === 'COMPLETED') {
     return (
       <VStack
         flexGrow
+        minHeight="full"
         px="spacingX.globalGutter"
         pt="spacingY.navToTitle"
         pb="spacingY.screenBottom"
         gap="x6"
       >
         <TradeRoomPanel trade={trade} />
-        <ActionButton size="large" variant="brandSolid" onClick={onGoHome}>
-          홈으로
-        </ActionButton>
+        <VStack gap="x3" flexGrow justify="flex-end">
+          <ActionButton size="large" variant="brandSolid" onClick={onGoHome}>
+            홈으로
+          </ActionButton>
+        </VStack>
       </VStack>
     )
   }
+
+  const continueLabel = getContinueTradeLabel(trade)
 
   return (
     <VStack
@@ -46,23 +67,13 @@ export function TradeRoomScreen({
       gap="x6"
     >
       <TradeRoomPanel trade={trade} />
-      <VStack gap="x3" flexGrow justify="flex-end">
-        {trade.actions.includes('REPORT_PAYMENT') && (
-          <ActionButton size="large" variant="brandSolid" onClick={() => onReportPayment()}>
-            입금했어요
+      {continueLabel && onContinueTrade && (
+        <VStack gap="x3" flexGrow justify="flex-end">
+          <ActionButton size="large" variant="brandSolid" onClick={onContinueTrade}>
+            {continueLabel}
           </ActionButton>
-        )}
-        {trade.actions.includes('CONFIRM_PAYMENT') && (
-          <ActionButton size="large" variant="brandSolid" onClick={() => onConfirmPayment()}>
-            입금 확인
-          </ActionButton>
-        )}
-        {trade.actions.includes('CANCEL') && (
-          <ActionButton size="medium" variant="neutralWeak" onClick={() => onCancel()}>
-            거래 취소
-          </ActionButton>
-        )}
-      </VStack>
+        </VStack>
+      )}
     </VStack>
   )
 }

@@ -1,6 +1,7 @@
-﻿import { Fragment, useRef, useState, type ReactNode } from 'react'
+﻿import { Fragment, useRef, useState } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Portal, Text, VStack } from '@seed-design/react'
+import { useLoading } from 'react-simplikit'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { Callout } from 'seed-design/ui/callout'
 import {
@@ -13,8 +14,9 @@ import { List, ListDivider, ListItem } from 'seed-design/ui/list'
 import { ListHeader } from 'seed-design/ui/list-header'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
+import { SummaryListCard } from '../../../shared/ui/SummaryListCard'
 import type { SplitMode, TradeSide } from '../../home/types'
-import { formatAmount, formatAmountNumber, krwToCoin } from '../../home/utils/formatAmount'
+import { formatAmount, formatAmountNumber, formatCoinUnit, krwToCoin } from '../../home/utils/formatAmount'
 import { buildSplitPlan } from '../utils/splitPlan'
 
 interface TradeConfirmBottomSheetProps {
@@ -24,20 +26,6 @@ interface TradeConfirmBottomSheetProps {
   amountKrw: number
   splitMode: SplitMode
   onConfirm: () => Promise<void>
-}
-
-function SummaryListCard({ children }: { children: ReactNode }) {
-  return (
-    <VStack
-      width="full"
-      bg="bg.layerDefault"
-      borderWidth="1"
-      borderColor="stroke.neutralWeak"
-      borderRadius="r4"
-    >
-      {children}
-    </VStack>
-  )
 }
 
 export function TradeConfirmBottomSheet({
@@ -52,7 +40,7 @@ export function TradeConfirmBottomSheet({
     typeof document !== 'undefined' ? document.getElementById('app-frame-portal') : null,
   )
   const layerIndex = useActivityZIndexBase({ activityOffset: 1 })
-  const [loading, setLoading] = useState(false)
+  const [loading, startLoading] = useLoading()
   const [error, setError] = useState<string | null>(null)
 
   useLayoutOverlay(open)
@@ -66,10 +54,9 @@ export function TradeConfirmBottomSheet({
       : `${formatAmount(amountKrw)} 판매 등록할까요?`
 
   const handleConfirm = async () => {
-    setLoading(true)
     setError(null)
     try {
-      await onConfirm()
+      await startLoading(onConfirm())
       onOpenChange(false)
     } catch (err) {
       if (err instanceof Error && err.message === 'ACTIVE_TRADE_LIMIT') {
@@ -77,15 +64,20 @@ export function TradeConfirmBottomSheet({
       } else {
         setError('거래를 시작하지 못했어요. 다시 시도해 주세요.')
       }
-    } finally {
-      setLoading(false)
     }
   }
+
+  const showSplitDetails = splitPlan && splitPlan.legCount > 1
 
   return (
     <BottomSheetRoot open={open} onOpenChange={onOpenChange}>
       <Portal container={portalContainerRef}>
-        <BottomSheetContent title={title} layerIndex={layerIndex} showHandle>
+        <BottomSheetContent
+          title={title}
+          layerIndex={layerIndex}
+          showHandle
+          aria-describedby={undefined}
+        >
           <BottomSheetBody>
             <VStack gap="x4" width="full">
               <SummaryListCard>
@@ -94,10 +86,10 @@ export function TradeConfirmBottomSheet({
                   <ListDivider />
                   <ListItem title="거래 금액" detail={formatAmount(amountKrw)} />
                   <ListDivider />
-                  <ListItem title="코인 수량" detail={`${coinAmount} MS`} />
+                  <ListItem title="코인 수량" detail={formatCoinUnit(coinAmount)} />
                   <ListDivider />
                   <ListItem title="수수료" detail="없음" />
-                  {splitPlan && splitPlan.legCount > 1 && (
+                  {showSplitDetails && (
                     <>
                       <ListDivider />
                       <ListItem
@@ -108,11 +100,12 @@ export function TradeConfirmBottomSheet({
                   )}
                 </List>
               </SummaryListCard>
-              {splitPlan && splitPlan.legCount > 1 && (
+
+              {showSplitDetails ? (
                 <VStack gap="x2" width="full">
                   <Text textStyle="t4Regular" color="fg.neutralSubtle">
                     {formatAmount(amountKrw)}을 {formatAmountNumber(splitPlan.unitAmountKrw)}원씩
-                    {splitPlan.legCount}건으로 나눠 순서대로 매칭할게요.
+                    {splitPlan.legCount}건으로 나눠 동시에 매칭할게요.
                   </Text>
                   <SummaryListCard>
                     <ListHeader as="h3" variant="mediumWeak">
@@ -122,17 +115,18 @@ export function TradeConfirmBottomSheet({
                       {splitPlan.legAmounts.map((amount, i) => (
                         <Fragment key={i}>
                           {i > 0 && <ListDivider />}
-                          <ListItem
-                            highlighted={i === 0}
-                            title={`${i + 1}번째`}
-                            detail={`${formatAmount(amount)}${i === 0 ? ' · 이번에 시작' : ' · 이어서 진행'}`}
-                          />
+                          <ListItem title={`${i + 1}번째`} detail={formatAmount(amount)} />
                         </Fragment>
                       ))}
                     </List>
                   </SummaryListCard>
                 </VStack>
-              )}
+              ) : side === 'SELL' ? (
+                <Text textStyle="t4Regular" color="fg.neutralSubtle">
+                  한 건으로 등록하고 매칭을 시작할게요.
+                </Text>
+              ) : null}
+
               {error && <Callout tone="critical" description={error} />}
             </VStack>
           </BottomSheetBody>

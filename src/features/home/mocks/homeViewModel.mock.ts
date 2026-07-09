@@ -1,8 +1,17 @@
 import { getHomeWallet } from '../stores/homeWallet.store'
 import type { HomeViewModel } from '../types'
 
-/** 'default' | 'activeTrade' — 개발용 시나리오 전환 */
-export const MOCK_SCENARIO: 'default' | 'activeTrade' = 'default'
+/** @see docs/fixtures/scenarios.json */
+export type MockScenarioKey =
+  | 'default'
+  | 'activeTrade'
+  | 'splitSell'
+  | 'splitMatching'
+  | 'splitBindingNotify'
+  | 'splitDispute'
+
+/** 개발용 시나리오 전환 — scenarios.json 키와 동일 */
+export const MOCK_SCENARIO: MockScenarioKey = 'default'
 
 const BASE_MOCK: Omit<HomeViewModel, 'user' | 'wallet'> & {
   user: Omit<HomeViewModel['user'], 'isVerified'>

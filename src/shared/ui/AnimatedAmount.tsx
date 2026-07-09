@@ -61,6 +61,18 @@ function formatStaticAmount({
   }).format(value)
 }
 
+/**
+ * 금액 표시 + breeze `AnimateNumber` 래퍼.
+ *
+ * 포맷·suffix·`prefers-reduced-motion` fallback을 통합합니다.
+ * `replayKey`가 바뀌면 `startValue`에서 `value`로 재생합니다.
+ *
+ * @example
+ * ```tsx
+ * const { replayKey, triggerReplay } = useAmountReplay()
+ * <AnimatedAmount value={balance} suffix="원" startValue={0} replayKey={replayKey} />
+ * ```
+ */
 export function AnimatedAmount({
   value,
   startValue = value,

@@ -3,11 +3,13 @@ import { applyCompletedTrade } from '../../home/stores/homeWallet.store'
 import { PAYMENT_DEADLINE_MINUTES } from '../constants'
 import {
   clearMatchingSession,
+  getMatchingSession,
   setOnMatchConfirmed,
   startMatchingSession,
 } from '../matching/matchingSession.store'
 import type {
   CreateTradeOrderInput,
+  CreateTradeOrderResult,
   SplitGroup,
   SplitLeg,
   TradeAction,
@@ -17,13 +19,19 @@ import type {
 } from '../types'
 import type { SplitPlan } from '../utils/splitPlan'
 import { buildSplitPlan } from '../utils/splitPlan'
+import {
+  clearDevPaymentSimulation,
+  onPaymentReportedDevMock,
+} from '../mocks/devPaymentSimulation.mock'
 
 type Listener = () => void
 
 const listeners = new Set<Listener>()
 let activeTrade: TradeRecord | null = null
 let activeSplitGroup: SplitGroup | null = null
-let cachedTradeDetail: TradeDetailViewModel | null = null
+const tradesById = new Map<string, TradeRecord>()
+const tradeDetailCache = new Map<string, { version: number; detail: TradeDetailViewModel }>()
+let sessionVersion = 0
 let onMatchedCallback: ((tradeId: string) => void) | null = null
 let tradeIdSeq = 0
 
@@ -55,7 +63,10 @@ function getActionsForTrade(trade: TradeRecord): TradeAction[] {
     return trade.role === 'BUYER' ? ['REPORT_PAYMENT', 'CANCEL'] : ['CANCEL']
   }
   if (trade.status === 'PAYMENT_REPORTED') {
-    return trade.role === 'SELLER' ? ['CONFIRM_PAYMENT'] : []
+    return trade.role === 'SELLER' ? ['CONFIRM_PAYMENT', 'DENY_PAYMENT'] : []
+  }
+  if (trade.status === 'DISPUTED') {
+    return []
   }
   if (trade.status === 'COMPLETED' || trade.status === 'CANCELLED' || trade.status === 'EXPIRED') {
     return []
@@ -63,14 +74,8 @@ function getActionsForTrade(trade: TradeRecord): TradeAction[] {
   return ['CONTINUE']
 }
 
-function syncTradeDetailCache() {
-  if (!activeTrade) {
-    cachedTradeDetail = null
-    return
-  }
-
-  const trade = activeTrade
-  cachedTradeDetail = {
+function buildTradeDetailViewModel(trade: TradeRecord): TradeDetailViewModel {
+  return {
     ...trade,
     actions: getActionsForTrade(trade),
     counterpartyNickname: trade.role === 'BUYER' ? '판매자' : '구매자',
@@ -81,9 +86,29 @@ function syncTradeDetailCache() {
   }
 }
 
+function invalidateTradeDetailCache(tradeId?: string) {
+  if (tradeId) {
+    tradeDetailCache.delete(tradeId)
+    return
+  }
+  tradeDetailCache.clear()
+}
+
+function setTradeRecord(trade: TradeRecord) {
+  tradesById.set(trade.id, trade)
+  invalidateTradeDetailCache(trade.id)
+  if (activeTrade?.id === trade.id || !activeTrade) {
+    activeTrade = trade
+  }
+}
+
 function notify() {
-  syncTradeDetailCache()
+  sessionVersion += 1
   listeners.forEach((listener) => listener())
+}
+
+export function getTradeSessionVersion(): number {
+  return sessionVersion
 }
 
 function createTradeRecord(input: {
@@ -112,10 +137,10 @@ function createTradeRecord(input: {
 }
 
 function startMatchingForTrade(trade: TradeRecord) {
+  activeTrade = trade
   startMatchingSession({
     tradeId: trade.id,
     amountKrw: trade.amountKrw,
-    mode: 'FLEXIBLE',
   })
 }
 
@@ -130,24 +155,6 @@ function markSplitLegStatus(tradeId: string, status: SplitLeg['status']) {
   }
 }
 
-function activateSplitLeg(leg: SplitLeg, side: CreateTradeOrderInput['side']) {
-  const now = new Date().toISOString()
-  const trade = createTradeRecord({
-    id: leg.tradeId,
-    side,
-    amountKrw: leg.amountKrw,
-    now,
-    splitGroupId: activeSplitGroup?.id,
-    splitLegIndex: leg.index,
-    splitTotalLegs: activeSplitGroup?.totalLegs,
-  })
-
-  markSplitLegStatus(leg.tradeId, 'ACTIVE')
-  activeTrade = trade
-  startMatchingForTrade(trade)
-  notify()
-}
-
 function advanceSplitAfterLegComplete(completedTradeId: string) {
   if (!activeSplitGroup) return
 
@@ -157,31 +164,57 @@ function advanceSplitAfterLegComplete(completedTradeId: string) {
     completedLegs: activeSplitGroup.completedLegs + 1,
   }
 
-  const nextLeg = activeSplitGroup.legs.find((leg) => leg.status === 'PENDING')
-  if (!nextLeg) {
+  const allDone = activeSplitGroup.completedLegs >= activeSplitGroup.totalLegs
+  if (allDone) {
     activeSplitGroup = null
+    activeTrade = null
     notify()
     return
   }
 
-  activateSplitLeg(nextLeg, activeSplitGroup.side)
+  const nextActive = activeSplitGroup.legs.find(
+    (leg) => leg.status === 'ACTIVE' && leg.tradeId !== completedTradeId,
+  )
+  if (nextActive) {
+    const trade = tradesById.get(nextActive.tradeId)
+    if (trade && trade.status === 'MATCHING') {
+      activeTrade = trade
+    }
+  }
+
+  notify()
 }
 
 function clearSplitGroup() {
   activeSplitGroup = null
 }
 
+export function isSplitGroupInProgress(): boolean {
+  return (
+    activeSplitGroup !== null && activeSplitGroup.completedLegs < activeSplitGroup.totalLegs
+  )
+}
+
+export function getSplitGroupById(id: string): SplitGroup | null {
+  if (activeSplitGroup?.id === id) return activeSplitGroup
+  return null
+}
+
+export function getTradesById(): ReadonlyMap<string, TradeRecord> {
+  return tradesById
+}
+
 async function createSplitTradeOrder(
   input: CreateTradeOrderInput,
   plan: SplitPlan,
-): Promise<TradeRecord> {
+): Promise<CreateTradeOrderResult> {
   const now = new Date().toISOString()
   const splitId = `split-${Date.now()}`
   const legs: SplitLeg[] = plan.legAmounts.map((amountKrw, index) => ({
     index: index + 1,
     tradeId: generateTradeId(),
     amountKrw,
-    status: index === 0 ? 'ACTIVE' : 'PENDING',
+    status: 'ACTIVE',
   }))
 
   activeSplitGroup = {
@@ -195,39 +228,45 @@ async function createSplitTradeOrder(
     createdAt: now,
   }
 
-  const firstLeg = legs[0]
-  const trade = createTradeRecord({
-    id: firstLeg.tradeId,
-    side: input.side,
-    amountKrw: firstLeg.amountKrw,
-    now,
-    splitGroupId: splitId,
-    splitLegIndex: firstLeg.index,
-    splitTotalLegs: plan.legCount,
+  const createdTrades = legs.map((leg) => {
+    const trade = createTradeRecord({
+      id: leg.tradeId,
+      side: input.side,
+      amountKrw: leg.amountKrw,
+      now,
+      splitGroupId: splitId,
+      splitLegIndex: leg.index,
+      splitTotalLegs: plan.legCount,
+    })
+    tradesById.set(trade.id, trade)
+    return trade
   })
 
-  activeTrade = trade
+  const firstTrade = createdTrades[0]
+  activeTrade = firstTrade
   notify()
-  startMatchingForTrade(trade)
-  return trade
+
+  return { trade: firstTrade, splitGroupId: splitId }
 }
 
 function completeMatching(tradeId: string, amountKrw?: number) {
-  if (!activeTrade || activeTrade.id !== tradeId || activeTrade.status !== 'MATCHING') {
+  const trade = tradesById.get(tradeId)
+  if (!trade || trade.status !== 'MATCHING') {
     return
   }
 
   const now = new Date().toISOString()
-  const resolvedAmountKrw = amountKrw ?? activeTrade.amountKrw
-  activeTrade = {
-    ...activeTrade,
+  const resolvedAmountKrw = amountKrw ?? trade.amountKrw
+  const updated: TradeRecord = {
+    ...trade,
     status: 'PAYMENT_PENDING',
     amountKrw: resolvedAmountKrw,
     coinAmount: krwToCoin(resolvedAmountKrw),
-    version: activeTrade.version + 1,
+    version: trade.version + 1,
     updatedAt: now,
     paymentDeadline: addMinutes(now, PAYMENT_DEADLINE_MINUTES),
   }
+  setTradeRecord(updated)
   clearMatchingSession()
   notify()
   onMatchedCallback?.(tradeId)
@@ -238,6 +277,8 @@ setOnMatchConfirmed(({ tradeId, amountKrw }) => {
 })
 
 export function setOnTradeMatched(callback: ((tradeId: string) => void) | null) {
+  // 단일 listener만 유지 — Trade Activity 비활성 시 다른 화면이 덮어쓸 수 있음.
+  // 장기적으로 subscribeTradeMatched 이벤트 버스로 전환 검토.
   onMatchedCallback = callback
 }
 
@@ -255,16 +296,27 @@ export function subscribeTradeSession(listener: Listener): () => void {
 }
 
 export function getTradeDetail(tradeId: string): TradeDetailViewModel | null {
-  if (!cachedTradeDetail || cachedTradeDetail.id !== tradeId) {
-    return null
+  if (!tradeId) return null
+
+  const trade = tradesById.get(tradeId) ?? (activeTrade?.id === tradeId ? activeTrade : null)
+  if (!trade) return null
+
+  const cached = tradeDetailCache.get(tradeId)
+  if (cached && cached.version === trade.version) {
+    return cached.detail
   }
-  return cachedTradeDetail
+
+  const detail = buildTradeDetailViewModel(trade)
+  tradeDetailCache.set(tradeId, { version: trade.version, detail })
+  return detail
 }
 
-export async function createTradeOrder(input: CreateTradeOrderInput): Promise<TradeRecord> {
+export async function createTradeOrder(
+  input: CreateTradeOrderInput,
+): Promise<CreateTradeOrderResult> {
   await delay(400)
 
-  if (activeTrade && !isTerminalStatus(activeTrade.status)) {
+  if (isSplitGroupInProgress() || (activeTrade && !isTerminalStatus(activeTrade.status))) {
     throw new Error('ACTIVE_TRADE_LIMIT')
   }
 
@@ -282,10 +334,11 @@ export async function createTradeOrder(input: CreateTradeOrderInput): Promise<Tr
     now,
   })
 
+  tradesById.set(trade.id, trade)
   activeTrade = trade
   notify()
   startMatchingForTrade(trade)
-  return trade
+  return { trade }
 }
 
 export function isTerminalStatus(status: TradeRecord['status']): boolean {
@@ -297,39 +350,60 @@ export async function reportPayment(tradeId: string, version: number): Promise<T
   assertTrade(tradeId, version, 'PAYMENT_PENDING')
 
   const now = new Date().toISOString()
-  activeTrade = {
+  const updated: TradeRecord = {
     ...activeTrade!,
     status: 'PAYMENT_REPORTED',
     version: activeTrade!.version + 1,
     updatedAt: now,
     reportedAt: now,
   }
+  setTradeRecord(updated)
   notify()
-  return activeTrade
+  onPaymentReportedDevMock(updated.id, updated.version, confirmPayment)
+  return updated
+}
+
+export async function denyPayment(tradeId: string, version: number): Promise<TradeRecord> {
+  clearDevPaymentSimulation(tradeId)
+  await delay(300)
+  assertTrade(tradeId, version, 'PAYMENT_REPORTED')
+
+  const now = new Date().toISOString()
+  const updated: TradeRecord = {
+    ...activeTrade!,
+    status: 'DISPUTED',
+    version: activeTrade!.version + 1,
+    updatedAt: now,
+  }
+  setTradeRecord(updated)
+  notify()
+  return updated
 }
 
 export async function confirmPayment(tradeId: string, version: number): Promise<TradeRecord> {
+  clearDevPaymentSimulation(tradeId)
   await delay(400)
   assertTrade(tradeId, version, 'PAYMENT_REPORTED')
 
   const now = new Date().toISOString()
   const completedTradeId = activeTrade!.id
-  activeTrade = {
+  const updated: TradeRecord = {
     ...activeTrade!,
     status: 'COMPLETED',
     version: activeTrade!.version + 1,
     updatedAt: now,
     completedAt: now,
   }
+  setTradeRecord(updated)
   notify()
 
   if (activeSplitGroup) {
     advanceSplitAfterLegComplete(completedTradeId)
   }
 
-  applyCompletedTrade({ side: activeTrade!.side, coinAmount: activeTrade!.coinAmount })
+  applyCompletedTrade({ side: updated.side, coinAmount: updated.coinAmount })
 
-  return activeTrade
+  return updated
 }
 
 /** DEV 전용: 구매자 목업에서 판매자 입금 확인 없이 거래 완료 처리 */
@@ -338,38 +412,43 @@ export async function devForceCompletePayment(tradeId: string): Promise<TradeRec
     throw new Error('DEV_ONLY')
   }
 
+  clearDevPaymentSimulation(tradeId)
   await delay(100)
 
-  if (!activeTrade || activeTrade.id !== tradeId) {
+  const trade = tradesById.get(tradeId) ?? activeTrade
+  if (!trade || trade.id !== tradeId) {
     throw new Error('TRADE_NOT_FOUND')
   }
 
-  if (!['PAYMENT_PENDING', 'PAYMENT_REPORTED'].includes(activeTrade.status)) {
+  if (!['PAYMENT_PENDING', 'PAYMENT_REPORTED'].includes(trade.status)) {
     throw new Error('TRADE_STATE_CONFLICT')
   }
 
   const now = new Date().toISOString()
-  const completedTradeId = activeTrade.id
-  activeTrade = {
-    ...activeTrade,
+  const completedTradeId = trade.id
+  const updated: TradeRecord = {
+    ...trade,
     status: 'COMPLETED',
-    version: activeTrade.version + 1,
+    version: trade.version + 1,
     updatedAt: now,
     completedAt: now,
-    reportedAt: activeTrade.reportedAt ?? now,
+    reportedAt: trade.reportedAt ?? now,
   }
+  setTradeRecord(updated)
   notify()
 
   if (activeSplitGroup) {
     advanceSplitAfterLegComplete(completedTradeId)
   }
 
-  applyCompletedTrade({ side: activeTrade.side, coinAmount: activeTrade.coinAmount })
+  applyCompletedTrade({ side: updated.side, coinAmount: updated.coinAmount })
 
-  return activeTrade
+  return updated
 }
 
 export async function cancelTrade(tradeId: string, version: number): Promise<TradeRecord> {
+  // MVP mock: leg 단위 취소가 아니라 세션 전체(split·tradesById)를 초기화함.
+  // 실 API 연동 시 splitGroupId 기준 leg 취소로 좁혀야 함.
   await delay(300)
   if (!activeTrade || activeTrade.id !== tradeId) {
     throw new Error('TRADE_NOT_FOUND')
@@ -381,37 +460,88 @@ export async function cancelTrade(tradeId: string, version: number): Promise<Tra
     throw new Error('TRADE_STATE_CONFLICT')
   }
 
+  clearDevPaymentSimulation()
   clearMatchingSession()
   clearSplitGroup()
+  tradesById.clear()
 
   const now = new Date().toISOString()
-  activeTrade = {
+  const updated: TradeRecord = {
     ...activeTrade,
     status: 'CANCELLED',
     version: activeTrade.version + 1,
     updatedAt: now,
   }
+  activeTrade = updated
   notify()
-  return activeTrade
+  return updated
+}
+
+export function focusSplitLegTrade(tradeId: string) {
+  const trade = tradesById.get(tradeId)
+  if (!trade) return
+
+  const wasFocused = activeTrade?.id === tradeId
+  activeTrade = trade
+
+  if (trade.status === 'MATCHING') {
+    const session = getMatchingSession()
+    if (session?.tradeId !== tradeId) {
+      startMatchingForTrade(trade)
+      notify()
+    } else if (!wasFocused) {
+      notify()
+    }
+    return
+  }
+
+  if (!wasFocused) {
+    notify()
+  }
+}
+
+function getTradeOrThrow(tradeId: string): TradeRecord {
+  const trade = tradesById.get(tradeId) ?? (activeTrade?.id === tradeId ? activeTrade : null)
+  if (!trade) {
+    throw new Error('TRADE_NOT_FOUND')
+  }
+  activeTrade = trade
+  return trade
 }
 
 function assertTrade(tradeId: string, version: number, expectedStatus: TradeRecord['status']) {
-  if (!activeTrade || activeTrade.id !== tradeId) {
-    throw new Error('TRADE_NOT_FOUND')
-  }
-  if (activeTrade.version !== version) {
+  const trade = getTradeOrThrow(tradeId)
+  if (trade.version !== version) {
     throw new Error('TRADE_STATE_CONFLICT')
   }
-  if (activeTrade.status === expectedStatus) {
+  if (trade.status === expectedStatus) {
     return
   }
-  if (expectedStatus === 'PAYMENT_PENDING' && activeTrade.status === 'PAYMENT_REPORTED') {
+  if (expectedStatus === 'PAYMENT_PENDING' && trade.status === 'PAYMENT_REPORTED') {
     return
   }
-  if (expectedStatus === 'PAYMENT_REPORTED' && activeTrade.status === 'COMPLETED') {
+  if (expectedStatus === 'PAYMENT_REPORTED' && trade.status === 'COMPLETED') {
     return
   }
   throw new Error('TRADE_STATE_CONFLICT')
+}
+
+/** DEV/mock — fixture로 trade session 주입 */
+export function hydrateTradeMockSession(input: {
+  splitGroup: SplitGroup | null
+  trades: Map<string, TradeRecord>
+  activeTradeId?: string | null
+}): void {
+  clearDevPaymentSimulation()
+  clearMatchingSession()
+  activeSplitGroup = input.splitGroup
+  tradesById.clear()
+  invalidateTradeDetailCache()
+  for (const [id, trade] of input.trades) {
+    tradesById.set(id, trade)
+  }
+  activeTrade = input.activeTradeId ? tradesById.get(input.activeTradeId) ?? null : null
+  notify()
 }
 
 function delay(ms: number) {
@@ -419,8 +549,11 @@ function delay(ms: number) {
 }
 
 export function resetTradeSession() {
+  clearDevPaymentSimulation()
   clearMatchingSession()
   clearSplitGroup()
+  tradesById.clear()
+  invalidateTradeDetailCache()
   activeTrade = null
   notify()
 }

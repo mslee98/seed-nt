@@ -13,13 +13,23 @@ import {
 import LogoBrit from '../../../assets/logo-brit.svg?react'
 import IconCoinDollarSyncFill from '../../../assets/icons/icon-coin-dollar-sync-fill.svg?react'
 import type { HomeViewModel } from '../types'
+import type { SplitGroup } from '../../trade/types'
 import { formatAmount } from '../utils/formatAmount'
-import { getTradeStatusCopy } from '../utils/tradeStatusCopy'
+import { getHomeActiveTradeCopy } from '../utils/getHomeActiveTradeCopy'
 import { HomeInstallBanner } from './HomeInstallBanner'
+
+interface HomeActiveTradeCopy {
+  badge: string
+  title: string
+  description: string
+}
 
 interface HomeHeaderProps {
   activeTrade?: HomeViewModel['activeTrade']
+  activeTradeCopy?: HomeActiveTradeCopy | null
+  activeSplitGroup?: SplitGroup | null
   unreadNotificationCount?: number
+  needsAttention?: boolean
   onActiveTradeClick?: () => void
   compact?: boolean
 }
@@ -31,7 +41,10 @@ function formatNotificationBadgeLabel(count: number): string {
 
 export function HomeHeader({
   activeTrade,
+  activeTradeCopy,
+  activeSplitGroup,
   unreadNotificationCount = 0,
+  needsAttention = false,
   onActiveTradeClick,
   compact = false,
 }: HomeHeaderProps) {
@@ -94,7 +107,7 @@ export function HomeHeader({
           </VStack>
         )}
 
-        {activeTrade && (
+        {activeSplitGroup && (
           <Box
             as="button"
             display="flex"
@@ -111,16 +124,61 @@ export function HomeHeader({
             onClick={() => onActiveTradeClick?.()}
           >
             <Badge tone="warning" variant="weak" size="medium">
-              {getTradeStatusCopy(activeTrade.status).badge}
+              진행 중
             </Badge>
             <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
-              <Text textStyle="t4Bold" color="fg.neutral">
-                {getTradeStatusCopy(activeTrade.status).title}
+              <Text textStyle="t4Bold" color="fg.neutral" className="tabular-nums">
+                {formatAmount(activeSplitGroup.totalAmountKrw)}{' '}
+                {activeSplitGroup.side === 'BUY' ? '구매' : '판매'} 중
               </Text>
               <Text textStyle="t3Regular" color="fg.neutralMuted" className="tabular-nums">
-                {formatAmount(activeTrade.amountKrw)} · {activeTrade.coinAmount} MS
+                {activeSplitGroup.completedLegs}/{activeSplitGroup.totalLegs}건 완료
               </Text>
             </VStack>
+          </Box>
+        )}
+
+        {!activeSplitGroup && activeTrade && (
+          <Box
+            as="button"
+            display="flex"
+            alignItems="center"
+            gap="x2"
+            width="full"
+            px="x4"
+            py="x3"
+            borderWidth="1"
+            borderColor="stroke.neutralWeak"
+            borderRadius="r3"
+            bg="bg.layerDefault"
+            className={needsAttention ? 'home-header__active-trade--attention' : undefined}
+            style={{ textAlign: 'left' }}
+            onClick={() => onActiveTradeClick?.()}
+          >
+            {(() => {
+              const copy =
+                activeTradeCopy ??
+                getHomeActiveTradeCopy({
+                  status: activeTrade.status,
+                  role: activeTrade.role,
+                })
+              const badgeTone = needsAttention ? 'critical' : 'warning'
+              return (
+                <>
+                  <Badge tone={badgeTone} variant="weak" size="medium">
+                    {copy.badge}
+                  </Badge>
+                  <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
+                    <Text textStyle="t4Bold" color="fg.neutral">
+                      {copy.title}
+                    </Text>
+                    <Text textStyle="t3Regular" color="fg.neutralMuted" className="tabular-nums">
+                      {copy.description}
+                    </Text>
+                  </VStack>
+                </>
+              )
+            })()}
           </Box>
         )}
       </VStack>

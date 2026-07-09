@@ -1,75 +1,126 @@
 import { IconChevronRightLine } from '@karrotmarket/react-monochrome-icon'
 import { Badge, Icon } from '@seed-design/react'
 import { List, ListButtonItem } from 'seed-design/ui/list'
+import { useMemo } from 'react'
 
 import { useLayout } from '../../../app/layouts/LayoutContext'
 import { formatAmount } from '../../home/utils/formatAmount'
+import { usePendingNotifications } from '../../notifications/hooks/useNotifications'
 import { actions } from '../../../stackflow/stackflow'
 import { useActiveSplitGroup } from '../hooks/useActiveSplitGroup'
 import { useActiveTrade } from '../hooks/useActiveTrade'
-import { isTerminalStatus } from '../stores/tradeSession.store'
+import { isSplitGroupInProgress, isTerminalStatus } from '../stores/tradeSession.store'
 import { getTradeUiPhase } from '../utils/getTradeUiPhase'
 import { formatSplitLegSuffix } from '../utils/splitProgressCopy'
+
 export function GlobalActiveTradeBanner() {
   const { pathname } = useLayout()
   const activeTrade = useActiveTrade()
   const splitGroup = useActiveSplitGroup()
+  const pendingNotifications = usePendingNotifications()
 
-  if (pathname === '/' || !activeTrade || isTerminalStatus(activeTrade.status)) {
+  const hasActiveSplit = isSplitGroupInProgress()
+  const hasActiveSingleTrade =
+    activeTrade !== null && !isTerminalStatus(activeTrade.status) && !hasActiveSplit
+
+  const pendingBanner = useMemo(() => {
+    if (pendingNotifications.length === 0) return null
+    return [...pendingNotifications].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )[0]
+  }, [pendingNotifications])
+
+  if (pathname === '/' || pathname.startsWith('/trade')) {
     return null
   }
 
-  const phase = getTradeUiPhase(activeTrade.status)
-
-  if (phase === 'idle') {
+  if (!hasActiveSplit && !hasActiveSingleTrade && !pendingBanner) {
     return null
   }
 
-  const handleNavigateHome = () => {
-    actions.replace('Home', {}, { animate: false })
+  const handleNavigateTrade = () => {
+    if (pendingBanner?.splitGroupId && splitGroup) {
+      actions.push(
+        'Trade',
+        {
+          splitGroupId: pendingBanner.splitGroupId,
+          focusLeg: pendingBanner.focusLeg ? String(pendingBanner.focusLeg) : undefined,
+        },
+        { animate: true },
+      )
+      return
+    }
+
+    const targetTradeId = pendingBanner?.tradeId ?? activeTrade?.id
+    if (targetTradeId) {
+      actions.push('Trade', { tradeId: targetTradeId }, { animate: true })
+    }
   }
 
-  const handleContinueTrade = () => {
-    actions.replace('Home', {}, { animate: false })
-    window.dispatchEvent(
-      new CustomEvent('brit:open-trade-payment', {
-        detail: { tradeId: activeTrade.id },
-      }),
-    )
-  }
-
-  const legSuffix =
-    splitGroup && activeTrade.splitLegIndex
-      ? formatSplitLegSuffix(activeTrade.splitLegIndex, splitGroup.totalLegs)
-      : ''
-
-  if (phase === 'matching_order') {
+  if (pendingBanner && !hasActiveSplit && !hasActiveSingleTrade) {
     return (
       <div className="global-active-trade-banner">
         <List>
           <ListButtonItem
-            title={`${formatAmount(activeTrade.amountKrw)} · 정확한 금액으로 매칭 중${legSuffix}`}
+            title={pendingBanner.title ?? pendingBanner.message}
+            detail={pendingBanner.title ? pendingBanner.message : '거래 화면에서 확인해 주세요.'}
             prefix={
               <Badge tone="warning" variant="weak" size="medium">
-                매칭 중
+                알림
               </Badge>
             }
             suffix={<Icon svg={<IconChevronRightLine />} size="x5" color="fg.neutralSubtle" />}
-            onClick={handleNavigateHome}
+            onClick={handleNavigateTrade}
           />
         </List>
       </div>
     )
   }
 
+  if (hasActiveSplit && splitGroup) {
+    const completedLabel = `${formatAmount(splitGroup.totalAmountKrw)} · ${splitGroup.completedLegs}/${splitGroup.totalLegs}건 진행 중`
+    const detail = pendingBanner?.message ?? '거래 화면에서 이어할 수 있어요'
+    return (
+      <div className="global-active-trade-banner">
+        <List>
+          <ListButtonItem
+            title={completedLabel}
+            detail={detail}
+            prefix={
+              <Badge tone="warning" variant="weak" size="medium">
+                진행 중
+              </Badge>
+            }
+            suffix={<Icon svg={<IconChevronRightLine />} size="x5" color="fg.neutralSubtle" />}
+            onClick={handleNavigateTrade}
+          />
+        </List>
+      </div>
+    )
+  }
+
+  if (!activeTrade) return null
+
+  const phase = getTradeUiPhase(activeTrade.status)
+  if (phase === 'idle') return null
+
+  const legSuffix =
+    splitGroup && activeTrade.splitLegIndex
+      ? formatSplitLegSuffix(activeTrade.splitLegIndex, splitGroup.totalLegs)
+      : ''
+
   const title =
-    activeTrade.status === 'PAYMENT_REPORTED'
+    pendingBanner?.title ??
+    (activeTrade.status === 'PAYMENT_REPORTED'
       ? '입금 확인이 필요해요'
-      : `${formatAmount(activeTrade.amountKrw)} · 거래 이어하기${legSuffix}`
+      : phase === 'matching_order'
+        ? `${formatAmount(activeTrade.amountKrw)} · 매칭 중${legSuffix}`
+        : `${formatAmount(activeTrade.amountKrw)} · 거래 이어하기${legSuffix}`)
   const detail =
-    activeTrade.status === 'PAYMENT_REPORTED'
+    pendingBanner?.message ??
+    (activeTrade.status === 'PAYMENT_REPORTED'
       ? '구매자 입금 여부를 확인해 주세요.'
-      : undefined
+      : undefined)
 
   return (
     <div className="global-active-trade-banner">
@@ -78,12 +129,20 @@ export function GlobalActiveTradeBanner() {
           title={title}
           detail={detail}
           prefix={
-            <Badge tone="warning" variant="weak" size="medium">
-              진행 중
+            <Badge
+              tone={pendingBanner?.type === 'MATCHING_SUGGESTION' ? 'critical' : 'warning'}
+              variant="weak"
+              size="medium"
+            >
+              {pendingBanner?.type === 'MATCHING_SUGGESTION'
+                ? '확인 필요'
+                : phase === 'matching_order'
+                  ? '매칭 중'
+                  : '진행 중'}
             </Badge>
           }
           suffix={<Icon svg={<IconChevronRightLine />} size="x5" color="fg.neutralSubtle" />}
-          onClick={handleContinueTrade}
+          onClick={handleNavigateTrade}
         />
       </List>
     </div>

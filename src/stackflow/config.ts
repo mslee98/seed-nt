@@ -14,7 +14,9 @@ declare module '@stackflow/config' {
       splitMode?: string
     }
     Trade: {
-      tradeId: string
+      tradeId?: string
+      splitGroupId?: string
+      focusLeg?: string
     }
     SignupIdentity: {}
     SignupSms: {
@@ -47,7 +49,7 @@ export const config = defineConfig({
     },
     {
       name: 'Trade',
-      route: '/trade/:tradeId',
+      route: '/trade',
     },
     {
       name: 'SignupIdentity',
