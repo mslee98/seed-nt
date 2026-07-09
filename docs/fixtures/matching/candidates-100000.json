@@ -1,0 +1,48 @@
+{
+  "tradeId": "trade-matching-1",
+  "requestedAmountKrw": 100000,
+  "phase": "BROWSING",
+  "candidates": [
+    {
+      "id": "candidate-near-0-90000",
+      "nickname": "코인마스터",
+      "amountKrw": 90000,
+      "rating": 4.4,
+      "tradeCount": 29,
+      "mannerTemperature": 37.2,
+      "matchType": "NEAR"
+    },
+    {
+      "id": "candidate-near-1-120000",
+      "nickname": "코인트레이더",
+      "amountKrw": 120000,
+      "rating": 4.6,
+      "tradeCount": 46,
+      "mannerTemperature": 38.0,
+      "matchType": "NEAR"
+    },
+    {
+      "id": "candidate-near-2-70000",
+      "nickname": "안전거래왕",
+      "amountKrw": 70000,
+      "rating": 4.8,
+      "tradeCount": 63,
+      "mannerTemperature": 39.1,
+      "matchType": "NEAR"
+    },
+    {
+      "id": "candidate-exact-100000",
+      "nickname": "브릿유저",
+      "amountKrw": 100000,
+      "rating": 4.2,
+      "tradeCount": 12,
+      "mannerTemperature": 36.5,
+      "matchType": "EXACT"
+    }
+  ],
+  "revealedCandidateIds": [],
+  "dismissedCandidateIds": [],
+  "pendingMatch": null,
+  "suggestion": null,
+  "startedAt": "2026-07-09T08:00:00+09:00"
+}

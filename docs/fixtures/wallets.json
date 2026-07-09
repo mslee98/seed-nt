@@ -1,0 +1,14 @@
+{
+  "user-1": {
+    "coinBalance": 2000000,
+    "estimatedKrwValue": 2000000,
+    "availableCoin": 2000000,
+    "escrowCoin": 0
+  },
+  "user-1-with-escrow": {
+    "coinBalance": 2000000,
+    "estimatedKrwValue": 2000000,
+    "availableCoin": 1900000,
+    "escrowCoin": 100000
+  }
+}

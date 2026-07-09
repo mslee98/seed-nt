@@ -1,0 +1,23 @@
+{
+  "disputeId": "disp-1",
+  "items": [
+    {
+      "id": "msg-1",
+      "senderRole": "SELLER",
+      "body": "입금 내역이 없어요",
+      "createdAt": "2026-07-09T09:01:00+09:00"
+    },
+    {
+      "id": "msg-2",
+      "senderRole": "BUYER",
+      "body": "보냈는데 아직 반영이 안 된 것 같아요",
+      "createdAt": "2026-07-09T09:05:00+09:00"
+    },
+    {
+      "id": "msg-3",
+      "senderRole": "CS_AGENT",
+      "body": "이체 확인서를 첨부해 주세요. 확인 후 입금 기한을 연장해 드릴게요",
+      "createdAt": "2026-07-09T09:15:00+09:00"
+    }
+  ]
+}

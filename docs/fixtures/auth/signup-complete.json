@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "accessToken": "at_mock_access_token",
+  "refreshToken": "rt_mock_refresh_token",
+  "user": {
+    "id": "user-1",
+    "nickname": "Brit유저",
+    "isVerified": true
+  }
+}

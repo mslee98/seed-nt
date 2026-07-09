@@ -1,0 +1,44 @@
+{
+  "default": {
+    "description": "진행 중 거래 없음",
+    "activeTradeId": null,
+    "activeSplitGroupId": null,
+    "homeFixture": "home-default.json"
+  },
+  "activeTrade": {
+    "description": "입금 확인 대기 중인 active trade (단건)",
+    "activeTradeId": "trade-active-1",
+    "activeSplitGroupId": null,
+    "homeFixture": "home-active-trade.json"
+  },
+  "splitSell": {
+    "description": "분할 판매 1/3 완료, 2건 입금 확인 대기, 3건 매칭 중",
+    "activeTradeId": "t2",
+    "activeSplitGroupId": "split-xyz",
+    "splitGroupFixture": "trades/split-group-in-progress.json",
+    "homeFixture": "home-default.json"
+  },
+  "splitMatching": {
+    "description": "분할 판매 3건 전부 매칭 중 (스켈레톤·탐색 UX)",
+    "activeTradeId": null,
+    "activeSplitGroupId": "split-all-match",
+    "splitGroupFixture": "trades/split-group-all-matching.json",
+    "homeFixture": "home-default.json"
+  },
+  "splitBindingNotify": {
+    "description": "2건 Binding 직후 + Trade 밖 복귀 배너/푸시 테스트",
+    "activeTradeId": "t2",
+    "activeSplitGroupId": "split-binding",
+    "splitGroupFixture": "trades/split-group-binding-pending.json",
+    "notificationsFixture": "matching/active-trade-bound-notification.json",
+    "homeFixture": "home-default.json"
+  },
+  "splitDispute": {
+    "description": "2건 leg 분쟁 중, 1건 완료·3건 매칭 병렬",
+    "activeTradeId": "t2",
+    "activeSplitGroupId": "split-disputed",
+    "splitGroupFixture": "trades/split-group-disputed.json",
+    "disputeFixture": "disputes/dispute-open.json",
+    "homeFixture": "home-default.json"
+  }
+}

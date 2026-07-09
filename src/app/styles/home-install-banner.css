@@ -1,0 +1,8 @@
+.home-install-banner {
+  background: radial-gradient(
+    100% 90% at 0% 0%,
+    rgba(232, 243, 255, 1) 0%,
+    rgba(249, 250, 251, 1) 62%,
+    rgba(242, 244, 246, 1) 100%
+  );
+}

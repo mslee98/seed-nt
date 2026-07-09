@@ -1,0 +1,47 @@
+{
+  "id": "split-all-match",
+  "side": "SELL",
+  "status": "IN_PROGRESS",
+  "totalAmountKrw": 1500000,
+  "completedKrw": 0,
+  "progressPercent": 0,
+  "unitAmountKrw": 500000,
+  "totalLegs": 3,
+  "completedLegs": 0,
+  "legs": [
+    {
+      "index": 1,
+      "orderId": "o1",
+      "tradeId": null,
+      "amountKrw": 500000,
+      "status": "BROWSING",
+      "uiPhase": "matching",
+      "primaryAction": "VIEW_MATCHING",
+      "counterpartyNickname": null,
+      "statusLine": "구매자를 찾고 있어요"
+    },
+    {
+      "index": 2,
+      "orderId": "o2",
+      "tradeId": null,
+      "amountKrw": 500000,
+      "status": "BROWSING",
+      "uiPhase": "matching",
+      "primaryAction": "VIEW_MATCHING",
+      "counterpartyNickname": null,
+      "statusLine": "구매자를 찾고 있어요"
+    },
+    {
+      "index": 3,
+      "orderId": "o3",
+      "tradeId": null,
+      "amountKrw": 500000,
+      "status": "BROWSING",
+      "uiPhase": "matching",
+      "primaryAction": "VIEW_MATCHING",
+      "counterpartyNickname": null,
+      "statusLine": "구매자를 찾고 있어요"
+    }
+  ],
+  "createdAt": "2026-07-09T08:00:00+09:00"
+}

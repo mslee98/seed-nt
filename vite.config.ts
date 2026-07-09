@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import { seedDesignPlugin } from '@seed-design/vite-plugin'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import svgr from 'vite-plugin-svgr'
 
 // PWA theme_color/background_color: 라이트 모드 --seed-color-bg-layer-default (palette-gray-00) 기준
 const PWA_LAYER_DEFAULT = '#ffffff'
@@ -10,18 +11,20 @@ const PWA_LAYER_DEFAULT = '#ffffff'
 export default defineConfig({
   plugins: [
     react(),
+    svgr(),
     seedDesignPlugin({
-      colorMode: 'system',
+      colorMode: 'light-only',
       fontScaling: true,
-      injectColorSchemeTag: true,
+      // index.html / index.css에서 color-scheme: light 고정
+      injectColorSchemeTag: false,
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg'],
+      includeAssets: ['favicon.svg', 'icons.svg', 'logo_symbol-gray.png'],
       manifest: {
-        name: 'NT',
-        short_name: 'NT',
-        description: 'SEED Design PWA with Stackflow navigation',
+        name: 'Brit',
+        short_name: 'Brit',
+        description: '개인 간 코인 거래',
         theme_color: PWA_LAYER_DEFAULT,
         background_color: PWA_LAYER_DEFAULT,
         display: 'standalone',
@@ -30,16 +33,50 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
+            src: 'logo_symbol-gray.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'logo_symbol-gray.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
             src: 'favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
-            purpose: 'any maskable',
+            purpose: 'maskable',
           },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+        globIgnores: ['**/apng/**', '**/lotties/**'],
+        maximumFileSizeToCacheInBytes: 1_500_000,
         navigateFallback: '/index.html',
+        runtimeCaching: [
+          {
+            urlPattern: /\/apng\/.+\.png$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'brit-apng',
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/lotties\/.+\.json$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'brit-lottie',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: true,

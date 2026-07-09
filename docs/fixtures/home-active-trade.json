@@ -1,0 +1,21 @@
+{
+  "user": {
+    "id": "user-1",
+    "nickname": "Brit유저",
+    "isVerified": true
+  },
+  "wallet": {
+    "coinBalance": 2000000,
+    "estimatedKrwValue": 2000000
+  },
+  "unreadNotificationCount": 2,
+  "activeTrade": {
+    "id": "trade-active-1",
+    "role": "BUYER",
+    "status": "PAYMENT_REPORTED",
+    "amountKrw": 100000,
+    "coinAmount": 100000,
+    "updatedAt": "2026-07-09T08:00:00+09:00"
+  },
+  "recentTrades": []
+}

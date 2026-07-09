@@ -1,0 +1,21 @@
+{
+  "id": "trade-active-1",
+  "side": "BUY",
+  "role": "BUYER",
+  "status": "PAYMENT_REPORTED",
+  "amountKrw": 100000,
+  "coinAmount": 100000,
+  "version": 4,
+  "matchingStartedAt": "2026-07-09T08:00:00+09:00",
+  "updatedAt": "2026-07-09T08:10:00+09:00",
+  "reportedAt": "2026-07-09T08:10:00+09:00",
+  "paymentDeadline": "2026-07-09T08:40:00+09:00",
+  "actions": [],
+  "counterpartyNickname": "판매자",
+  "sellerAccount": {
+    "bankName": "카카오뱅크",
+    "accountNumber": "3333012345673",
+    "accountNumberMasked": "3333-**-******3",
+    "holderName": "김브릿"
+  }
+}

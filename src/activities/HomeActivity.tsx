@@ -1,194 +1,103 @@
+/**
+ * HomeActivity
+ *
+ * 책임: 홈 화면 JSX 조립 (입력·잔액·확인 시트)
+ * 비책임: 매칭·split 진행 UI (→ TradeActivity)
+ *
+ * @see docs/stackflow/README.md
+ * @see docs/domains/trade.md
+ */
 import type { ActivityComponentType } from '@stackflow/react'
-import { useFlow } from '@stackflow/react'
-import {
-  IconBellLine,
-  IconChevronRightLine,
-  IconHorizline3VerticalLine,
-  IconMagnifyingglassLine,
-  IconPersonCircleLine,
-} from '@karrotmarket/react-monochrome-icon'
-import { HStack, Icon, Skeleton, Text, VStack } from '@seed-design/react'
-import { useState } from 'react'
-import { ActionButton } from 'seed-design/ui/action-button'
-import {
-  AppBar,
-  AppBarIconButton,
-  AppBarLeft,
-  AppBarMain,
-  AppBarRight,
-} from 'seed-design/ui/app-bar'
+import { VStack } from '@seed-design/react'
 import { AppScreen, AppScreenContent } from 'seed-design/ui/app-screen'
-import { List, ListButtonItem, ListDivider } from 'seed-design/ui/list'
-import { ListHeader } from 'seed-design/ui/list-header'
-import { PageBanner, PageBannerButton } from 'seed-design/ui/page-banner'
-import { ProgressCircle } from 'seed-design/ui/progress-circle'
-import { Snackbar, SnackbarProvider, useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
-const AnimationDemo = () => {
-  const snackbar = useSnackbarAdapter()
-  const [loading, setLoading] = useState(false)
-
-  const handleLoadingClick = () => {
-    setLoading(true)
-    window.setTimeout(() => setLoading(false), 2000)
-  }
-
-  return (
-    <VStack
-      px="spacingX.globalGutter"
-      py="x4"
-      gap="spacingY.componentDefault"
-      bg="bg.layerDefault"
-    >
-      <Text textStyle="t4Regular" color="fg.neutralMuted">
-        shimmer · spin · enter/exit · pressed 색상 전환
-      </Text>
-
-      <HStack gap="x3" align="center">
-        <Skeleton radius="full" width="x12" height="x12" />
-        <VStack gap="x2" grow>
-          <Skeleton radius="8" height="x4" width="full" />
-          <Skeleton radius="8" height="x4" width="x20" />
-        </VStack>
-      </HStack>
-
-      <HStack gap="x6" align="center" justify="center" py="x2">
-        <VStack gap="x1" align="center">
-          <ProgressCircle size="24" />
-          <Text textStyle="t3Regular" color="fg.neutralSubtle">
-            로딩
-          </Text>
-        </VStack>
-        <VStack gap="x1" align="center">
-          <ProgressCircle size="40" value={65} />
-          <Text textStyle="t3Regular" color="fg.neutralSubtle">
-            65%
-          </Text>
-        </VStack>
-      </HStack>
-
-      <VStack gap="x2">
-        <ActionButton loading={loading} onClick={handleLoadingClick}>
-          로딩 버튼
-        </ActionButton>
-        <ActionButton
-          variant="neutralWeak"
-          onClick={() =>
-            snackbar.create({
-              render: () => (
-                <Snackbar
-                  variant="positive"
-                  message="저장되었습니다"
-                  actionLabel="확인"
-                />
-              ),
-            })
-          }
-        >
-          스낵바 (enter/exit)
-        </ActionButton>
-      </VStack>
-    </VStack>
-  )
-}
+import { ScreenLayout } from '../app/layouts/ScreenLayout'
+import { HomeBalanceCard } from '../features/home/components/HomeBalanceCard'
+import { HomeHeader } from '../features/home/components/HomeHeader'
+import { HomeSafetyBanner } from '../features/home/components/HomeSafetyBanner'
+import { HomeTradeInput } from '../features/home/components/HomeTradeInput'
+import { useHomeScreen } from '../features/home/hooks/useHomeScreen'
+import { TradeConfirmBottomSheet } from '../features/trade/components/TradeConfirmBottomSheet'
 
 const HomeActivity: ActivityComponentType<'Home'> = () => {
-  const { push } = useFlow()
+  const screen = useHomeScreen()
 
   return (
-    <SnackbarProvider>
-      <AppScreen>
-        <AppBar>
-          <AppBarLeft />
-          <AppBarMain title="내 근처" />
-          <AppBarRight>
-            <AppBarIconButton aria-label="알림">
-              <IconBellLine />
-            </AppBarIconButton>
-          </AppBarRight>
-        </AppBar>
-
-        <AppScreenContent>
-          <VStack
-            minHeight="full"
-            bg="bg.layerBasement"
-            gap="spacingY.componentDefault"
-            pb="spacingY.screenBottom"
-          >
-            <PageBanner
-              tone="informative"
-              variant="weak"
-              title="이번 주 인기 소식"
-              description="우리 동네에서 가장 많이 본 이야기를 확인해 보세요."
-              suffix={
-                <PageBannerButton onClick={() => push('Detail', { id: 'hot' })}>
-                  보러 가기
-                </PageBannerButton>
-              }
-            />
-
-            <VStack bg="bg.layerDefault">
-              <ListHeader as="h2" variant="mediumWeak">
-                애니메이션
-              </ListHeader>
-              <AnimationDemo />
-            </VStack>
-
-            <VStack bg="bg.layerDefault">
-              <ListHeader as="h2" variant="mediumWeak">
-                바로가기
-              </ListHeader>
-              <List width="full">
-                <ListButtonItem
-                  prefix={<Icon svg={<IconMagnifyingglassLine />} />}
-                  title="검색"
-                  detail="눌러서 pressed inset 확인"
-                  suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('Detail', { id: 'search' })}
+    <>
+      {screen.authRequiredDialog}
+      <AppScreen layerOffsetTop="safeArea" className="flex min-h-0 flex-1 flex-col">
+        <ScreenLayout>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <AppScreenContent
+              className="min-h-0 flex-1 overflow-y-auto"
+              ptr
+              onPtrReady={() => {}}
+              onPtrRefresh={screen.handlePtrRefresh}
+            >
+              <VStack gap="x0">
+                <HomeHeader
+                  activeTrade={screen.headerActiveTrade}
+                  activeTradeCopy={screen.headerActiveTradeCopy}
+                  activeSplitGroup={screen.headerSplitGroup}
+                  unreadNotificationCount={screen.viewModel.unreadNotificationCount}
+                  needsAttention={screen.needsAttention}
+                  onActiveTradeClick={screen.handleActiveTradeClick}
                 />
-                <ListDivider />
-                <ListButtonItem
-                  prefix={<Icon svg={<IconPersonCircleLine />} />}
-                  title="프로필"
-                  detail="내 정보와 활동 내역"
-                  suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('Detail', { id: 'profile' })}
-                />
-              </List>
-            </VStack>
-
-            <VStack bg="bg.layerDefault">
-              <ListHeader as="h2" variant="mediumWeak">
-                더보기
-              </ListHeader>
-              <List width="full">
-                <ListButtonItem
-                  prefix={<Icon svg={<IconHorizline3VerticalLine />} />}
-                  title="바텀시트"
-                  detail="슬라이드 업 애니메이션"
-                  suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('BottomSheet', {})}
-                />
-                <ListDivider />
-                <ListButtonItem
-                  prefix={<Icon svg={<IconHorizline3VerticalLine />} />}
-                  title="알림창"
-                  detail="페이드 인/아웃 다이얼로그"
-                  suffix={<Icon svg={<IconChevronRightLine />} size="x4_5" />}
-                  onClick={() => push('AlertDialog', {})}
-                />
-              </List>
-            </VStack>
-
-            <VStack px="spacingX.globalGutter">
-              <ActionButton size="large" onClick={() => push('Detail', { id: 'write' })}>
-                글쓰기
-              </ActionButton>
-            </VStack>
-          </VStack>
-        </AppScreenContent>
+                <VStack
+                  position="relative"
+                  bleedTop="x6"
+                  style={{ paddingBottom: 'var(--home-body-bottom-padding)' }}
+                >
+                  <VStack px="spacingX.globalGutter" gap="x4">
+                    <HomeBalanceCard
+                      coinBalance={screen.viewModel.wallet.coinBalance}
+                      startCoinBalance={0}
+                      replayKey={screen.balanceReplayKey}
+                    />
+                    <HomeTradeInput
+                      side={screen.tradeInput.side}
+                      amountKrw={screen.tradeInput.amountKrw}
+                      amountInput={screen.tradeInput.amountInput}
+                      amountError={screen.tradeInput.amountError}
+                      helperText={
+                        screen.hasBlockingTrade
+                          ? '진행 중인 거래가 끝나면 새 거래를 시작할 수 있어요.'
+                          : screen.tradeInput.helperText
+                      }
+                      isSubmitDisabled={
+                        screen.tradeInput.isSubmitDisabled || screen.hasBlockingTrade
+                      }
+                      showSplitSellToggle={screen.tradeInput.showSplitSellToggle}
+                      splitSellEnabled={screen.tradeInput.splitSellEnabled}
+                      splitRecommendation={screen.tradeInput.splitRecommendation}
+                      onSideChange={screen.tradeInput.setSide}
+                      onAmountInputChange={screen.tradeInput.handleAmountInputChange}
+                      onQuickAmountSelect={screen.tradeInput.handleQuickAmountSelect}
+                      onSplitSellEnabledChange={screen.tradeInput.setSplitSellEnabled}
+                      onSubmit={screen.handleSubmit}
+                    />
+                  </VStack>
+                  <VStack px="spacingX.globalGutter" pt="x6">
+                    <HomeSafetyBanner />
+                  </VStack>
+                </VStack>
+              </VStack>
+            </AppScreenContent>
+          </div>
+        </ScreenLayout>
       </AppScreen>
-    </SnackbarProvider>
+
+      {screen.tradeInput.amountKrw !== null && (
+        <TradeConfirmBottomSheet
+          open={screen.confirmOpen}
+          onOpenChange={screen.handleConfirmOpenChange}
+          side={screen.tradeInput.side}
+          amountKrw={screen.tradeInput.amountKrw}
+          splitMode={screen.tradeInput.splitMode}
+          onConfirm={screen.handleConfirmTrade}
+        />
+      )}
+    </>
   )
 }
 

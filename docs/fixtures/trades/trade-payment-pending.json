@@ -1,0 +1,20 @@
+{
+  "id": "trade-payment-pending-1",
+  "side": "BUY",
+  "role": "BUYER",
+  "status": "PAYMENT_PENDING",
+  "amountKrw": 100000,
+  "coinAmount": 100000,
+  "version": 3,
+  "matchingStartedAt": "2026-07-09T08:00:00+09:00",
+  "updatedAt": "2026-07-09T08:05:00+09:00",
+  "paymentDeadline": "2026-07-09T08:35:00+09:00",
+  "actions": ["REPORT_PAYMENT", "CANCEL"],
+  "counterpartyNickname": "판매자",
+  "sellerAccount": {
+    "bankName": "카카오뱅크",
+    "accountNumber": "3333012345673",
+    "accountNumberMasked": "3333-**-******3",
+    "holderName": "김브릿"
+  }
+}

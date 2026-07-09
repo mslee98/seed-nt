@@ -1,32 +1,44 @@
 import { seedPlugin } from '@seed-design/stackflow'
-import type { SeedPluginOptions } from '@seed-design/stackflow'
 import { historySyncPlugin } from '@stackflow/plugin-history-sync'
-import { webRendererPlugin } from '@stackflow/plugin-renderer-web'
+import { basicRendererPlugin } from '@stackflow/plugin-renderer-basic'
 import { stackflow } from '@stackflow/react'
 
-import AlertDialogActivity from '../activities/AlertDialogActivity'
-import BottomSheetActivity from '../activities/BottomSheetActivity'
+import SignupAccountActivity from '../activities/auth/SignupAccountActivity'
+import SignupCompleteActivity from '../activities/auth/SignupCompleteActivity'
+import SignupIdentityActivity from '../activities/auth/SignupIdentityActivity'
+import SignupPinActivity from '../activities/auth/SignupPinActivity'
+import SignupSmsActivity from '../activities/auth/SignupSmsActivity'
 import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
+import TradeActivity from '../activities/TradeActivity'
+import TradeConfirmActivity from '../activities/TradeConfirmActivity'
+import { detectTheme } from '../shared/utils/detectTheme'
 import { config } from './config'
 
-function detectTheme(): SeedPluginOptions['theme'] {
-  if (typeof navigator === 'undefined') return 'cupertino'
-  return /android/i.test(navigator.userAgent) ? 'android' : 'cupertino'
-}
-
-export const { Stack } = stackflow({
-  config,
+/**
+ * Stackflow bootstrap.
+ *
+ * - Activity 내부 네비: `useFlow()` (push / pop / replace)
+ * - Stack 밖 크롬: `actions` (GlobalBottomNavigation, SignupComplete 등)
+ *
+ * @see docs/stackflow/README.md
+ */
+export const { Stack, actions } = stackflow({  config,
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,
-    BottomSheet: BottomSheetActivity,
-    AlertDialog: AlertDialogActivity,
+    TradeConfirm: TradeConfirmActivity,
+    Trade: TradeActivity,
+    SignupIdentity: SignupIdentityActivity,
+    SignupSms: SignupSmsActivity,
+    SignupAccount: SignupAccountActivity,
+    SignupPin: SignupPinActivity,
+    SignupComplete: SignupCompleteActivity,
     NotFound: NotFoundActivity,
   },
   plugins: [
-    webRendererPlugin(),
+    basicRendererPlugin(),
     seedPlugin(({ initialContext }) => ({
       theme: initialContext?.theme ?? detectTheme(),
     })),

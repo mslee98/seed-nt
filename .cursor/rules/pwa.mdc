@@ -1,0 +1,63 @@
+---
+description: PWA 도입·구현 가이드 — manifest, Service Worker, 오프라인 UX, 설치 UX, Android/iOS 호환성, 토스 스타일 아키텍처
+globs: src/**/*.{ts,tsx},vite.config.ts,index.html,public/**/*
+alwaysApply: true
+---
+
+# PWA
+
+React/Vite/TypeScript 기반 PWA 도입·개선 작업 시 이 룰을 따릅니다. 상세 가이드는 `.agents/skills/pwa/` 참조 파일을 읽습니다.
+
+**핵심 목표**: 모바일 앱처럼 보이는 것이 아니라, 네트워크 불안정·설치·오프라인·업데이트·권한·iOS/Android 차이를 겪어도 자연스럽게 사용할 수 있는 구조.
+
+## 작업 순서
+
+1. **코드 수정 전 프로젝트 분석** — `references/diagnosis.md` 체크리스트로 현재 상태 점검, 진단 보고서 작성
+2. **호환성 검토** — `references/compatibility.md` 매트릭스로 Android/iOS 판단 후 구현
+3. **아키텍처 설계** — `references/architecture.md` 구조·코드 원칙·폴더 배치
+4. **단계별 구현** — `references/phases-and-testing.md` Phase 1→6 순서, 한 번에 전부 구현 금지
+5. **구현 상세** — `references/implementation.md` manifest/SW/오프라인/IndexedDB/Push/업데이트/설치 UX
+
+## 현재 프로젝트 PWA 현황 (기준점)
+
+- 빌드: Vite + `vite-plugin-pwa` + Workbox (`vite.config.ts`)
+- manifest: `VitePWA` 플러그인 인라인 설정
+- 설치 UX: `src/features/home/` (`usePwaInstallPrompt`, `HomeInstallBanner`, `detectInstallPlatform`)
+- 라우팅: Stackflow (Next.js 아님)
+- 신규 PWA 코드는 `src/features/pwa/`로 통합·이전 검토
+
+## 코드 작성 원칙 (토스 스타일)
+
+- **가독성**: 함수명으로 의도 표현, 긍정 조건, magic string 상수화, 주석은 "왜"만
+- **예측 가능성**: 단일 책임, side effect 분리, 브라우저 API는 service/유틸로 래핑
+- **응집도**: PWA 설치·SW·캐시·동기화 코드를 `features/pwa/`에 모음
+- **결합도**: UI → hook → service. 비즈니스 API와 PWA 캐싱 강결합 금지
+
+## Service Worker 캐싱 전략
+
+| 대상 | 전략 |
+|------|------|
+| 앱 Shell | precache |
+| JS/CSS/font | stale-while-revalidate 또는 cache-first |
+| 이미지 | cache-first + max entries + max age |
+| API GET | network-first 또는 stale-while-revalidate |
+| API POST/PUT/PATCH/DELETE | 캐싱 금지, 실패 시 sync queue 검토 |
+| 인증·민감 API | 캐싱 금지 |
+| navigation | offline fallback |
+
+Workbox(vite-plugin-pwa 내장) 사용 권장. 직접 작성 시 유지보수 부담 증가.
+
+## 금지 사항
+
+- 브라우저 분기를 컴포넌트 곳곳에 흩뿌리기
+- 인증/개인정보/민감 데이터 캐싱
+- iOS 불가 기능을 가능한 것처럼 포장
+- Android 전용 기능을 공통 기능처럼 포장
+- 앱 진입 직후 알림 권한 요청
+- PWA 로직을 비즈니스 로직에 강결합
+- 불필요한 파일·hook·provider 과다 생성
+- 호환성 검토 없이 코드부터 작성
+
+## 산출물 형식 (작업 완료 시)
+
+결론 → 현재 구조 진단 → PWA 기능별 적용 가능성 → Android/iOS 호환성 → 권장 아키텍처 → 단계별 계획 → 코드 수정안 → 테스트 방법 → 남은 리스크 → 다음 작업 제안

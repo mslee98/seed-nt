@@ -20,13 +20,13 @@ const NotFoundActivity: ActivityComponentType<'NotFound'> = () => {
         <AppBarMain>404</AppBarMain>
         <AppBarRight />
       </AppBar>
+
       <AppScreenContent>
         <VStack
           minHeight="full"
           align="center"
           justify="center"
           gap="spacingY.componentDefault"
-          bg="bg.layerDefault"
           px="spacingX.globalGutter"
         >
           <Text textStyle="screenTitle" color="fg.neutral">

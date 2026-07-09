@@ -1,14 +1,35 @@
 import { defineConfig } from '@stackflow/config'
 
+import type { SignupAccountStep, SignupPinStep } from '../features/auth/constants'
+
 declare module '@stackflow/config' {
   interface Register {
     Home: {}
     Detail: {
       id: string
     }
+    TradeConfirm: {
+      side: string
+      amountKrw: string
+      splitMode?: string
+    }
+    Trade: {
+      tradeId?: string
+      splitGroupId?: string
+      focusLeg?: string
+    }
+    SignupIdentity: {}
+    SignupSms: {
+      phone: string
+    }
+    SignupAccount: {
+      step?: SignupAccountStep
+    }
+    SignupPin: {
+      step?: SignupPinStep
+    }
+    SignupComplete: {}
     NotFound: {}
-    BottomSheet: {}
-    AlertDialog: {}
   }
 }
 
@@ -23,12 +44,32 @@ export const config = defineConfig({
       route: '/detail/:id',
     },
     {
-      name: 'BottomSheet',
-      route: '/sheet',
+      name: 'TradeConfirm',
+      route: '/trade/confirm',
     },
     {
-      name: 'AlertDialog',
-      route: '/dialog',
+      name: 'Trade',
+      route: '/trade',
+    },
+    {
+      name: 'SignupIdentity',
+      route: '/auth/signup/identity',
+    },
+    {
+      name: 'SignupSms',
+      route: '/auth/signup/sms',
+    },
+    {
+      name: 'SignupAccount',
+      route: '/auth/signup/account',
+    },
+    {
+      name: 'SignupPin',
+      route: '/auth/signup/pin',
+    },
+    {
+      name: 'SignupComplete',
+      route: '/auth/signup/complete',
     },
     {
       name: 'NotFound',
