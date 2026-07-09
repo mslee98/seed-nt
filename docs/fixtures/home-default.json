@@ -1,0 +1,13 @@
+{
+  "user": {
+    "id": "user-1",
+    "nickname": "Brit유저",
+    "isVerified": true
+  },
+  "wallet": {
+    "coinBalance": 2000000,
+    "estimatedKrwValue": 2000000
+  },
+  "unreadNotificationCount": 2,
+  "recentTrades": []
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "trade-1",
+    "type": "BUY",
+    "status": "COMPLETED",
+    "amountKrw": 50000,
+    "coinAmount": 50000,
+    "completedAt": "2026-07-05T14:30:00.000Z"
+  },
+  {
+    "id": "trade-2",
+    "type": "SELL",
+    "status": "COMPLETED",
+    "amountKrw": 120000,
+    "coinAmount": 120000,
+    "completedAt": "2026-07-03T09:15:00.000Z"
+  },
+  {
+    "id": "trade-3",
+    "type": "BUY",
+    "status": "CANCELLED",
+    "amountKrw": 30000,
+    "coinAmount": 30000,
+    "completedAt": "2026-06-28T18:00:00.000Z"
+  },
+  {
+    "id": "trade-active-1",
+    "type": "BUY",
+    "status": "PAYMENT_REPORTED",
+    "amountKrw": 100000,
+    "coinAmount": 100000,
+    "completedAt": "2026-07-06T11:20:00.000Z"
+  }
+]

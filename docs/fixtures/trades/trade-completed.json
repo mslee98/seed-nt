@@ -1,0 +1,14 @@
+{
+  "id": "trade-completed-1",
+  "side": "BUY",
+  "role": "BUYER",
+  "status": "COMPLETED",
+  "amountKrw": 100000,
+  "coinAmount": 100000,
+  "version": 5,
+  "matchingStartedAt": "2026-07-09T08:00:00+09:00",
+  "updatedAt": "2026-07-09T08:20:00+09:00",
+  "completedAt": "2026-07-09T08:20:00+09:00",
+  "actions": [],
+  "counterpartyNickname": "판매자"
+}

@@ -1,0 +1,19 @@
+{
+  "trade": {
+    "id": "t2",
+    "status": "DISPUTED",
+    "version": 5,
+    "amountKrw": 500000,
+    "splitLegIndex": 2
+  },
+  "dispute": {
+    "id": "disp-1",
+    "tradeId": "t2",
+    "splitGroupId": "split-disputed",
+    "splitLegIndex": 2,
+    "status": "OPEN",
+    "reason": "NOT_RECEIVED",
+    "resolution": null,
+    "createdAt": "2026-07-09T09:00:00+09:00"
+  }
+}

@@ -1,3 +1,6 @@
+> **문서 위치 안내:** **종합** [docs/architecture/trade-platform-summary.md](../architecture/trade-platform-summary.md).  
+> 도메인 요약은 [docs/domains/trade.md](../domains/trade.md)를 먼저 참고하세요.
+
 # Brit 거래 시스템 프로세스 설계
 
 이 문서는 **Brit** 송금·거래 시스템의 UI/UX 흐름과 비즈니스 프로세스를 정의합니다.  
@@ -278,20 +281,22 @@ Wallet(coinBalance) → GiftCatalog 선택 → PIN 확인 → GiftOrder 생성
 
 ---
 
-## 8. 비즈니스 규칙 — 결정이 필요한 항목
+## 8. 비즈니스 규칙 — 확정·미결정
 
-대화하면서 채워갈 체크리스트:
+**종합:** [trade-platform-summary.md](../architecture/trade-platform-summary.md) §2, §12.
 
-| # | 질문 | 옵션 |
+| # | 항목 | 결정 |
 |---|------|------|
-| 1 | 입금 대기 시간 | 15분 / 30분 / 1시간 |
-| 2 | 입금 신고 후 판매자 무응답 | 자동 완료? CS 개입? |
-| 3 | 허위 입금 신고 | 제재·신뢰 점수·일시 정지 |
-| 4 | 동시 active trade | 1건 고정 vs N건 |
-| 5 | 수수료 | 없음 / MS 차감 / KRW 별도 |
-| 6 | 최소 거래 단위 | 현재 1만원 — 유지? |
-| 7 | 야간·공휴일 | 거래 제한 여부 |
-| 8 | 분쟁 처리 | 1:1 채팅? CS 티켓? |
+| 1 | 동시 active trade | **split 1세트** (B-1) |
+| 2 | 입금 대기 | **30분** (초안) |
+| 3 | 입금 신고 후 판매자 무응답 | **CS만**, 자동 완료 없음 |
+| 4 | 허위 입금 | 철회 10분 / `deny-payment` → 분쟁 ([trade-disputes.md](./trade-disputes.md)) |
+| 5 | 분쟁 | 인앱 채팅 + CS resolve (M2) |
+| 6 | C2C 수수료 | 없음 (MVP) |
+| 7 | C2B 커미션 | **보류** ([merchant.md](../domains/merchant.md)) |
+| 8 | 입금 UX | 딥링크·메모·다이얼로그 ([trade-payment-ux.md](./trade-payment-ux.md)) |
+
+미결: NEAR_TOLERANCE, BUY split, leg EXPIRED 정책, `MS_TO_KRW` 통일.
 
 ---
 
@@ -348,12 +353,7 @@ interface Wallet {
 
 ## 11. 다음에 함께 정할 것
 
-문서를 구체화하려면 아래부터 결정하는 것이 좋습니다.
-
-1. **입금 확인 주체** — 판매자 수동 확인만? 일정 시간 후 자동 완료?
-2. **동시 거래** — 한 사용자가 여러 건 동시에 가능한지?
-3. **매칭 방식** — 정확 금액만? 부분 매칭 허용?
-4. **첫 MVP 범위** — Split·알림·분쟁 중 어디까지?
+[trade-platform-summary.md](../architecture/trade-platform-summary.md) §12 참고. 우선 구현: C2C Trade Activity + 위젯.
 
 ---
 

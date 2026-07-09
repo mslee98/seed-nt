@@ -1,0 +1,13 @@
+{
+  "pendingNotifications": [
+    {
+      "type": "TRADE_BOUND",
+      "splitGroupId": "split-binding",
+      "focusLeg": 2,
+      "tradeId": "t2",
+      "orderId": "o2",
+      "amountKrw": 500000,
+      "message": "매칭됐어요 · 이○○님과 거래할 수 있어요"
+    }
+  ]
+}
