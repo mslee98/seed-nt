@@ -19,7 +19,7 @@ import {
   isQueueLocked,
 } from '../matching/utils/matchingPhase'
 import type { TradeRecord } from '../types'
-import { getMatchingHeroCopy } from '../utils/matchingCopy'
+import { getMatchingHeroCopy } from '../copy'
 import { MatchingCandidateList } from './MatchingCandidateList'
 import { PushEnableCard } from './PushEnableCard'
 import { TradeMotion } from './TradeMotion'
@@ -148,7 +148,7 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
           <Badge tone="warning" variant="weak" size="medium">
             {statusBadgeLabel}
           </Badge>
-          <Text textStyle="t5Bold" color="fg.neutral">
+          <Text textStyle="t6Bold" color="fg.neutral">
             {heroCopy.title}
           </Text>
           {heroCopy.description && (

@@ -2,7 +2,7 @@ import { Badge, Text, VStack } from '@seed-design/react'
 import { List, ListItem } from 'seed-design/ui/list'
 
 import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
-import { getTradeStatusCopy } from '../../home/utils/tradeStatusCopy'
+import { getTradeStatusCopy } from '../../trade/copy'
 import type { TradeStatus } from '../../home/types'
 import { useTransactionsViewModel } from '../hooks/useTransactionsViewModel'
 import type { TransactionItem } from '../types'

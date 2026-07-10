@@ -1,5 +1,5 @@
 import { useActivity, useFlow } from '@stackflow/react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBooleanState } from 'react-simplikit'
 
 import { useRequireAuth } from '../../auth/hooks/useRequireAuth'
@@ -14,7 +14,8 @@ import {
   isSplitGroupInProgress,
   isTerminalStatus,
 } from '../../trade/stores/tradeSession.store'
-import { getHomeActiveTradeCopy } from '../utils/getHomeActiveTradeCopy'
+import { getHomeActiveTradeCopy } from '../../trade/copy'
+import { consumePendingBalanceReplay } from '../stores/homeWallet.store'
 import { useHomeViewModel } from './useHomeViewModel'
 import { useTradeInputState } from './useTradeInputState'
 
@@ -36,9 +37,9 @@ export function useHomeScreen() {
   const splitGroup = useActiveSplitGroup()
   const tradeInput = useTradeInputState({ coinBalance: viewModel.wallet.coinBalance })
   const { replayKey: balanceReplayKey, triggerReplay: triggerBalanceReplay } = useAmountReplay()
+  const [balanceStartCoin, setBalanceStartCoin] = useState(0)
 
   const [confirmOpen, openConfirm, closeConfirm] = useBooleanState(false)
-  const prevTradeStatusRef = useRef(activeTrade?.status)
 
   const hasBlockingTrade =
     isSplitGroupInProgress() ||
@@ -111,26 +112,35 @@ export function useHomeScreen() {
     }
   }, [activeTrade, headerActiveTrade, push, splitGroup])
 
+  /** AnimateNumber 마운트·레이아웃 후 replay (첫 프레임 최종값 플래시 방지) */
+  const scheduleBalanceReplay = useCallback(
+    (startCoin: number) => {
+      setBalanceStartCoin(startCoin)
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          triggerBalanceReplay()
+        })
+      })
+    },
+    [triggerBalanceReplay],
+  )
+
   const handlePtrRefresh = useCallback(async () => {
+    const startCoin = viewModel.wallet.coinBalance
     await viewModel.refresh()
-    triggerBalanceReplay()
-  }, [triggerBalanceReplay, viewModel])
+    scheduleBalanceReplay(startCoin)
+  }, [scheduleBalanceReplay, viewModel])
 
-  const refreshBalance = useCallback(async () => {
-    await viewModel.refresh()
-    triggerBalanceReplay()
-  }, [triggerBalanceReplay, viewModel])
-
+  /** 거래 완료 후 Home 복귀 시 pending replay */
   useEffect(() => {
-    const prevStatus = prevTradeStatusRef.current
-    const nextStatus = activeTrade?.status
+    if (!isActive) return
 
-    if (prevStatus !== 'COMPLETED' && nextStatus === 'COMPLETED' && isActive) {
-      void refreshBalance()
-    }
+    const pending = consumePendingBalanceReplay()
+    if (!pending) return
 
-    prevTradeStatusRef.current = nextStatus
-  }, [activeTrade, isActive, refreshBalance])
+    scheduleBalanceReplay(pending.from)
+  }, [isActive, scheduleBalanceReplay, viewModel.wallet.coinBalance])
 
   const handleConfirmOpenChange = useCallback(
     (open: boolean) => {
@@ -145,6 +155,7 @@ export function useHomeScreen() {
     viewModel,
     tradeInput,
     balanceReplayKey,
+    balanceStartCoin,
     confirmOpen,
     openConfirm,
     closeConfirm,

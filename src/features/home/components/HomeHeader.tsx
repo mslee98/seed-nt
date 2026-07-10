@@ -10,12 +10,14 @@ import {
   VStack,
 } from '@seed-design/react'
 
+import { PressableScale } from '../../../shared/ui/PressableScale'
+
 import LogoBrit from '../../../assets/logo-brit.svg?react'
 import IconCoinDollarSyncFill from '../../../assets/icons/icon-coin-dollar-sync-fill.svg?react'
 import type { HomeViewModel } from '../types'
 import type { SplitGroup } from '../../trade/types'
 import { formatAmount } from '../utils/formatAmount'
-import { getHomeActiveTradeCopy } from '../utils/getHomeActiveTradeCopy'
+import { getHomeActiveTradeCopy } from '../../trade/copy'
 import { HomeInstallBanner } from './HomeInstallBanner'
 
 interface HomeActiveTradeCopy {
@@ -62,16 +64,21 @@ export function HomeHeader({
             role="img"
           />
 
-          <Box
-            as="button"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            width="40px"
-            height="40px"
-            borderRadius="r2"
-            color="fg.neutralSubtle"
+          <PressableScale
             aria-label={hasUnreadNotification ? '읽지 않은 알림 있음' : '알림'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              padding: 0,
+              border: 'none',
+              background: 'transparent',
+              borderRadius: 'var(--seed-radius-r2)',
+              color: 'var(--seed-color-fg-neutral-subtle)',
+              cursor: 'pointer',
+            }}
           >
             <HStack position="relative" align="flex-start">
               <Icon svg={<IconBellLine />} size="x6" />
@@ -90,14 +97,14 @@ export function HomeHeader({
                 </NotificationBadgePositioner>
               )}
             </HStack>
-          </Box>
+          </PressableScale>
         </HStack>
 
         {!compact && (
           <VStack gap="spacingY.betweenText">
             <HStack align="center" gap="x2">
               <IconCoinDollarSyncFill width={40} height={40} aria-hidden />
-              <Text textStyle="screenTitle" color="fg.neutral">
+              <Text textStyle="screenTitle" color="fg.neutral" className="typo-title-tight">
                 필요한 만큼{'\n'}쉽게 거래해요
               </Text>
             </HStack>

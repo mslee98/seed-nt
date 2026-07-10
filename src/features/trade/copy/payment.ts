@@ -8,10 +8,6 @@ export function getPaymentHeroDescription(coinLabel: string): string {
   return `입금 확인 후 ${coinLabel}이 지급돼요`
 }
 
-export function getPaymentMemoCalloutDescription(): string {
-  return '입금 확인을 위해 송금 메모에 입력해 주세요.'
-}
-
 export function getPaymentFooterDismissHint(): string {
   return '시트를 닫아도 거래는 유지돼요.'
 }
@@ -20,12 +16,32 @@ export function getPaymentFooterReportHint(): string {
   return '입금 후 [입금했어요]를 누르면 상대에게 알림이 전송돼요.'
 }
 
+export function getPaymentReportedBuyerBadge(): string {
+  return '입금 확인 중'
+}
+
 export function getPaymentReportedBuyerTitle(): string {
-  return '입금 확인을 기다리고 있어요'
+  return '입금 완료를 알렸어요'
 }
 
 export function getPaymentReportedBuyerDescription(): string {
-  return '상대가 확인하면 코인이 지급돼요.'
+  return '판매자가 입금을 확인하고 있어요'
+}
+
+export function getPaymentReportedBuyerOutcome(coinLabel: string): string {
+  return `확인이 완료되면 ${coinLabel}이 자동으로 지급돼요.`
+}
+
+export function getPaymentReportedBuyerStatusLine(): string {
+  return '판매자 확인 대기'
+}
+
+export function getPaymentReportedBuyerReassuranceLines(): readonly [string, string] {
+  return ['앱을 닫아도 거래는 계속 진행돼요.', '확인 결과는 알림으로 알려드릴게요.']
+}
+
+export function getPaymentReportedBuyerDelayHint(): string {
+  return '확인이 늦어지면 거래 내역에서 문의할 수 있어요.'
 }
 
 export function getPaymentCountdownCopy(

@@ -2,7 +2,7 @@ import { Badge, Text, VStack } from '@seed-design/react'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
 import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
-import { getTradeStatusCopy } from '../../home/utils/tradeStatusCopy'
+import { getTradeStatusCopy } from '../copy'
 import type { TradeStatus } from '../../home/types'
 import { getMockTransactionById } from '../../transactions/mocks/transactions.mock'
 

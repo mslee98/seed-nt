@@ -1,6 +1,6 @@
-import type { TradeStatus } from '../types'
-import type { MatchingSession } from '../../trade/matching/types'
-import { getTradeStatusCopy } from './tradeStatusCopy'
+import type { TradeStatus } from '../../home/types'
+import type { MatchingSession } from '../matching/types'
+import { getTradeStatusCopy } from './tradeStatus'
 
 interface HomeActiveTradeCopy {
   badge: string

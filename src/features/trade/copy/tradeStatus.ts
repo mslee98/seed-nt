@@ -1,4 +1,4 @@
-import type { TradeStatus } from '../types'
+import type { TradeStatus } from '../../home/types'
 
 interface TradeStatusCopy {
   badge: string
@@ -25,7 +25,7 @@ const PAYMENT_PENDING_COPY: Record<TradeRole, TradeStatusCopy> = {
   BUYER: {
     badge: '진행 중',
     title: '입금해 주세요',
-    description: '입금 후 보냈어요를 눌러주세요.',
+    description: '입금 후 입금했어요를 눌러주세요.',
   },
   SELLER: {
     badge: '진행 중',
@@ -36,9 +36,9 @@ const PAYMENT_PENDING_COPY: Record<TradeRole, TradeStatusCopy> = {
 
 const PAYMENT_REPORTED_COPY: Record<TradeRole, TradeStatusCopy> = {
   BUYER: {
-    badge: '진행 중',
-    title: '판매자가 입금을 확인하고 있어요',
-    description: '확인이 끝나면 코인이 들어와요.',
+    badge: '입금 확인 중',
+    title: '입금 완료를 알렸어요',
+    description: '판매자가 입금을 확인하고 있어요',
   },
   SELLER: {
     badge: '진행 중',
