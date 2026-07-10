@@ -20,4 +20,17 @@
     var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) +
       var(--seed-dimension-x6)
   );
+  --keyboard-inset: 0px;
+}
+
+.bottom-cta {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-frame-max-width);
+  z-index: var(--app-sticky-footer-z-index);
+  background: var(--seed-color-bg-neutral-weak);
+  bottom: calc(var(--bottom-cta-offset, 0px) + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
 }

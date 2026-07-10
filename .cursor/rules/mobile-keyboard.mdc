@@ -1,0 +1,72 @@
+---
+description: 모바일 키패드·BottomCTA — VisualViewport inset, Activity/시트 공통 CTA
+globs: src/**/*.{ts,tsx},src/app/styles/layout.css
+alwaysApply: false
+---
+
+# Mobile Keyboard & BottomCTA
+
+모바일 키패드 대응과 하단 CTA 공통 규칙입니다.
+
+## 인프라
+
+| 파일 | 역할 |
+|------|------|
+| [`useKeyboardInset.ts`](src/shared/hooks/useKeyboardInset.ts) | VisualViewport → `--keyboard-inset` |
+| [`KeyboardInsetProvider`](src/app/providers/KeyboardInsetProvider.tsx) | 앱 루트 1회 구독 ([`App.tsx`](src/App.tsx)) |
+| [`BottomCTA`](src/shared/ui/BottomCTA.tsx) | Activity viewport 하단 고정 CTA |
+| [`BottomSheetBottomCTA`](src/shared/ui/BottomSheetBottomCTA.tsx) | `BottomSheetFooter` 내부 inset |
+
+Android Chromium: `navigator.virtualKeyboard.overlaysContent = true` (optional, feature detect).
+
+## BottomCTA behavior
+
+| behavior | 용도 |
+|----------|------|
+| `keyboardAdaptive` (기본) | TextField 있는 Activity — CTA가 키보드 위로 |
+| `fixed` | 입력 없는 완료·확인 화면, 대부분 BottomSheet |
+| `hiddenWhenKeyboard` | 긴 폼 예외 — 키보드 열리면 CTA 숨김 |
+
+## 사용법
+
+### Activity (`ActivityScreenLayout`)
+
+```tsx
+<ActivityScreenLayout
+  bottomCTABehavior="keyboardAdaptive"  // SignupIdentity, SignupAccount
+  fixedBottom={<ActionButton size="large">다음</ActionButton>}
+>
+```
+
+입력 없음 → `bottomCTABehavior="fixed"` (SignupComplete, TradeConfirm).
+
+### BottomSheet
+
+```tsx
+<BottomSheetFooter>
+  <BottomSheetBottomCTA behavior="fixed">
+    <ActionButton size="large">확인</ActionButton>
+  </BottomSheetBottomCTA>
+</BottomSheetFooter>
+```
+
+## 플랫폼
+
+- **iOS Safari / PWA**: `visualViewport` resize + scroll, rAF 디바운스
+- **Android Chrome**: VisualViewport + optional VirtualKeyboard API
+- **Desktop**: inset ≈ 0 → safe-area만
+
+## 금지
+
+- `paddingBottom: 300px` 하드코딩
+- 화면마다 키보드 listener 중복 (Provider 1곳만)
+- `100vh` — shell은 `min-h-dvh` ([`MobileFrame`](src/app/layouts/MobileFrame.tsx))
+
+## 테스트
+
+1. SignupIdentity — 이름/전화 입력 시 CTA가 키보드 위
+2. SignupAccount — 계좌번호 입력
+3. iOS PWA standalone + Android Chrome
+4. Desktop — CTA 위치·너비(616px) 정상
+
+관련: [mobile-motion.mdc](mobile-motion.mdc), [consumer-ux.mdc](consumer-ux.mdc)
