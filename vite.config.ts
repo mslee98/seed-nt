@@ -54,25 +54,16 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
-        globIgnores: ['**/apng/**', '**/lotties/**'],
+        globIgnores: ['**/motion/**', '**/apng/**', '**/lotties/**'],
         maximumFileSizeToCacheInBytes: 1_500_000,
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
-            urlPattern: /\/apng\/.+\.png$/i,
+            urlPattern: /\/motion\/.+\.apng$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'brit-apng',
+              cacheName: 'brit-motion',
               expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/lotties\/.+\.json$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'brit-lottie',
-              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 30 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

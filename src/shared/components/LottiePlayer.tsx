@@ -8,8 +8,15 @@ const Lottie = (
   'default' in LottieImport ? LottieImport.default : LottieImport
 ) as ComponentType<LottieComponentProps>
 
+const DEFAULT_RENDERER_SETTINGS: LottieComponentProps['rendererSettings'] = {
+  preserveAspectRatio: 'xMidYMid meet',
+  progressiveLoad: true,
+}
+
 interface LottiePlayerProps {
-  src: string
+  animationData?: object
+  loadAnimation?: () => Promise<object>
+  mountWhen?: boolean
   className?: string
   loop?: boolean
   autoplay?: boolean
@@ -17,42 +24,57 @@ interface LottiePlayerProps {
 }
 
 export function LottiePlayer({
-  src,
+  animationData: animationDataProp,
+  loadAnimation,
+  mountWhen = true,
   className,
   loop = false,
   autoplay = true,
   size = 80,
 }: LottiePlayerProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
-  const [animationData, setAnimationData] = useState<object | null>(null)
+  const [loadedAnimationData, setLoadedAnimationData] = useState<object | null>(
+    animationDataProp ?? null,
+  )
 
   useEffect(() => {
+    if (!mountWhen || animationDataProp) {
+      setLoadedAnimationData(animationDataProp ?? null)
+      return
+    }
+
+    if (!loadAnimation) {
+      setLoadedAnimationData(null)
+      return
+    }
+
     let cancelled = false
-    fetch(src)
-      .then((res) => res.json())
+    void loadAnimation()
       .then((data) => {
-        if (!cancelled) setAnimationData(data)
+        if (!cancelled) setLoadedAnimationData(data)
       })
       .catch(() => {
-        if (!cancelled) setAnimationData(null)
+        if (!cancelled) setLoadedAnimationData(null)
       })
+
     return () => {
       cancelled = true
     }
-  }, [src])
+  }, [animationDataProp, loadAnimation, mountWhen])
 
-  if (!animationData) return null
+  if (!mountWhen || !loadedAnimationData) return null
 
   const shouldLoop = prefersReducedMotion ? false : loop
   const shouldAutoplay = prefersReducedMotion ? false : autoplay
 
   return (
     <Lottie
-      animationData={animationData}
+      animationData={loadedAnimationData}
       loop={shouldLoop}
       autoplay={shouldAutoplay}
       className={className}
       style={{ width: size, height: size }}
+      rendererSettings={DEFAULT_RENDERER_SETTINGS}
     />
   )
 }

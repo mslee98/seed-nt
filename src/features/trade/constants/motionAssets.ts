@@ -1,3 +1,5 @@
+import type { LottieAssetKey } from '../../../assets/lottie/lottieRegistry'
+
 export type MotionAssetKey =
   | 'matching'
   | 'completed'
@@ -6,41 +8,49 @@ export type MotionAssetKey =
   | 'waitingPayment'
   | 'disputed'
 
-export interface MotionAsset {
-  type: 'lottie' | 'apng'
+export type ApngMotionAsset = {
+  type: 'apng'
   src: string
   defaultLoop: boolean
 }
 
+export type LottieMotionAsset = {
+  type: 'lottie'
+  lottieKey: LottieAssetKey
+  defaultLoop: boolean
+}
+
+export type MotionAsset = ApngMotionAsset | LottieMotionAsset
+
 export const MOTION_ASSETS: Record<MotionAssetKey, MotionAsset> = {
   matching: {
     type: 'apng',
-    src: '/apng/moneybag-rotate-apng.png',
+    src: '/motion/moneybag-rotate.v1.apng',
     defaultLoop: true,
   },
   completed: {
     type: 'lottie',
-    src: '/lotties/Success.json',
+    lottieKey: 'success',
     defaultLoop: false,
   },
   waitingConfirm: {
     type: 'apng',
-    src: '/apng/moneybag-loop-400-apng.png',
+    src: '/motion/moneybag-loop.v1.apng',
     defaultLoop: true,
   },
   paymentTransfer: {
     type: 'lottie',
-    src: '/lotties/money-winds-loop.json',
+    lottieKey: 'moneyWindsLoop',
     defaultLoop: true,
   },
   waitingPayment: {
     type: 'apng',
-    src: '/apng/flying-coin-won-slow-apng.png',
+    src: '/motion/flying-coin-won.v1.apng',
     defaultLoop: true,
   },
   disputed: {
     type: 'apng',
-    src: '/apng/money-protect-confetti-apng.png',
+    src: '/motion/money-protect.v1.apng',
     defaultLoop: true,
   },
 }
