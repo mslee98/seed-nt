@@ -4,7 +4,6 @@
  * 제거 시:
  * 1. 이 파일 삭제
  * 2. tradeSession.store.ts 의 import + onPaymentReportedDevMock / clearDevPaymentSimulation 호출 제거
- * 3. (선택) TradePaymentBottomSheet 의 [목업] 입금 확인 건너뛰기 제거
  */
 
 const DEV_SELLER_CONFIRM_MIN_MS = 3_000

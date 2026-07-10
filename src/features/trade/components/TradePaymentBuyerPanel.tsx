@@ -13,27 +13,22 @@ import {
   getPaymentFooterReportHint,
   getPaymentHeroDescription,
   getPaymentHeroTitle,
-  getPaymentMemoCalloutDescription,
-} from '../utils/paymentCopy'
-import { formatPaymentMemo } from '../utils/paymentMemo'
+} from '../copy'
 
 interface TradePaymentBuyerPanelProps {
   trade: TradeDetailViewModel
   onAccountCopied?: () => void
-  onMemoCopied?: () => void
   onCopyFailed?: () => void
 }
 
 export function TradePaymentBuyerPanel({
   trade,
   onAccountCopied,
-  onMemoCopied,
   onCopyFailed,
 }: TradePaymentBuyerPanelProps) {
   const sellerAccount = trade.sellerAccount
   if (!sellerAccount) return null
 
-  const paymentMemo = formatPaymentMemo(trade.id, trade.splitLegIndex)
   const amountLabel = formatAmount(trade.amountKrw)
   const coinLabel = formatCoinAmount(trade.amountKrw)
 
@@ -53,15 +48,6 @@ export function TradePaymentBuyerPanel({
     const copied = await copyToClipboard(sellerAccount.accountNumber)
     if (copied) {
       onAccountCopied?.()
-    } else {
-      onCopyFailed?.()
-    }
-  }
-
-  const handleCopyMemo = async () => {
-    const copied = await copyToClipboard(paymentMemo)
-    if (copied) {
-      onMemoCopied?.()
     } else {
       onCopyFailed?.()
     }
@@ -108,21 +94,6 @@ export function TradePaymentBuyerPanel({
           <Text textStyle="t4Regular" color="fg.neutralMuted">
             예금주 {sellerAccount.holderName}
           </Text>
-        </VStack>
-      </SummaryListCard>
-
-      <SummaryListCard>
-        <ListHeader as="h3" variant="mediumWeak">
-          받는 분 메모
-        </ListHeader>
-        <VStack gap="x3" width="full" p="x4" pt="x0">
-          <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
-            {paymentMemo}
-          </Text>
-          <Callout tone="informative" description={getPaymentMemoCalloutDescription()} />
-          <ActionButton size="medium" variant="neutralWeak" flexGrow onClick={handleCopyMemo}>
-            메모 복사
-          </ActionButton>
         </VStack>
       </SummaryListCard>
 

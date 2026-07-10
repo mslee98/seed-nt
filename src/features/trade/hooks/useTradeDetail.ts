@@ -4,7 +4,6 @@ import {
   cancelTrade,
   confirmPayment,
   denyPayment,
-  devForceCompletePayment,
   getTradeDetail,
   reportPayment,
   subscribeTradeSession,
@@ -47,11 +46,6 @@ export function useTradeDetail(tradeId: string) {
     return cancelTrade(current.id, current.version)
   }, [resolveLiveTrade])
 
-  const devForceCompletePaymentAction = useCallback(async () => {
-    const current = resolveLiveTrade()
-    return devForceCompletePayment(current.id)
-  }, [resolveLiveTrade])
-
   const denyPaymentAction = useCallback(async () => {
     const current = resolveLiveTrade()
     return denyPayment(current.id, current.version)
@@ -63,6 +57,5 @@ export function useTradeDetail(tradeId: string) {
     confirmPayment: confirmPaymentAction,
     denyPayment: denyPaymentAction,
     cancelTrade: cancelAction,
-    devForceCompletePayment: devForceCompletePaymentAction,
   }
 }

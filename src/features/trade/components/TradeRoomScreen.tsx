@@ -1,5 +1,5 @@
-import { VStack } from '@seed-design/react'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { HStack, VStack } from '@seed-design/react'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 
 import type { MatchingCandidate } from '../matching/types'
 import type { TradeDetailViewModel } from '../types'
@@ -11,6 +11,9 @@ interface TradeRoomScreenProps {
   onContinueTrade?: () => void
   onGoHome: () => void
   onSelectMatchingCandidate?: (candidate: MatchingCandidate) => void
+  onCopyAccount?: () => void
+  onCopyFailed?: () => void
+  onContactSupport?: () => void
 }
 
 function getContinueTradeLabel(trade: TradeDetailViewModel): string | null {
@@ -25,6 +28,9 @@ export function TradeRoomScreen({
   onContinueTrade,
   onGoHome,
   onSelectMatchingCandidate,
+  onCopyAccount,
+  onCopyFailed,
+  onContactSupport,
 }: TradeRoomScreenProps) {
   if (trade.status === 'MATCHING') {
     return (
@@ -47,15 +53,17 @@ export function TradeRoomScreen({
       >
         <TradeRoomPanel trade={trade} />
         <VStack gap="x3" flexGrow justify="flex-end">
-          <ActionButton size="large" variant="brandSolid" onClick={onGoHome}>
+          <BottomActionButton size="large" variant="brandSolid" onClick={onGoHome}>
             홈으로
-          </ActionButton>
+          </BottomActionButton>
         </VStack>
       </VStack>
     )
   }
 
   const continueLabel = getContinueTradeLabel(trade)
+  const isBuyerWaiting =
+    trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER'
 
   return (
     <VStack
@@ -66,12 +74,38 @@ export function TradeRoomScreen({
       pb="spacingY.screenBottom"
       gap="x6"
     >
-      <TradeRoomPanel trade={trade} />
+      <TradeRoomPanel
+        trade={trade}
+        onAccountCopied={onCopyAccount}
+        onCopyFailed={onCopyFailed}
+      />
+      {isBuyerWaiting && trade.sellerAccount && onCopyAccount && onContactSupport && (
+        <VStack gap="x3" flexGrow justify="flex-end">
+          <HStack gap="x2" width="full">
+            <BottomActionButton
+              size="large"
+              variant="neutralWeak"
+              flexGrow
+              onClick={onCopyAccount}
+            >
+              계좌 다시 보기
+            </BottomActionButton>
+            <BottomActionButton
+              size="large"
+              variant="neutralOutline"
+              flexGrow
+              onClick={onContactSupport}
+            >
+              문의하기
+            </BottomActionButton>
+          </HStack>
+        </VStack>
+      )}
       {continueLabel && onContinueTrade && (
         <VStack gap="x3" flexGrow justify="flex-end">
-          <ActionButton size="large" variant="brandSolid" onClick={onContinueTrade}>
+          <BottomActionButton size="large" variant="brandSolid" onClick={onContinueTrade}>
             {continueLabel}
-          </ActionButton>
+          </BottomActionButton>
         </VStack>
       )}
     </VStack>

@@ -1,6 +1,8 @@
 import { useActivity, useActivityParams, useFlow } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
+import { showSnackbar } from '../../../shared/utils/showSnackbar'
 import {
   focusSplitLegTrade,
   getActiveSplitGroup,
@@ -11,6 +13,7 @@ import {
 } from '../stores/tradeSession.store'
 import type { SplitLegViewModel } from '../types/splitDashboard'
 import { mapSplitGroupToDashboard } from '../utils/mapSplitDashboard'
+import { copyToClipboard } from '../utils/copyToClipboard'
 import { shouldOpenPaymentSheet, getPaymentSheetAutoOpenKey } from '../utils/tradeSheetPolicy'
 import { useMatchingAcceptSheet } from './useMatchingAcceptSheet'
 import { useTradeSession } from './useTradeSession'
@@ -25,6 +28,7 @@ export function useTradeScreen() {
   const { isActive } = useActivity()
   const { tradeId, splitGroupId, focusLeg } = useActivityParams<'Trade'>()
   const { push, replace } = useFlow()
+  const snackbar = useSnackbarAdapter()
 
   const [paymentSheetTradeId, setPaymentSheetTradeId] = useState<string | null>(null)
   const [disputeSheetLeg, setDisputeSheetLeg] = useState<SplitLegViewModel | null>(null)
@@ -128,6 +132,29 @@ export function useTradeScreen() {
     replace('Home', {}, { animate: true })
   }, [replace])
 
+  const handleCopyAccount = useCallback(async () => {
+    const targetId = tradeId ?? paymentSheetTradeId
+    if (!targetId) return
+
+    const trade = getTradeDetail(targetId)
+    if (!trade?.sellerAccount) return
+
+    const copied = await copyToClipboard(trade.sellerAccount.accountNumber)
+    if (copied) {
+      showSnackbar(snackbar, '계좌번호를 복사했어요.')
+    } else {
+      showSnackbar(snackbar, '복사하지 못했어요.', 'critical')
+    }
+  }, [paymentSheetTradeId, snackbar, tradeId])
+
+  const handleCopyAccountFailed = useCallback(() => {
+    showSnackbar(snackbar, '복사하지 못했어요.', 'critical')
+  }, [snackbar])
+
+  const handleContactSupport = useCallback(() => {
+    push('Detail', { id: 'transactions' }, { animate: true })
+  }, [push])
+
   useEffect(() => {
     autoSheetKeyRef.current = null
     focusHandledRef.current = null
@@ -218,6 +245,9 @@ export function useTradeScreen() {
     handleBrowseStore,
     handleBrowseCommunity,
     handleGoHome,
+    handleCopyAccount,
+    handleCopyAccountFailed,
+    handleContactSupport,
     openPaymentSheet,
     acceptOpen: acceptSheet.acceptOpen,
     acceptCandidate: acceptSheet.acceptCandidate,

@@ -41,6 +41,10 @@ MSW·백엔드 stub·통합 테스트용 JSON fixture입니다.
 | `matching/candidates-100000.json` | `matchingSession.mock.ts` |
 | `auth/*.json` | `auth.api.ts` |
 
+## DEV 입금 완료 시뮬레이션
+
+로컬 DEV에서는 `scenarios.json`으로 입금 대기 거래를 로드한 뒤, 구매자가 「입금했어요」를 누르면 `devPaymentSimulation.mock.ts`가 판매자 `confirmPayment`를 3–8초 후 자동 호출해 완료 플로우를 확인할 수 있어요. 프로덕션 UI에는 DEV 전용 버튼이 없습니다.
+
 ## 환율
 
 현재 fixture는 프론트 코드 기준 **`coinAmount = amountKrw`** (1:1)입니다.  

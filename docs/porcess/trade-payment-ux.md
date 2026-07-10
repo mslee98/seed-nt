@@ -24,7 +24,6 @@ Binding 이후 **원화 입금**을 사용자가 편하게 하고, 판매자 확
 
   2건 · 50만 원
   카카오뱅크 3333-**-***3  김○○
-  받는 분 메모: BRIT-t2-2
 
   [카카오뱅크으로 보내기]     ← 딥링크 (가능 범위 prefill)
   ─────────────────────────
@@ -43,7 +42,6 @@ Binding 이후 **원화 입금**을 사용자가 편하게 하고, 판매자 확
 | 항목 | 목적 |
 |------|------|
 | **건 번호·금액·계좌** 3종 고정 표시 | split 동시 입금 실수 방지 |
-| 입금 메모 `BRIT-{tradeId}-{legIndex}` | 판매자 뱅킹 앱 대조 |
 | 「보냈어요」전 AlertDialog | 허위 신고 감소 |
 | 「돈 받았어요」전 AlertDialog | 확인 실수 감소 |
 | 구매자 신고 → 판매자 푸시 | 확인 지연 감소 |
@@ -85,7 +83,7 @@ MVP는 **§2 수동 신고 + §3 예방**으로 충분합니다.
 
 ## 7. 구현 체크리스트 (프론트)
 
-- [ ] `TradePaymentBottomSheet` — 건 라벨·메모·딥링크 CTA
+- [ ] `TradePaymentBottomSheet` — 건 라벨·딥링크 CTA
 - [ ] `report-payment` / `confirm-payment` 전 AlertDialog
 - [ ] 판매자 카드 `못 받았어요` → `deny-payment`
 - [ ] `notifyTradeMatchedIfReady`와 별도 입금 신고 푸시

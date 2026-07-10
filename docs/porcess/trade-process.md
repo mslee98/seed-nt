@@ -294,7 +294,7 @@ Wallet(coinBalance) → GiftCatalog 선택 → PIN 확인 → GiftOrder 생성
 | 5 | 분쟁 | 인앱 채팅 + CS resolve (M2) |
 | 6 | C2C 수수료 | 없음 (MVP) |
 | 7 | C2B 커미션 | **보류** ([merchant.md](../domains/merchant.md)) |
-| 8 | 입금 UX | 딥링크·메모·다이얼로그 ([trade-payment-ux.md](./trade-payment-ux.md)) |
+| 8 | 입금 UX | 딥링크·다이얼로그 ([trade-payment-ux.md](./trade-payment-ux.md)) |
 
 미결: NEAR_TOLERANCE, BUY split, leg EXPIRED 정책, `MS_TO_KRW` 통일.
 

@@ -108,7 +108,6 @@ SplitGroup      위젯 리스트·진행률
 **MVP 편의 (이체확인증 강제 X):** [trade-payment-ux.md](../porcess/trade-payment-ux.md)
 
 - 은행 앱 딥링크 (계좌·금액 prefill)
-- 입금 메모 `BRIT-{tradeId}-{leg}`
 - CTA 전 확인 다이얼로그
 - 판매자 푸시 (신고 시)
 - 분쟁 시에만 스크린샷 선택
@@ -187,7 +186,7 @@ SplitGroup      위젯 리스트·진행률
 2. Home 슬림화 + 확인 시트  
 3. Split 위젯 + leg 상세  
 4. 매칭 대기·배너·복귀  
-5. 입금 UX (딥링크·메모·다이얼로그)  
+5. 입금 UX (딥링크·다이얼로그)  
 6. 분쟁 UI  
 
 ### C2B

@@ -4,17 +4,25 @@ import { PageBanner } from 'seed-design/ui/page-banner'
 import { ResultSection } from 'seed-design/ui/result-section'
 
 import { formatAmount, formatCoinAmount, formatCoinUnit } from '../../home/utils/formatAmount'
+import { getPaymentReportedBuyerBadge } from '../copy'
 import type { TradeDetailViewModel } from '../types'
+import { TradeHeroMotion } from './TradeHeroMotion'
 import { TradeMotion } from './TradeMotion'
+import { TradePaymentBuyerWaitingPanel } from './TradePaymentBuyerWaitingPanel'
 
 interface TradeRoomPanelProps {
   trade: TradeDetailViewModel
+  motionMountWhen?: boolean
   onAccountCopied?: () => void
   onCopyFailed?: () => void
-  onMemoCopied?: () => void
 }
 
-export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
+export function TradeRoomPanel({
+  trade,
+  motionMountWhen = true,
+  onAccountCopied,
+  onCopyFailed,
+}: TradeRoomPanelProps) {
   const sideLabel = trade.side === 'BUY' ? '구매' : '판매'
   const isTerminal =
     trade.status === 'COMPLETED' || trade.status === 'CANCELLED' || trade.status === 'EXPIRED'
@@ -24,11 +32,19 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
       ? `${trade.splitLegIndex}건 · ${formatAmount(trade.amountKrw)}`
       : formatAmount(trade.amountKrw)
 
+  const statusBadgeLabel = (() => {
+    if (trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER') {
+      return getPaymentReportedBuyerBadge()
+    }
+    if (isTerminal) return '종료'
+    return '진행 중'
+  })()
+
   if (trade.status === 'COMPLETED') {
     return (
-      <VStack gap="x4" align="center" py="x2">
-        <TradeMotion variant="completed" size={120} />
+      <VStack align="center" width="full" py="x2">
         <ResultSection
+          asset={<TradeHeroMotion variant="completed" mountWhen={motionMountWhen} />}
           title="거래가 완료됐어요"
           description={`${formatCoinAmount(trade.amountKrw)} ${sideLabel}`}
         />
@@ -45,7 +61,7 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
         <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
           {legLabel}
         </Text>
-        <TradeMotion variant="disputed" size={96} />
+        <TradeMotion variant="disputed" size={96} mountWhen={motionMountWhen} />
         <Callout
           tone="warning"
           description="입금 확인이 맞지 않아 검토 중이에요. 다른 leg 거래는 계속할 수 있어요."
@@ -58,7 +74,7 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
     <VStack gap="x5" width="full">
       <VStack gap="spacingY.betweenText">
         <Badge tone={isTerminal ? 'neutral' : 'warning'} variant="weak" size="medium">
-          {isTerminal ? '종료' : '진행 중'}
+          {statusBadgeLabel}
         </Badge>
         <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
           {legLabel} {sideLabel}
@@ -73,13 +89,13 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
           tone="informative"
           variant="weak"
           title="입금 계좌는 아래에서 확인할 수 있어요"
-          description="입금하기를 눌러 계좌와 메모를 확인해 주세요."
+          description="입금하기를 눌러 계좌를 확인해 주세요."
         />
       )}
 
       {trade.status === 'PAYMENT_PENDING' && trade.role === 'SELLER' && (
         <VStack gap="x4" align="center" width="full">
-          <TradeMotion variant="waitingPayment" size={96} />
+          <TradeMotion variant="waitingPayment" size={96} mountWhen={motionMountWhen} />
           <PageBanner
             tone="informative"
             variant="weak"
@@ -90,15 +106,13 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
       )}
 
       {trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER' && (
-        <VStack gap="x4" align="center" width="full">
-          <TradeMotion variant="paymentTransfer" size={96} />
-          <PageBanner
-            tone="informative"
-            variant="weak"
-            title="판매자가 입금을 확인하고 있어요"
-            description="확인이 끝나면 코인이 들어와요."
-          />
-        </VStack>
+        <TradePaymentBuyerWaitingPanel
+          trade={trade}
+          motionMountWhen={motionMountWhen}
+          embedded
+          onAccountCopied={onAccountCopied}
+          onCopyFailed={onCopyFailed}
+        />
       )}
 
       {trade.status === 'PAYMENT_REPORTED' && trade.role === 'SELLER' && (
@@ -106,7 +120,7 @@ export function TradeRoomPanel({ trade }: TradeRoomPanelProps) {
           tone="informative"
           variant="weak"
           title="구매자가 입금했다고 알려왔어요"
-          description="계좌 입금 내역과 메모를 확인해 주세요."
+          description="계좌 입금 내역을 확인해 주세요."
         />
       )}
     </VStack>
