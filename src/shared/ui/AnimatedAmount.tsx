@@ -2,6 +2,10 @@ import { HStack, Text } from '@seed-design/react'
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import AnimateNumber from 'seed-design/breeze/animate-number/animate-number'
 
+import {
+  type AmountTypographyVariant,
+  resolveAnimateNumberTypography,
+} from '../constants/typography'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
 type TextStyle = ComponentProps<typeof Text>['textStyle']
@@ -26,9 +30,13 @@ interface AnimatedAmountProps {
   useGrouping?: boolean
   minimumFractionDigits?: number
   maximumFractionDigits?: number
+  /** inline: SEED textStyle preset, hero: 홈 입력 등 대형 금액 */
+  variant?: AmountTypographyVariant
+  /** inline variant에서 AnimateNumber·fallback 공통 타이포 소스 */
   numberTextStyle?: TextStyle
   suffixTextStyle?: TextStyle
   textColor?: TextColor
+  /** preset override — 일반적으로 지정하지 않음 */
   fontSize?: number | string
   fontWeight?: CSSProperties['fontWeight']
   className?: string
@@ -61,16 +69,20 @@ function formatStaticAmount({
   }).format(value)
 }
 
+function joinClassNames(...classes: Array<string | undefined>) {
+  return classes.filter(Boolean).join(' ')
+}
+
 /**
  * 금액 표시 + breeze `AnimateNumber` 래퍼.
  *
- * 포맷·suffix·`prefers-reduced-motion` fallback을 통합합니다.
+ * `variant="inline"`은 `numberTextStyle`, `variant="hero"`는 `.amount-hero` preset을 사용합니다.
  * `replayKey`가 바뀌면 `startValue`에서 `value`로 재생합니다.
  *
  * @example
  * ```tsx
- * const { replayKey, triggerReplay } = useAmountReplay()
- * <AnimatedAmount value={balance} suffix="원" startValue={0} replayKey={replayKey} />
+ * <AnimatedAmount value={amountKrw} variant="hero" suffix="원" replayKey={replayKey} />
+ * <AnimatedAmount value={balance} numberTextStyle="t5Bold" replayKey={replayKey} />
  * ```
  */
 export function AnimatedAmount({
@@ -84,18 +96,28 @@ export function AnimatedAmount({
   useGrouping = true,
   minimumFractionDigits,
   maximumFractionDigits,
+  variant = 'inline',
   numberTextStyle = 't5Bold',
   suffixTextStyle = numberTextStyle,
   textColor = 'fg.neutral',
-  fontSize = 20,
-  fontWeight = 700,
+  fontSize,
+  fontWeight,
   className,
   animated = true,
 }: AnimatedAmountProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const supportsIntegerAnimation = Number.isInteger(value) && Number.isInteger(startValue)
+  const isHero = variant === 'hero'
   const animatedColor =
     FG_COLOR_VAR[String(textColor)] ?? 'var(--seed-color-fg-neutral)'
+  const resolvedTypography = resolveAnimateNumberTypography(variant, numberTextStyle)
+  const resolvedFontSize = fontSize ?? resolvedTypography.fontSize
+  const resolvedFontWeight = fontWeight ?? resolvedTypography.fontWeight
+  const numberClassName = joinClassNames(
+    isHero ? 'amount-hero' : 'tabular-nums',
+    className,
+  )
+  const suffixClassName = isHero ? 'amount-hero-suffix' : undefined
 
   const fallbackText = formatStaticAmount({
     value,
@@ -108,10 +130,42 @@ export function AnimatedAmount({
   })
 
   if (prefersReducedMotion || !animated || !supportsIntegerAnimation) {
+    if (suffix) {
+      return (
+        <HStack align="center" gap="x1" className={className}>
+          {isHero ? (
+            <span className={numberClassName} style={{ color: animatedColor }}>
+              {fallbackText}
+            </span>
+          ) : (
+            <Text textStyle={numberTextStyle} color={textColor} className={numberClassName}>
+              {fallbackText}
+            </Text>
+          )}
+          {isHero ? (
+            <span className={suffixClassName} style={{ color: animatedColor }}>
+              {suffix}
+            </span>
+          ) : (
+            <Text textStyle={suffixTextStyle} color={textColor}>
+              {suffix}
+            </Text>
+          )}
+        </HStack>
+      )
+    }
+
+    if (isHero) {
+      return (
+        <span className={numberClassName} style={{ color: animatedColor }}>
+          {fallbackText}
+        </span>
+      )
+    }
+
     return (
-      <Text textStyle={numberTextStyle} color={textColor} className={className}>
+      <Text textStyle={numberTextStyle} color={textColor} className={numberClassName}>
         {fallbackText}
-        {suffix}
       </Text>
     )
   }
@@ -122,18 +176,22 @@ export function AnimatedAmount({
         value={value}
         startValue={startValue}
         replayKey={replayKey}
-        fontSize={fontSize}
-        fontWeight={fontWeight}
+        fontSize={resolvedFontSize}
+        fontWeight={resolvedFontWeight}
         color={animatedColor}
         showComma={useGrouping && Math.abs(value) >= 1_000}
-        className={className}
+        className={numberClassName}
       />
-      {suffix && (
-        <Text textStyle={suffixTextStyle} color={textColor}>
-          {suffix}
-        </Text>
-      )}
+      {suffix &&
+        (isHero ? (
+          <span className={suffixClassName} style={{ color: animatedColor }}>
+            {suffix}
+          </span>
+        ) : (
+          <Text textStyle={suffixTextStyle} color={textColor}>
+            {suffix}
+          </Text>
+        ))}
     </HStack>
   )
 }
-
