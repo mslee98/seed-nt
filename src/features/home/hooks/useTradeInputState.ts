@@ -1,7 +1,15 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 
+import { useAmountReplay } from '../../../shared/hooks/useAmountReplay'
 import { TRADE_LIMITS } from '../constants'
-import { krwToCoin, formatCoinUnit } from '../utils/formatAmount'
+import {
+  formatAmountInputDisplay,
+  formatAmountNumber,
+  formatCoinUnit,
+  isManwonUnitAmount,
+  krwToCoin,
+  parseAmountInput,
+} from '../utils/formatAmount'
 import { getSplitRecommendation } from '../utils/splitRecommendation'
 import type { SplitMode, TradeSide } from '../types'
 
@@ -17,7 +25,10 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   const [side, setSide] = useState<TradeSide>('BUY')
   const [amountKrw, setAmountKrw] = useState<number | null>(null)
   const [amountInput, setAmountInput] = useState('')
+  const [amountStartKrw, setAmountStartKrw] = useState(0)
+  const [amountFieldBlurred, setAmountFieldBlurred] = useState(false)
   const [splitSellEnabled, setSplitSellEnabled] = useState(true)
+  const { replayKey: amountReplayKey, triggerReplay: triggerAmountReplay } = useAmountReplay()
 
   const splitRecommendation = useMemo(
     () => (amountKrw ? getSplitRecommendation(amountKrw) : null),
@@ -38,10 +49,14 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   }, [showSplitSellToggle])
 
   const amountError = useMemo(() => {
-    if (amountKrw === null) return null
+    if (!amountFieldBlurred || amountKrw === null) return null
+
+    if (!isManwonUnitAmount(amountKrw)) {
+      return '10,000원 단위로 입력해 주세요'
+    }
 
     if (amountKrw < TRADE_LIMITS.minAmount) {
-      return `${TRADE_LIMITS.minAmount.toLocaleString('ko-KR')}원 이상부터 거래할 수 있어요`
+      return `${formatAmountNumber(TRADE_LIMITS.minAmount)}원 이상부터 거래할 수 있어요`
     }
 
     if (amountKrw > TRADE_LIMITS.maxAmount) {
@@ -53,15 +68,15 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     }
 
     return null
-  }, [amountKrw, side, coinBalance])
+  }, [amountFieldBlurred, amountKrw, side, coinBalance])
 
   const helperText = useMemo(() => {
     if (amountError) return undefined
 
     if (!amountKrw) {
       return side === 'BUY'
-        ? '금액을 입력하면 예상 코인을 보여드릴게요'
-        : '금액을 입력하면 판매할 코인을 보여드릴게요'
+        ? '10,000원 단위로 입력하면 예상 코인을 보여드릴게요'
+        : '10,000원 단위로 입력하면 판매할 코인을 보여드릴게요'
     }
 
     const coinAmount = krwToCoin(amountKrw)
@@ -74,11 +89,12 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   const isSubmitDisabled = !amountKrw || !!amountError
 
   const handleAmountInputChange = (value: string) => {
-    const digitsOnly = value.replace(/[^\d]/g, '')
-    setAmountInput(digitsOnly)
+    const digitsOnly = parseAmountInput(value)
+    setAmountInput(formatAmountInputDisplay(digitsOnly))
 
     if (!digitsOnly) {
       setAmountKrw(null)
+      setAmountFieldBlurred(false)
       return
     }
 
@@ -86,8 +102,17 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   }
 
   const handleQuickAmountSelect = (amount: number) => {
-    setAmountKrw(amount)
-    setAmountInput(String(amount))
+    const current = amountKrw ?? 0
+    const next = current + amount
+    setAmountStartKrw(current)
+    setAmountKrw(next)
+    setAmountInput(formatAmountNumber(next))
+    setAmountFieldBlurred(true)
+    triggerAmountReplay()
+  }
+
+  const handleAmountBlur = () => {
+    setAmountFieldBlurred(true)
   }
 
   return {
@@ -95,6 +120,8 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     setSide,
     amountKrw,
     amountInput,
+    amountStartKrw,
+    amountReplayKey,
     splitMode,
     splitSellEnabled,
     setSplitSellEnabled,
@@ -105,5 +132,6 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     isSubmitDisabled,
     handleAmountInputChange,
     handleQuickAmountSelect,
+    handleAmountBlur,
   }
 }

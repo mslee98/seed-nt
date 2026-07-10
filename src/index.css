@@ -25,6 +25,7 @@
 
   body {
     font-family: var(--app-font-family);
+    letter-spacing: var(--app-typo-body-tracking);
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;

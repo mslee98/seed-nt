@@ -1,0 +1,65 @@
+.amount-hero-field__input-host {
+  position: relative;
+  flex: 1;
+  min-height: calc(
+    var(--app-typo-amount-hero-size) * var(--app-typo-amount-hero-line-height)
+  );
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-family: inherit;
+  /* TextFieldInput(:first-child)의 SEED padding-left와 동기화 — input·blur overlay 공통 */
+  padding-left: var(--seed-dimension-x4);
+  box-sizing: border-box;
+}
+
+/* breeze replay 시 digit 슬롯 높이(fontSize × 1.2)에 맞춤 */
+.amount-hero-field__input-host--display:has(.counter) {
+  min-height: calc(var(--app-typo-amount-hero-size) * 1.2);
+}
+
+/* hero 타이포 — focus input·blur 표시 공통 */
+.amount-hero-field .amount-hero,
+.amount-hero-field .amount-hero-input {
+  font-size: var(--app-typo-amount-hero-size);
+  font-weight: var(--app-typo-amount-hero-weight);
+  letter-spacing: var(--app-typo-amount-hero-tracking);
+  line-height: var(--app-typo-amount-hero-line-height);
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+}
+
+.amount-hero-field__display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: text;
+  color: var(--seed-color-fg-neutral);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.amount-hero-field__input-host--display .amount-hero-input {
+  color: transparent;
+  caret-color: transparent;
+}
+
+.amount-hero-input {
+  width: 100%;
+  background: transparent;
+}
+
+.amount-hero-field__input-host:not(.amount-hero-field__input-host--display) .amount-hero-input {
+  caret-color: var(--seed-color-fg-neutral);
+}
+
+.amount-hero-field .amount-hero .counter {
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}

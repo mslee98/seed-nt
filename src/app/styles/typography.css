@@ -1,17 +1,36 @@
 :root {
-  --app-font-family:
-    'Pretendard Variable',
-    Pretendard,
+  --font-sans:
     -apple-system,
     BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    'Helvetica Neue',
-    'Segoe UI',
     'Apple SD Gothic Neo',
+    'Pretendard Variable',
+    Pretendard,
     'Noto Sans KR',
-    'Malgun Gothic',
+    'Segoe UI',
+    Roboto,
     sans-serif;
+
+  --app-font-family: var(--font-sans);
+
+  --app-typo-body-tracking: -0.01em;
+  --app-typo-title-tracking: -0.02em;
+  --app-typo-amount-hero-size: 2rem;
+  --app-typo-amount-hero-weight: 750;
+  --app-typo-amount-hero-tracking: -0.03em;
+  --app-typo-amount-hero-line-height: 1.15;
+}
+
+.typo-title-tight {
+  letter-spacing: var(--app-typo-title-tracking);
+}
+
+.amount-hero,
+.amount-hero-suffix {
+  font-size: var(--app-typo-amount-hero-size);
+  font-weight: var(--app-typo-amount-hero-weight);
+  letter-spacing: var(--app-typo-amount-hero-tracking);
+  line-height: var(--app-typo-amount-hero-line-height);
+  font-variant-numeric: tabular-nums;
 }
 
 input[inputmode='numeric'] {

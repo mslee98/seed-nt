@@ -1,13 +1,11 @@
 import { Box, HStack, Text, VStack } from '@seed-design/react'
-import { ActionButton } from 'seed-design/ui/action-button'
 import { Chip } from 'seed-design/ui/chip'
 import { List, ListSwitchItem } from 'seed-design/ui/list'
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from 'seed-design/ui/segmented-control'
-import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
+import { SegmentedControl } from 'seed-design/ui/segmented-control'
 
+import { AmountHeroField } from '../../../shared/ui/AmountHeroField'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
+import { MotionChipButton, TapSegmentedControlItem } from '../../../shared/motion'
 import { QUICK_AMOUNTS } from '../constants'
 import { formatAmount, formatAmountNumber } from '../utils/formatAmount'
 import type { SplitRecommendation } from '../utils/splitRecommendation'
@@ -17,6 +15,8 @@ interface HomeTradeInputProps {
   side: TradeSide
   amountKrw: number | null
   amountInput: string
+  amountStartKrw: number
+  amountReplayKey: number
   amountError: string | null
   helperText?: string
   isSubmitDisabled: boolean
@@ -25,22 +25,25 @@ interface HomeTradeInputProps {
   splitRecommendation: SplitRecommendation | null
   onSideChange: (side: TradeSide) => void
   onAmountInputChange: (value: string) => void
+  onAmountBlur: () => void
   onQuickAmountSelect: (amount: number) => void
   onSplitSellEnabledChange: (enabled: boolean) => void
   onSubmit: () => void
 }
 
 function formatQuickAmountLabel(amount: number): string {
-  if (amount >= 10_000) {
+  if (amount >= 10_000 && amount % 10_000 === 0) {
     return `${amount / 10_000}만원`
   }
-  return `${amount.toLocaleString('ko-KR')}원`
+  return `${formatAmountNumber(amount)}원`
 }
 
 export function HomeTradeInput({
   side,
   amountKrw,
   amountInput,
+  amountStartKrw,
+  amountReplayKey,
   amountError,
   helperText,
   isSubmitDisabled,
@@ -49,6 +52,7 @@ export function HomeTradeInput({
   splitRecommendation,
   onSideChange,
   onAmountInputChange,
+  onAmountBlur,
   onQuickAmountSelect,
   onSplitSellEnabledChange,
   onSubmit,
@@ -80,7 +84,7 @@ export function HomeTradeInput({
             borderRadius="full"
             bg="bg.brandSolid"
           />
-          <Text textStyle="t5Bold" color="fg.neutral">
+          <Text textStyle="t4Bold" color="fg.neutral">
             거래할 금액
           </Text>
         </HStack>
@@ -90,46 +94,33 @@ export function HomeTradeInput({
           onValueChange={(value) => onSideChange(value as TradeSide)}
           aria-label="거래 유형"
         >
-          <SegmentedControlItem value="BUY">구매</SegmentedControlItem>
-          <SegmentedControlItem value="SELL">판매</SegmentedControlItem>
+          <TapSegmentedControlItem value="BUY">구매</TapSegmentedControlItem>
+          <TapSegmentedControlItem value="SELL">판매</TapSegmentedControlItem>
         </SegmentedControl>
 
-        <TextField
-          label="금액"
-          labelVisuallyHidden
-          suffix="원"
+        <AmountHeroField
+          value={amountInput}
+          onValueChange={onAmountInputChange}
+          amountKrw={amountKrw}
+          startValue={amountStartKrw}
+          replayKey={amountReplayKey}
           description={helperText}
           errorMessage={amountError ?? undefined}
           invalid={!!amountError}
-          value={amountInput}
-          onValueChange={({ value }) => onAmountInputChange(value)}
-          className="tabular-nums"
-        >
-          <TextFieldInput
-            placeholder="금액 입력"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            className="tabular-nums"
-          />
-        </TextField>
+          onBlur={onAmountBlur}
+        />
 
         <HStack gap="x2" flexWrap="wrap">
-          {QUICK_AMOUNTS.map((amount) => {
-            const isSelected = amountKrw === amount
-            return (
-              <Chip.Toggle
-                key={amount}
-                size="medium"
-                variant={isSelected ? 'outlineStrong' : 'outlineWeak'}
-                checked={isSelected}
-                onCheckedChange={(checked) => {
-                  if (checked) onQuickAmountSelect(amount)
-                }}
-              >
-                <Chip.Label className="tabular-nums">{formatQuickAmountLabel(amount)}</Chip.Label>
-              </Chip.Toggle>
-            )
-          })}
+          {QUICK_AMOUNTS.map((amount) => (
+            <MotionChipButton
+              key={amount}
+              size="medium"
+              variant="outlineWeak"
+              onClick={() => onQuickAmountSelect(amount)}
+            >
+              <Chip.Label className="tabular-nums">{formatQuickAmountLabel(amount)}</Chip.Label>
+            </MotionChipButton>
+          ))}
         </HStack>
 
         {showSplitSellToggle && splitDetail && (
@@ -152,7 +143,7 @@ export function HomeTradeInput({
         )}
 
         <VStack pt="x1">
-          <ActionButton
+          <BottomActionButton
             size="large"
             variant="brandSolid"
             disabled={isSubmitDisabled}
@@ -160,7 +151,7 @@ export function HomeTradeInput({
             className="tabular-nums"
           >
             {ctaLabel}
-          </ActionButton>
+          </BottomActionButton>
         </VStack>
       </VStack>
     </VStack>

@@ -1,4 +1,4 @@
-import { COIN_TO_KRW } from '../constants'
+import { AMOUNT_UNIT_KRW, COIN_TO_KRW } from '../constants'
 
 export function formatAmount(amount: number): string {
   return `${amount.toLocaleString('ko-KR')}원`
@@ -6,6 +6,19 @@ export function formatAmount(amount: number): string {
 
 export function formatAmountNumber(amount: number): string {
   return amount.toLocaleString('ko-KR')
+}
+
+export function parseAmountInput(value: string): string {
+  return value.replace(/[^\d]/g, '')
+}
+
+export function formatAmountInputDisplay(digits: string): string {
+  if (!digits) return ''
+  return formatAmountNumber(Number(digits))
+}
+
+export function isManwonUnitAmount(amountKrw: number): boolean {
+  return amountKrw > 0 && amountKrw % AMOUNT_UNIT_KRW === 0
 }
 
 export function krwToCoin(amountKrw: number): number {

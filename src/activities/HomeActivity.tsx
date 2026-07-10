@@ -51,13 +51,16 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                   <VStack px="spacingX.globalGutter" gap="x4">
                     <HomeBalanceCard
                       coinBalance={screen.viewModel.wallet.coinBalance}
-                      startCoinBalance={0}
+                      startCoinBalance={screen.balanceStartCoin}
                       replayKey={screen.balanceReplayKey}
+                      balanceAnimated={screen.balanceReplayKey > 0}
                     />
                     <HomeTradeInput
                       side={screen.tradeInput.side}
                       amountKrw={screen.tradeInput.amountKrw}
                       amountInput={screen.tradeInput.amountInput}
+                      amountStartKrw={screen.tradeInput.amountStartKrw}
+                      amountReplayKey={screen.tradeInput.amountReplayKey}
                       amountError={screen.tradeInput.amountError}
                       helperText={
                         screen.hasBlockingTrade
@@ -72,6 +75,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                       splitRecommendation={screen.tradeInput.splitRecommendation}
                       onSideChange={screen.tradeInput.setSide}
                       onAmountInputChange={screen.tradeInput.handleAmountInputChange}
+                      onAmountBlur={screen.tradeInput.handleAmountBlur}
                       onQuickAmountSelect={screen.tradeInput.handleQuickAmountSelect}
                       onSplitSellEnabledChange={screen.tradeInput.setSplitSellEnabled}
                       onSubmit={screen.handleSubmit}
