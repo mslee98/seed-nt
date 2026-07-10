@@ -1,6 +1,6 @@
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Portal, ResponsivePair } from '@seed-design/react'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 
 import {
   AlertDialogAction,
@@ -81,10 +81,10 @@ export function TradePaymentConfirmAlertDialog({
           <AlertDialogFooter>
             {deferCloseToConfirm ? (
               <ResponsivePair gap="x2" width="full">
-                <ActionButton size="large" variant="neutralWeak" flexGrow onClick={handleDismiss}>
+                <BottomActionButton size="large" variant="neutralWeak" flexGrow onClick={handleDismiss}>
                   닫기
-                </ActionButton>
-                <ActionButton
+                </BottomActionButton>
+                <BottomActionButton
                   size="large"
                   variant={confirmVariant}
                   flexGrow
@@ -93,7 +93,7 @@ export function TradePaymentConfirmAlertDialog({
                   onClick={handleDeferredConfirm}
                 >
                   {copy.confirm}
-                </ActionButton>
+                </BottomActionButton>
               </ResponsivePair>
             ) : (
               <ResponsivePair gap="x2" width="full">

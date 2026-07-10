@@ -3,7 +3,7 @@ import { useFlow } from '@stackflow/react'
 import { useState, type MouseEvent } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 import { showSnackbar } from '../../shared/utils/showSnackbar'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../shared/ui/BottomActionButton'
 
 import { sendSmsCode } from '../../features/auth/api/auth.api'
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
@@ -87,7 +87,7 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
         progress={<SignupProgressHeader type="identity" step={activeStep} />}
         fixedBottom={
           showBottomCta ? (
-            <ActionButton
+            <BottomActionButton
               type="submit"
               form={SIGNUP_IDENTITY_FORM_ID}
               size="large"
@@ -96,7 +96,7 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
               loading={isSubmitting}
             >
               {getIdentityCtaLabel(activeStep)}
-            </ActionButton>
+            </BottomActionButton>
           ) : undefined
         }
       >

@@ -33,7 +33,7 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
       >
         <VStack px="spacingX.globalGutter" py="x4" gap="x6">
           <VStack gap="spacingY.betweenText">
-            <Text textStyle="t6Bold" color="fg.neutral">
+            <Text textStyle="screenTitle" color="fg.neutral">
               인증번호를 입력해 주세요
             </Text>
             <Text textStyle="t5Regular" color="fg.neutralMuted">

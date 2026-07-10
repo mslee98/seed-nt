@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Portal, Text, VStack } from '@seed-design/react'
 import { useLoading } from 'react-simplikit'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import {
   BottomSheetBody,
   BottomSheetContent,
@@ -71,7 +71,7 @@ export function MatchingAcceptBottomSheet({
           </BottomSheetBody>
           <BottomSheetFooter>
             <VStack gap="x2" width="full">
-              <ActionButton
+              <BottomActionButton
                 size="large"
                 variant="brandSolid"
                 flexGrow
@@ -80,8 +80,8 @@ export function MatchingAcceptBottomSheet({
                 onClick={handleConfirm}
               >
                 이 상대에게 제안하기
-              </ActionButton>
-              <ActionButton
+              </BottomActionButton>
+              <BottomActionButton
                 size="large"
                 variant="neutralWeak"
                 flexGrow
@@ -89,7 +89,7 @@ export function MatchingAcceptBottomSheet({
                 onClick={() => onOpenChange(false)}
               >
                 다른 상대 보기
-              </ActionButton>
+              </BottomActionButton>
             </VStack>
           </BottomSheetFooter>
         </BottomSheetContent>

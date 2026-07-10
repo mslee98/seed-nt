@@ -27,7 +27,7 @@ const SignupPinActivity: ActivityComponentType<'SignupPin'> = () => {
     >
       <VStack px="spacingX.globalGutter" py="x4" gap="x6" flexGrow>
         <VStack gap="spacingY.betweenText">
-          <Text textStyle="t6Bold" color="fg.neutral">
+          <Text textStyle="screenTitle" color="fg.neutral">
             {copy.title}
           </Text>
           <Text textStyle="t5Regular" color="fg.neutralMuted">

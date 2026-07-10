@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { HStack, Portal, Text, VStack } from '@seed-design/react'
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import {
   BottomSheetBody,
   BottomSheetContent,
@@ -55,12 +55,12 @@ export function InstallGuideBottomSheet({ open, onOpenChange }: InstallGuideBott
           </BottomSheetBody>
           <BottomSheetFooter>
             <HStack gap="x2" width="full">
-              <ActionButton variant="neutralWeak" onClick={() => onOpenChange(false)}>
+              <BottomActionButton variant="neutralWeak" onClick={() => onOpenChange(false)}>
                 닫기
-              </ActionButton>
-              <ActionButton variant="neutralSolid" flexGrow onClick={() => onOpenChange(false)}>
+              </BottomActionButton>
+              <BottomActionButton variant="neutralSolid" flexGrow onClick={() => onOpenChange(false)}>
                 확인
-              </ActionButton>
+              </BottomActionButton>
             </HStack>
           </BottomSheetFooter>
         </BottomSheetContent>

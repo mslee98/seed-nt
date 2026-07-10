@@ -3,7 +3,7 @@ import { useActivityParams, useFlow } from '@stackflow/react'
 import { useState } from 'react'
 import { useLoading } from 'react-simplikit'
 import { Text, VStack } from '@seed-design/react'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../shared/ui/BottomActionButton'
 
 import { ActivityScreenLayout } from '../app/layouts/ActivityScreenLayout'
 import type { TradeSide } from '../features/home/types'
@@ -52,15 +52,16 @@ const TradeConfirmActivity: ActivityComponentType<'TradeConfirm'> = () => {
     <ActivityScreenLayout
       title="거래 확인"
       appScreenProps={{ preventSwipeBack: true }}
+      bottomCTABehavior="fixed"
       fixedBottom={
-        <ActionButton
+        <BottomActionButton
           size="large"
           variant="brandSolid"
           loading={loading}
           onClick={handleStartMatching}
         >
           매칭 시작하기
-        </ActionButton>
+        </BottomActionButton>
       }
     >
       <VStack

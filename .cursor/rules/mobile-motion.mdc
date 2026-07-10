@@ -1,0 +1,43 @@
+---
+description: 모바일 모션 에셋 규칙 — APNG, Lottie, PWA 캐시 (키패드는 별도)
+globs: src/**/*.{ts,tsx},public/motion/**,src/assets/lottie/**,vite.config.ts
+alwaysApply: false
+---
+
+# Mobile Motion
+
+키패드/BottomCTA: [mobile-keyboard.mdc](mobile-keyboard.mdc)
+
+## APNG
+
+- 경로: `public/motion/`
+- 렌더: **`<img>` only** — [`ApngPlayer`](src/shared/components/ApngPlayer.tsx)
+- 금지: CSS `background-image`, canvas, 이미지 최적화 래퍼
+- 파일명: **버저닝 필수** — 예: `moneybag-rotate.v1.apng` (교체 시 `v2`로 올려 SW 캐시 무효화)
+- 레지스트리: [`motionAssets.ts`](src/features/trade/constants/motionAssets.ts)
+
+## Lottie
+
+- 경로: `src/assets/lottie/*.vN.json`
+- 로드: **import / dynamic import** — [`lottieRegistry.ts`](src/assets/lottie/lottieRegistry.ts)
+- 금지: `/lotties/...` URL fetch, `public/` URL 직접 참조
+- 대용량(100KB+): `loadLottieAsset()` dynamic import
+- 바텀시트·모달: `LottiePlayer` `mountWhen={open}` — 열린 뒤 mount
+- `rendererSettings`: `preserveAspectRatio: 'xMidYMid meet'`, `progressiveLoad: true` ([`LottiePlayer`](src/shared/components/LottiePlayer.tsx))
+
+## PWA Cache
+
+- motion precache **금지** — [`vite.config.ts`](vite.config.ts) `globIgnores: ['**/motion/**', ...]`
+- runtime: `/motion/*.apng` → **CacheFirst** + 파일명 버저닝 (`brit-motion`)
+- Lottie는 번들 import → `/lotties/` runtime rule 없음
+- dev: SW 활성 시 에셋 교체는 **파일명 vN bump**로 검증
+
+## 접근성
+
+- `prefers-reduced-motion`: APNG 미렌더, Lottie autoplay/loop off
+- 화면당 핵심 모션 1곳 — [consumer-ux.mdc](consumer-ux.mdc) 그래픽 섹션
+
+## breeze AnimateNumber (금액)
+
+- 홈 잔액·금액 칩: [`AnimatedAmount`](src/shared/ui/AnimatedAmount.tsx) + [`useAmountReplay`](src/shared/hooks/useAmountReplay.ts)
+- 금액 표기: `formatAmountNumber` / `formatCoinUnit` — `1,000,000` 콤마 형식

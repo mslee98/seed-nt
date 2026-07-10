@@ -217,7 +217,7 @@ export function ActiveStepInput({
   return (
     <VStack gap="x6">
       <VStack gap="spacingY.betweenText">
-        <Text textStyle="t6Bold" color="fg.neutral">
+        <Text textStyle="screenTitle" color="fg.neutral">
           {activeCopy.screenTitle}
         </Text>
         <Text textStyle="t5Regular" color="fg.neutralMuted">

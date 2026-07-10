@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Box, Portal, Text, VStack } from '@seed-design/react'
 
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import {
   BottomSheetBody,
   BottomSheetContent,
@@ -13,6 +13,7 @@ import { List, ListDivider, ListItem } from 'seed-design/ui/list'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
 import { LottiePlayer } from '../../../shared/components/LottiePlayer'
+import { loadLottieAsset } from '../../../assets/lottie/lottieRegistry'
 
 interface AccountIntroSheetProps {
   open: boolean
@@ -46,7 +47,10 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
           <BottomSheetBody>
             <VStack gap="x4" align="center">
               <Box py="x2">
-                <LottiePlayer src="/lotties/check-blue-spot.json" />
+                <LottiePlayer
+                  loadAnimation={() => loadLottieAsset('checkBlueSpot')}
+                  mountWhen={open}
+                />
               </Box>
               <VStack gap="x2" width="full">
                 <Text textStyle="t4Regular" color="fg.neutralMuted">
@@ -64,7 +68,7 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <ActionButton
+            <BottomActionButton
               size="large"
               variant="brandSolid"
               flexGrow
@@ -73,7 +77,7 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
               }}
             >
               확인했어요
-            </ActionButton>
+            </BottomActionButton>
           </BottomSheetFooter>
         </BottomSheetContent>
       </Portal>

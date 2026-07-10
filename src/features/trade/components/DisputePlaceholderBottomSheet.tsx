@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Portal, Text, VStack } from '@seed-design/react'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import {
   BottomSheetBody,
   BottomSheetContent,
@@ -62,14 +62,14 @@ export function DisputePlaceholderBottomSheet({
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <ActionButton
+            <BottomActionButton
               size="large"
               variant="brandSolid"
               flexGrow
               onClick={() => onOpenChange(false)}
             >
               확인
-            </ActionButton>
+            </BottomActionButton>
           </BottomSheetFooter>
         </BottomSheetContent>
       </Portal>

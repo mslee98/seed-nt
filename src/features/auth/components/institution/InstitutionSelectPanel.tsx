@@ -48,7 +48,7 @@ export function InstitutionSelectPanel({ onSelect }: InstitutionSelectPanelProps
     <>
       <VStack gap="x0" flexGrow style={{ minHeight: 0 }}>
         <VStack px="spacingX.globalGutter" pt="x4" pb="x3" gap="spacingY.betweenText">
-          <Text textStyle="t6Bold" color="fg.neutral">
+          <Text textStyle="screenTitle" color="fg.neutral">
             어느 금융기관 계좌인가요?
           </Text>
           <Text textStyle="t5Regular" color="fg.neutralMuted">

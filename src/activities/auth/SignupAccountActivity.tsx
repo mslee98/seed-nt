@@ -3,7 +3,7 @@ import { useActivityParams, useFlow } from '@stackflow/react'
 import { useState } from 'react'
 import { Text, VStack } from '@seed-design/react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../shared/ui/BottomActionButton'
 import { FieldButton } from 'seed-design/ui/field-button'
 import { PageBanner } from 'seed-design/ui/page-banner'
 import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
@@ -80,7 +80,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
       onBack={handleBack}
       progress={<SignupProgressHeader type="account" step="accountNumber" />}
       fixedBottom={
-        <ActionButton
+        <BottomActionButton
           size="large"
           variant="brandSolid"
           disabled={!canSubmit}
@@ -88,7 +88,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
           onClick={() => void handleVerify()}
         >
           계좌 확인하기
-        </ActionButton>
+        </BottomActionButton>
       }
     >
       <VStack
@@ -102,7 +102,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
         }}
       >
         <VStack gap="spacingY.betweenText">
-          <Text textStyle="t6Bold" color="fg.neutral">
+          <Text textStyle="screenTitle" color="fg.neutral">
             계좌번호를 입력해 주세요
           </Text>
           <Text textStyle="t5Regular" color="fg.neutralMuted">

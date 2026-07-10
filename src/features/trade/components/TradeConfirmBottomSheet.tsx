@@ -2,7 +2,7 @@
 import { useActivityZIndexBase } from '@seed-design/stackflow'
 import { Portal, Text, VStack } from '@seed-design/react'
 import { useLoading } from 'react-simplikit'
-import { ActionButton } from 'seed-design/ui/action-button'
+import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import { Callout } from 'seed-design/ui/callout'
 import {
   BottomSheetBody,
@@ -15,6 +15,7 @@ import { ListHeader } from 'seed-design/ui/list-header'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
 import { SummaryListCard } from '../../../shared/ui/SummaryListCard'
+import { BottomSheetBottomCTA } from '../../../shared/ui/BottomSheetBottomCTA'
 import type { SplitMode, TradeSide } from '../../home/types'
 import { formatAmount, formatAmountNumber, formatCoinUnit, krwToCoin } from '../../home/utils/formatAmount'
 import { buildSplitPlan } from '../utils/splitPlan'
@@ -131,15 +132,17 @@ export function TradeConfirmBottomSheet({
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <ActionButton
-              size="large"
-              variant="brandSolid"
-              flexGrow
-              loading={loading}
-              onClick={handleConfirm}
-            >
-              매칭 시작하기
-            </ActionButton>
+            <BottomSheetBottomCTA behavior="fixed">
+              <BottomActionButton
+                size="large"
+                variant="brandSolid"
+                flexGrow
+                loading={loading}
+                onClick={handleConfirm}
+              >
+                매칭 시작하기
+              </BottomActionButton>
+            </BottomSheetBottomCTA>
           </BottomSheetFooter>
         </BottomSheetContent>
       </Portal>
