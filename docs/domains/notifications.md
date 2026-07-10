@@ -124,7 +124,7 @@ flowchart TD
 ### 4.4 완료·분쟁
 
 - `TRADE_COMPLETED` → 스낵바 + 잔액 갱신 (Home)
-- `DISPUTE_OPENED` → 분쟁 모션 (`money-protect-confetti-apng`) + 배너
+- `DISPUTE_OPENED` → 분쟁 모션 (`money-protect.v1.apng`) + 배너
 
 ---
 
@@ -132,12 +132,12 @@ flowchart TD
 
 | 거래 UI 상태 | 역할 | 에셋 | 경로 |
 |--------------|------|------|------|
-| `MATCHING` (탐색) | 공통 | moneybag rotate | `/apng/moneybag-rotate-apng.png` |
-| `MATCHING` (승인 대기) | 공통 | moneybag loop | `/apng/moneybag-loop-400-apng.png` |
-| `PAYMENT_PENDING` | 판매자 | flying coin | `/apng/flying-coin-won-slow-apng.png` |
-| `PAYMENT_REPORTED` | 구매자 | moneybag loop | `/apng/moneybag-loop-400-apng.png` |
-| `COMPLETED` | 공통 | Success lottie | `/lotties/Success.json` |
-| `DISPUTED` | 공통 | money protect | `/apng/money-protect-confetti-apng.png` |
+| `MATCHING` (탐색) | 공통 | moneybag rotate | `/motion/moneybag-rotate.v1.apng` |
+| `MATCHING` (승인 대기) | 공통 | moneybag loop | `/motion/moneybag-loop.v1.apng` |
+| `PAYMENT_PENDING` | 판매자 | flying coin | `/motion/flying-coin-won.v1.apng` |
+| `PAYMENT_REPORTED` | 구매자 | money winds | `src/assets/lottie/money-winds-loop.v1.json` |
+| `COMPLETED` | 공통 | Success lottie | `src/assets/lottie/success.v1.json` |
+| `DISPUTED` | 공통 | money protect | `/motion/money-protect.v1.apng` |
 
 정의: `src/features/trade/constants/motionAssets.ts`
 
