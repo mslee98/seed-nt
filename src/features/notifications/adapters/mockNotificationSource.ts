@@ -75,7 +75,7 @@ function handleTradeStatusChange(trade: TradeRecord, prevStatus?: TradeRecord['s
       type: 'PAYMENT_REPORTED_ACK',
       tradeId: trade.id,
       amountKrw: trade.amountKrw,
-      message: '입금 신고를 보냈어요. 판매자가 입금을 확인하고 있어요.',
+      message: '입금했어요를 눌렀어요. 판매자가 확인하고 있어요.',
       priority: 'normal',
       createdAt: new Date().toISOString(),
     })
