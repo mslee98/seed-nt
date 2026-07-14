@@ -5,8 +5,8 @@ import { ActionButton } from 'seed-design/ui/action-button'
 
 import { usePwaInstallPrompt } from '../hooks/usePwaInstallPrompt'
 import { useIsDesktopViewport } from '../../../app/layouts/useIsDesktopViewport'
-import { needsManualInstallGuide } from '../utils/detectInstallPlatform'
-import { dismissInstallBanner, shouldShowInstallBanner } from '../utils/installBannerStorage'
+import { needsManualInstallGuide } from '../services/detectInstallPlatform'
+import { dismissInstallBanner, shouldShowInstallBanner } from '../services/installBannerStorage'
 import { InstallGuideBottomSheet } from './InstallGuideBottomSheet'
 
 export function HomeInstallBanner() {

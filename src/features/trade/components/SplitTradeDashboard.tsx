@@ -1,6 +1,6 @@
 import { Box, HStack, Text, VStack } from '@seed-design/react'
 
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import type { SplitDashboardViewModel, SplitLegViewModel } from '../types/splitDashboard'
 import { SplitLegCard } from './SplitLegCard'
 import { WhileYouWaitSection } from './WhileYouWaitSection'

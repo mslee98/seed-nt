@@ -30,7 +30,7 @@
 | **B** | 동시 거래 | split 전체 = **진행 중 1세트**. Home **새 거래 불가** |
 | **C** | Binding 직후 | 구매자 **입금 시트 자동 오픈** |
 | **D** | Split UI | **탭 X** → 세로 **위젯 리스트** + 상세보기. 상단 `completedKrw / totalKrw` |
-| **E** | 거래 시작 | Home **확인 시트** → Trade. `TradeConfirm` **deprecated** |
+| **E** | 거래 시작 | Home **확인 다이얼로그** → Trade. `TradeConfirm` **deprecated** |
 | **F** | Split 매칭 | 등록 직후 **모든 leg 동시 매칭** |
 | **G** | 입금 | **leg 단위 독립** (동시 `PAYMENT_PENDING` 가능) |
 | **H** | 매칭 대기 | Trade: 스피너·스켈레톤 + 스토어/커뮤니티. Trade 밖: 글로벌 배너 |
@@ -45,7 +45,7 @@
 ## 3. 화면·Stackflow (목표)
 
 ```text
-Home (/)           잔액·금액·확인 시트 — 허브
+Home (/)           잔액·금액·확인 다이얼로그 — 허브
 Trade (/trade?)    위젯 리스트·매칭·입금·분쟁 — C2C 핵심
 Detail (/detail/*) 거래내역, MY, 스토어, 커뮤니티
 
@@ -183,7 +183,7 @@ SplitGroup      위젯 리스트·진행률
 ### 프론트
 
 1. `TradeSessionScope` + Trade route  
-2. Home 슬림화 + 확인 시트  
+2. Home 슬림화 + 확인 다이얼로그  
 3. Split 위젯 + leg 상세  
 4. 매칭 대기·배너·복귀  
 5. 입금 UX (딥링크·다이얼로그)  

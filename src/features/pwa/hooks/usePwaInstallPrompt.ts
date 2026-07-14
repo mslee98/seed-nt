@@ -1,14 +1,14 @@
 import { useCallback, useState, useSyncExternalStore } from 'react'
 
-import { recordInstallPromptDismissed } from '../utils/installBannerStorage'
+import { recordInstallPromptDismissed } from '../services/installBannerStorage'
 import {
   clearDeferredPrompt,
   getDeferredPrompt,
   getPwaInstallPromptSnapshot,
   subscribePwaInstallPrompt,
-} from '../utils/pwaInstallPromptStore'
+} from '../services/pwaInstallPromptStore'
 
-export type { BeforeInstallPromptEvent } from '../utils/pwaInstallPromptStore'
+export type { BeforeInstallPromptEvent } from '../services/pwaInstallPromptStore'
 
 /**
  * 카카오엔터 A2HS(useA2HS) 패턴:

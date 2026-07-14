@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import type { MatchingSession } from '../../trade/matching/types'
-import type { TradeStatus } from '../../home/types'
+import type { TradeStatus } from '../../trade/types'
 import { useNotificationAttention } from './useNotifications'
 
 type TradeRole = 'BUYER' | 'SELLER'

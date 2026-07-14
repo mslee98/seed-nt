@@ -4,7 +4,7 @@ import { Callout } from 'seed-design/ui/callout'
 import { ListHeader } from 'seed-design/ui/list-header'
 
 import { SummaryListCard } from '../../../shared/ui/SummaryListCard'
-import { formatAmount, formatCoinAmount } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinAmount } from '../../../shared/utils/formatAmount'
 import { usePaymentCountdown } from '../hooks/usePaymentCountdown'
 import type { TradeDetailViewModel } from '../types'
 import { copyToClipboard } from '../utils/copyToClipboard'

@@ -8,8 +8,6 @@
   align-items: center;
   width: 100%;
   font-family: inherit;
-  /* TextFieldInput(:first-child)의 SEED padding-left와 동기화 — input·blur overlay 공통 */
-  padding-left: var(--seed-dimension-x4);
   box-sizing: border-box;
 }
 
@@ -18,7 +16,7 @@
   min-height: calc(var(--app-typo-amount-hero-size) * 1.2);
 }
 
-/* hero 타이포 — focus input·blur 표시 공통 */
+/* hero 타이포 — focus input·breeze overlay 공통 */
 .amount-hero-field .amount-hero,
 .amount-hero-field .amount-hero-input {
   font-size: var(--app-typo-amount-hero-size);
@@ -29,6 +27,7 @@
   font-family: inherit;
 }
 
+/* SEED TextFieldInput padding-left와 동일 — focus/blur 숫자 시작 위치 통일 */
 .amount-hero-field__display {
   position: absolute;
   inset: 0;
@@ -36,7 +35,7 @@
   align-items: center;
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 0 0 0 var(--seed-dimension-x4);
   margin: 0;
   cursor: text;
   color: var(--seed-color-fg-neutral);

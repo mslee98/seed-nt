@@ -1,4 +1,4 @@
-import type { TradeSide } from '../types'
+import type { TradeSide } from '../../trade/types'
 
 export interface HomeWallet {
   coinBalance: number

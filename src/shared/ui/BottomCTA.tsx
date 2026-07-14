@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { VStack } from '@seed-design/react'
 
 import { APP_LAYOUT } from '../constants/app-layout'
-import { useKeyboardInset } from '../hooks/useKeyboardInset'
+import { KEYBOARD_INSET_CSS_VAR, useKeyboardInset } from '../hooks/useKeyboardInset'
 
 export { BottomActionButton } from './BottomActionButton'
 
@@ -11,15 +11,22 @@ export type BottomCTABehavior = 'keyboardAdaptive' | 'fixed' | 'hiddenWhenKeyboa
 interface BottomCTAProps {
   children: ReactNode
   behavior?: BottomCTABehavior
-  /** Activity: viewport 하단 고정 | sheet: footer 내부 inset만 */
+  /**
+   * `inline` — AppScreen Layer 안 in-flow (Activity 권장, 스택 z-index 안전)
+   * `fixed` — viewport 고정 (특수 케이스; Layer 밖이면 z-index 주의)
+   */
   variant?: 'fixed' | 'inline'
   className?: string
+}
+
+function ctaPaddingBottom(keyboardOffset: string) {
+  return `calc(${keyboardOffset} + env(safe-area-inset-bottom, 0px) + var(--seed-dimension-x4, 16px))`
 }
 
 export function BottomCTA({
   children,
   behavior = 'keyboardAdaptive',
-  variant = 'fixed',
+  variant = 'inline',
   className,
 }: BottomCTAProps) {
   const keyboardInset = useKeyboardInset()
@@ -28,20 +35,20 @@ export function BottomCTA({
     return null
   }
 
-  const bottomOffset =
-    behavior === 'keyboardAdaptive' ? `var(${/* KEYBOARD_INSET_CSS_VAR */ '--keyboard-inset'}, 0px)` : '0px'
+  const keyboardOffset =
+    behavior === 'keyboardAdaptive' ? `var(${KEYBOARD_INSET_CSS_VAR}, 0px)` : '0px'
 
   if (variant === 'inline') {
     return (
       <VStack
         width="full"
         px="spacingX.globalGutter"
-        py="x4"
+        pt="x4"
         shrink={0}
         bg="bg.neutralWeak"
         className={className}
         style={{
-          paddingBottom: `calc(${bottomOffset} + env(safe-area-inset-bottom, 0px))`,
+          paddingBottom: ctaPaddingBottom(keyboardOffset),
         }}
       >
         {children}
@@ -53,7 +60,7 @@ export function BottomCTA({
     <div
       className={['bottom-cta', className].filter(Boolean).join(' ')}
       style={{
-        ['--bottom-cta-offset' as string]: bottomOffset,
+        ['--bottom-cta-offset' as string]: keyboardOffset,
         minHeight: APP_LAYOUT.fixedBottom.minHeight,
       }}
     >

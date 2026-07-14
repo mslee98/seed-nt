@@ -17,7 +17,7 @@
 | B | 동시 거래 | split 전체 = **진행 중 1세트**. Home에서 **새 거래 불가** (B-1) |
 | C | Binding 직후 | 구매자 **입금 시트 자동 오픈** (C-1) |
 | D | Split UI | **탭 X** → 세로 **위젯 리스트** + 상세보기. 상단 `완료금액 / 총액` 진행률 |
-| E | 거래 시작 | Home **확인 시트** → `POST trade-orders` → `push Trade`. `TradeConfirm` 미사용 |
+| E | 거래 시작 | Home **확인 다이얼로그** → `POST trade-orders` → `push Trade`. `TradeConfirm` 미사용 |
 | F | Split 매칭 | 등록 직후 **모든 leg 동시 매칭** (1-A) |
 | G | 입금 | **leg 단위 독립** (여러 건 동시 `PAYMENT_PENDING` 가능) |
 | H | 매칭 대기 UX | Trade 안: 스피너·스켈레톤 + 하단 스토어/커뮤니티 링크. Trade 밖: 글로벌 배너 |
@@ -77,7 +77,7 @@ SplitGroup      leg N개 묶음 (위젯 리스트 데이터 소스)
 | 단계 | 화면 | API | 서버 |
 |------|------|-----|------|
 | 1 | Home: 150만 입력 · 판매 | — | — |
-| 2 | 확인 시트: `150만 원을 3번에 나눠 거래해요` | `GET /trade-orders/split-preview?amountKrw=1500000` | unit 50만 × 3 반환 |
+| 2 | 확인 다이얼로그: `150만 원을 3번에 나눠 거래해요` | `GET /trade-orders/split-preview?amountKrw=1500000` | unit 50만 × 3 반환 |
 | 3 | 「매칭 시작」 | `POST /trade-orders` `{ side:SELL, amountKrw:1500000, splitMode:AUTO }` | SplitGroup + Order×3 + escrow 전액 + **leg 3건 매칭 큐 등록** |
 | 4 | Trade 위젯 리스트 (0%) | `GET /split-groups/{id}` | legs 3건 `MATCHING` |
 | 5 | (선택) 스토어 이동 | `push Detail/store` | 매칭 워커 계속 |
@@ -93,7 +93,7 @@ SplitGroup      leg N개 묶음 (위젯 리스트 데이터 소스)
 
 | 단계 | 화면 | API | 서버 |
 |------|------|-----|------|
-| 1 | Home: 50만 · 구매 → 확인 시트 | — | — |
+| 1 | Home: 50만 · 구매 → 확인 다이얼로그 | — | — |
 | 2 | 「매칭 시작」 | `POST /trade-orders` `{ side:BUY, amountKrw:500000 }` | Order + 매칭 큐 |
 | 3 | Trade (위젯 없음, 단건 UI) | `GET /trade-orders/{orderId}/matching` | `matchMode: EXACT_AUTO \| FLEXIBLE_LIST` |
 | 4a | EXACT: 승인 시트 직행 | — | 후보 1명 자동 propose |
@@ -236,7 +236,7 @@ sequenceDiagram
     participant Redis as Redis
     participant Worker as MatchingWorker
 
-    U->>App: Home 확인 시트 → 매칭 시작
+    U->>App: Home 확인 다이얼로그 → 매칭 시작
     App->>API: POST /trade-orders
     API->>Redis: ZADD matching:pool:{side}:{amount}
     API-->>App: splitGroup + orderIds

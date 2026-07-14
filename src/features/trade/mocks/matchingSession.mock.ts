@@ -1,5 +1,5 @@
-import { formatCoinAmount } from '../../home/utils/formatAmount'
-import type { MatchingCandidate } from './types'
+import { formatCoinAmount } from '../../../shared/utils/formatAmount'
+import type { MatchingCandidate } from '../matching/types'
 
 const NICKNAMES = ['브릿유저', '코인마스터', '코인트레이더', '안전거래왕', '빠른매칭']
 

@@ -101,7 +101,7 @@ export function useTradeScreen() {
 
       if (leg.primaryAction === 'VIEW_MATCHING') {
         focusSplitLegTrade(leg.tradeId)
-        push('Trade', { tradeId: leg.tradeId, splitGroupId: splitGroupId ?? undefined })
+        replace('Trade', { tradeId: leg.tradeId, splitGroupId: splitGroupId ?? undefined })
         return
       }
 
@@ -117,7 +117,7 @@ export function useTradeScreen() {
         openPaymentSheet(leg.tradeId)
       }
     },
-    [openDisputeSheet, openPaymentSheet, push, splitGroupId],
+    [openDisputeSheet, openPaymentSheet, replace, splitGroupId],
   )
 
   const handleBrowseStore = useCallback(() => {

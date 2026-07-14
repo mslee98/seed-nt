@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-b1bafff1'], (function (workbox) { 'use strict';
+define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,25 +81,16 @@ define(['./workbox-b1bafff1'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "/index.html",
-    "revision": "0.43iqjag16cg"
+    "revision": "0.m9o80am01q"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/index.html"), {
     allowlist: [/^\/$/]
   }));
-  workbox.registerRoute(/\/apng\/.+\.png$/i, new workbox.CacheFirst({
-    "cacheName": "brit-apng",
+  workbox.registerRoute(/\/motion\/.+\.apng$/i, new workbox.CacheFirst({
+    "cacheName": "brit-motion",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 24,
-      maxAgeSeconds: 2592000
-    }), new workbox.CacheableResponsePlugin({
-      statuses: [0, 200]
-    })]
-  }), 'GET');
-  workbox.registerRoute(/\/lotties\/.+\.json$/i, new workbox.StaleWhileRevalidate({
-    "cacheName": "brit-lottie",
-    plugins: [new workbox.ExpirationPlugin({
-      maxEntries: 12,
       maxAgeSeconds: 2592000
     }), new workbox.CacheableResponsePlugin({
       statuses: [0, 200]

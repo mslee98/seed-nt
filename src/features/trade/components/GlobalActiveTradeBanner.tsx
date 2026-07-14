@@ -4,7 +4,7 @@ import { List, ListButtonItem } from 'seed-design/ui/list'
 import { useMemo } from 'react'
 
 import { useLayout } from '../../../app/layouts/LayoutContext'
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import { usePendingNotifications } from '../../notifications/hooks/useNotifications'
 import { actions } from '../../../stackflow/stackflow'
 import { useActiveSplitGroup } from '../hooks/useActiveSplitGroup'

@@ -41,7 +41,6 @@ flowchart LR
 |----------|-------|--------|
 | `Home` | `/` | — |
 | `Detail` | `/detail/:id` | `id: string` |
-| `TradeConfirm` | `/trade/confirm` | `side`, `amountKrw`, `splitMode?` |
 | `Trade` | `/trade` | `tradeId?`, `splitGroupId?`, `focusLeg?` |
 | `SignupIdentity` | `/auth/signup/identity` | — |
 | `SignupSms` | `/auth/signup/sms` | `phone: string` |

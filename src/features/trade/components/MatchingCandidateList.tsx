@@ -88,8 +88,15 @@ export function MatchingCandidateList({
   const showSectionTitles = exact.length > 0 && near.length > 0
 
   if (!showSectionTitles) {
+    const soleTitle = exact.length > 0 ? '가장 적합한 상대' : near.length > 0 ? '비슷한 상대' : null
+
     return (
       <VStack gap="x3" width="full">
+        {soleTitle && (
+          <ListHeader as="h3" variant="mediumWeak">
+            {soleTitle}
+          </ListHeader>
+        )}
         {candidates.map((candidate) => {
           const variant: MatchingCandidateCardVariant =
             pendingCandidateId === candidate.id ? 'pending' : queueLocked ? 'locked' : 'default'
@@ -113,7 +120,7 @@ export function MatchingCandidateList({
   return (
     <VStack gap="x5" width="full">
       <CandidateSection
-        title="추천"
+        title="가장 적합한 상대"
         candidates={exact}
         requestedAmountKrw={requestedAmountKrw}
         pendingCandidateId={pendingCandidateId}

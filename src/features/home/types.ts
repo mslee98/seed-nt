@@ -1,15 +1,4 @@
-export type TradeSide = 'BUY' | 'SELL'
-
-export type TradeStatus =
-  | 'MATCHING'
-  | 'PAYMENT_PENDING'
-  | 'PAYMENT_REPORTED'
-  | 'DISPUTED'
-  | 'COMPLETED'
-  | 'CANCELLED'
-  | 'EXPIRED'
-
-export type SplitMode = 'AUTO' | 'CUSTOM' | 'NONE'
+import type { SplitMode, TradeSide, TradeStatus } from '../trade/types'
 
 export interface HomeViewModel {
   user: {

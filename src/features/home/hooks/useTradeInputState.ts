@@ -9,16 +9,43 @@ import {
   isManwonUnitAmount,
   krwToCoin,
   parseAmountInput,
-} from '../utils/formatAmount'
+} from '../../../shared/utils/formatAmount'
 import { getSplitRecommendation } from '../utils/splitRecommendation'
-import type { SplitMode, TradeSide } from '../types'
+import type { SplitMode, TradeSide } from '../../trade/types'
 
 interface UseTradeInputStateOptions {
   coinBalance: number
 }
 
+function getAmountError(
+  amountKrw: number | null,
+  side: TradeSide,
+  coinBalance: number,
+): string | null {
+  if (amountKrw === null) return null
+
+  if (!isManwonUnitAmount(amountKrw)) {
+    return '10,000원 단위로 입력해 주세요'
+  }
+
+  if (amountKrw < TRADE_LIMITS.minAmount) {
+    return `${formatAmountNumber(TRADE_LIMITS.minAmount)}원 이상부터 거래할 수 있어요`
+  }
+
+  if (amountKrw > TRADE_LIMITS.maxAmount) {
+    return '한 번에 거래할 수 있는 금액을 넘었어요.'
+  }
+
+  if (side === 'SELL' && krwToCoin(amountKrw) > coinBalance) {
+    return '보유한 코인보다 많이 판매할 수 없어요'
+  }
+
+  return null
+}
+
 /**
  * 홈 거래 입력 상태.
+ * 라이브 천 단위 콤마 + 검증 실패 시 경고·CTA 비활성만 (값은 자르지 않음).
  * SELL + 100만 원 이상일 때만 `splitSellEnabled` 토글을 노출합니다 (기본 켜짐).
  */
 export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
@@ -26,7 +53,6 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
   const [amountKrw, setAmountKrw] = useState<number | null>(null)
   const [amountInput, setAmountInput] = useState('')
   const [amountStartKrw, setAmountStartKrw] = useState(0)
-  const [amountFieldBlurred, setAmountFieldBlurred] = useState(false)
   const [splitSellEnabled, setSplitSellEnabled] = useState(true)
   const { replayKey: amountReplayKey, triggerReplay: triggerAmountReplay } = useAmountReplay()
 
@@ -48,27 +74,10 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     }
   }, [showSplitSellToggle])
 
-  const amountError = useMemo(() => {
-    if (!amountFieldBlurred || amountKrw === null) return null
-
-    if (!isManwonUnitAmount(amountKrw)) {
-      return '10,000원 단위로 입력해 주세요'
-    }
-
-    if (amountKrw < TRADE_LIMITS.minAmount) {
-      return `${formatAmountNumber(TRADE_LIMITS.minAmount)}원 이상부터 거래할 수 있어요`
-    }
-
-    if (amountKrw > TRADE_LIMITS.maxAmount) {
-      return '한 번에 거래할 수 있는 금액을 넘었어요.'
-    }
-
-    if (side === 'SELL' && krwToCoin(amountKrw) > coinBalance) {
-      return '보유한 코인보다 많이 판매할 수 없어요'
-    }
-
-    return null
-  }, [amountFieldBlurred, amountKrw, side, coinBalance])
+  const amountError = useMemo(
+    () => getAmountError(amountKrw, side, coinBalance),
+    [amountKrw, side, coinBalance],
+  )
 
   const helperText = useMemo(() => {
     if (amountError) return undefined
@@ -94,7 +103,6 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
 
     if (!digitsOnly) {
       setAmountKrw(null)
-      setAmountFieldBlurred(false)
       return
     }
 
@@ -107,12 +115,7 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     setAmountStartKrw(current)
     setAmountKrw(next)
     setAmountInput(formatAmountNumber(next))
-    setAmountFieldBlurred(true)
     triggerAmountReplay()
-  }
-
-  const handleAmountBlur = () => {
-    setAmountFieldBlurred(true)
   }
 
   return {
@@ -132,6 +135,5 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
     isSubmitDisabled,
     handleAmountInputChange,
     handleQuickAmountSelect,
-    handleAmountBlur,
   }
 }

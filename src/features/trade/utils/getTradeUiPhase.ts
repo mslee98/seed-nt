@@ -1,4 +1,4 @@
-import type { TradeStatus } from '../../home/types'
+import type { TradeStatus } from '../types'
 
 export type TradeUiPhase = 'idle' | 'matching_order' | 'trade_in_progress'
 

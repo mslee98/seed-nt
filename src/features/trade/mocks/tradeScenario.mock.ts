@@ -1,5 +1,5 @@
 import { MOCK_SCENARIO } from '../../home/mocks/homeViewModel.mock'
-import { hydrateTradeMockSession } from '../stores/tradeSession.store'
+import { hydrateTradeMockSession } from './tradeSession.dev'
 import {
   buildMockTradesFromFixture,
   fixtureToSplitGroup,

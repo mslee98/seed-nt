@@ -1,3 +1,11 @@
+/**
+ * useSignupSmsVerification
+ *
+ * 책임: SMS 인증·타이머·계좌 intro 시트 상태
+ * 비책임: 계좌 등록 화면 UI (→ SignupAccount)
+ *
+ * 인증 후 intro 시트를 닫아도 강제 재오픈하지 않음 (Consumer UX).
+ */
 import { useActivity, useActivityParams, useFlow } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -16,8 +24,9 @@ export function useSignupSmsVerification() {
   const [remaining, setRemaining] = useState(TIMER_SECONDS)
   const [isVerifying, setIsVerifying] = useState(false)
   const [introSheetOpen, setIntroSheetOpen] = useState(false)
+  const [introDismissed, setIntroDismissed] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
 
-  const hasVerifiedRef = useRef(false)
   const hasNavigatedRef = useRef(false)
   const isVerifyingRef = useRef(false)
 
@@ -35,37 +44,45 @@ export function useSignupSmsVerification() {
     }
   }, [isActive])
 
+  const navigateToAccount = useCallback(() => {
+    if (hasNavigatedRef.current) return
+
+    hasNavigatedRef.current = true
+    setIntroSheetOpen(false)
+    setIntroDismissed(false)
+    push('SignupAccount', { step: 'bank' })
+  }, [push])
+
+  const handleVerify = useCallback(
+    async (smsCode: string) => {
+      if (isVerified || isVerifyingRef.current) return
+
+      isVerifyingRef.current = true
+      setIsVerifying(true)
+      try {
+        await verifySmsCode(draft.phone, smsCode)
+        setIsVerified(true)
+        setIntroDismissed(false)
+        setIntroSheetOpen(true)
+      } finally {
+        isVerifyingRef.current = false
+        setIsVerifying(false)
+      }
+    },
+    [draft.phone, isVerified],
+  )
+
   useEffect(() => {
-    if (isActive && hasVerifiedRef.current && !hasNavigatedRef.current && !introSheetOpen) {
-      setIntroSheetOpen(true)
-    }
-  }, [isActive, introSheetOpen])
-
-  const handleVerify = useCallback(async (smsCode: string) => {
-    if (hasVerifiedRef.current || isVerifyingRef.current) return
-
-    isVerifyingRef.current = true
-    setIsVerifying(true)
-    try {
-      await verifySmsCode(draft.phone, smsCode)
-      hasVerifiedRef.current = true
-      setIntroSheetOpen(true)
-    } finally {
-      isVerifyingRef.current = false
-      setIsVerifying(false)
-    }
-  }, [draft.phone])
-
-  useEffect(() => {
-    if (code.length !== SMS_LENGTH || hasVerifiedRef.current) return
+    if (code.length !== SMS_LENGTH || isVerified) return
     void handleVerify(code)
-  }, [code, handleVerify])
+  }, [code, handleVerify, isVerified])
 
   const handleResend = async () => {
     await sendSmsCode(draft.phone)
-    hasVerifiedRef.current = false
     hasNavigatedRef.current = false
+    setIsVerified(false)
     setIntroSheetOpen(false)
+    setIntroDismissed(false)
     setCode('')
     setRemaining(TIMER_SECONDS)
   }
@@ -73,14 +90,9 @@ export function useSignupSmsVerification() {
   const handleIntroSheetOpenChange = (open: boolean) => {
     if (hasNavigatedRef.current) return
     setIntroSheetOpen(open)
-  }
-
-  const handleIntroConfirm = () => {
-    if (hasNavigatedRef.current) return
-
-    hasNavigatedRef.current = true
-    setIntroSheetOpen(false)
-    push('SignupAccount', { step: 'bank' })
+    if (!open && isVerified) {
+      setIntroDismissed(true)
+    }
   }
 
   const handleDigit = (digit: string) => {
@@ -93,6 +105,8 @@ export function useSignupSmsVerification() {
 
   const timerLabel = `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`
 
+  const showContinueToAccount = isVerified && introDismissed && !introSheetOpen
+
   return {
     phone,
     smsLength: SMS_LENGTH,
@@ -101,9 +115,12 @@ export function useSignupSmsVerification() {
     introSheetOpen,
     isActive,
     timerLabel,
+    showContinueToAccount,
     handleResend,
     handleIntroSheetOpenChange,
-    handleIntroConfirm,
+    handleIntroConfirm: navigateToAccount,
+    handleIntroSkip: navigateToAccount,
+    handleContinueToAccount: navigateToAccount,
     handleDigit,
     handleBackspace,
   }

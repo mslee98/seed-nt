@@ -4,8 +4,11 @@ export {
   getMatchingCopy,
   getMatchedDockCopy,
   getMatchingHeroCopy,
+  getMatchingUiMode,
+  getMatchingStatusBadgeLabel,
+  MATCHING_LEAVE_OK_HINT,
 } from './matching'
-export type { MatchingHeroCopy } from './matching'
+export type { MatchingHeroCopy, MatchingUiMode } from './matching'
 export {
   getPaymentHeroTitle,
   getPaymentHeroDescription,

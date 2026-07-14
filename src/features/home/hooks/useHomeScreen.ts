@@ -22,7 +22,7 @@ import { useTradeInputState } from './useTradeInputState'
 /**
  * Home Activity orchestration.
  *
- * 입력·확인 시트 후 Trade로 push합니다. 매칭·결제 UI는 Trade Activity에 위임합니다.
+ * 입력·확인 다이얼로그 후 Trade로 push합니다. 매칭·결제 UI는 Trade Activity에 위임합니다.
  *
  * @see docs/domains/trade.md
  * @see docs/domains/notifications.md
@@ -82,7 +82,7 @@ export function useHomeScreen() {
   }
 
   const handleConfirmTrade = useCallback(async () => {
-    if (!tradeInput.amountKrw) return
+    if (tradeInput.isSubmitDisabled || !tradeInput.amountKrw) return
 
     const result = await createTradeOrder({
       side: tradeInput.side,
@@ -96,7 +96,13 @@ export function useHomeScreen() {
     }
 
     push('Trade', { tradeId: result.trade.id }, { animate: true })
-  }, [push, tradeInput.amountKrw, tradeInput.side, tradeInput.splitMode])
+  }, [
+    push,
+    tradeInput.amountKrw,
+    tradeInput.isSubmitDisabled,
+    tradeInput.side,
+    tradeInput.splitMode,
+  ])
 
   const handleActiveTradeClick = useCallback(() => {
     if (headerActiveTrade) {

@@ -1,4 +1,4 @@
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import {
   showPaymentReportedNotification,
   showSellerMatchedNotification,

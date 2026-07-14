@@ -3,7 +3,7 @@
  *
  * 제거 시:
  * 1. 이 파일 삭제
- * 2. tradeSession.store.ts 의 import + onPaymentReportedDevMock / clearDevPaymentSimulation 호출 제거
+ * 2. main.tsx 의 setTradeSessionDevHooks 등록 제거
  */
 
 const DEV_SELLER_CONFIRM_MIN_MS = 3_000

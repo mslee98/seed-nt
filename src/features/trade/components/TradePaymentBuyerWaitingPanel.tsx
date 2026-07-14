@@ -5,7 +5,7 @@ import { ListHeader } from 'seed-design/ui/list-header'
 
 import { PAYMENT_WAITING_LOTTIE_SIZE } from '../../../shared/constants/motion'
 import { SummaryListCard } from '../../../shared/ui/SummaryListCard'
-import { formatAmount, formatCoinAmount, formatCoinUnit } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinAmount, formatCoinUnit } from '../../../shared/utils/formatAmount'
 import {
   getPaymentReportedBuyerBadge,
   getPaymentReportedBuyerDelayHint,

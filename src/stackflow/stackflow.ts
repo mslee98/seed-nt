@@ -12,7 +12,6 @@ import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
 import TradeActivity from '../activities/TradeActivity'
-import TradeConfirmActivity from '../activities/TradeConfirmActivity'
 import { detectTheme } from '../shared/utils/detectTheme'
 import { config } from './config'
 
@@ -24,11 +23,11 @@ import { config } from './config'
  *
  * @see docs/stackflow/README.md
  */
-export const { Stack, actions } = stackflow({  config,
+export const { Stack, actions } = stackflow({
+  config,
   components: {
     Home: HomeActivity,
     Detail: DetailActivity,
-    TradeConfirm: TradeConfirmActivity,
     Trade: TradeActivity,
     SignupIdentity: SignupIdentityActivity,
     SignupSms: SignupSmsActivity,

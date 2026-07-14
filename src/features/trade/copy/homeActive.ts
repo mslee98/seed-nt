@@ -1,4 +1,4 @@
-import type { TradeStatus } from '../../home/types'
+import type { TradeStatus } from '../types'
 import type { MatchingSession } from '../matching/types'
 import { getTradeStatusCopy } from './tradeStatus'
 

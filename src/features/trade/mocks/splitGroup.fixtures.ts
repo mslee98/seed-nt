@@ -3,7 +3,7 @@ import splitGroupAllMatching from '../../../../docs/fixtures/trades/split-group-
 import splitGroupBindingPending from '../../../../docs/fixtures/trades/split-group-binding-pending.json'
 import splitGroupDisputed from '../../../../docs/fixtures/trades/split-group-disputed.json'
 import splitGroupInProgress from '../../../../docs/fixtures/trades/split-group-in-progress.json'
-import type { TradeSide } from '../../home/types'
+import type { TradeSide } from '../types'
 import type { MockScenarioKey } from '../../home/mocks/homeViewModel.mock'
 import type { SplitGroup, TradeRecord } from '../types'
 import type { SplitDashboardViewModel } from '../types/splitDashboard'

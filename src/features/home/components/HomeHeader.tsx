@@ -16,9 +16,9 @@ import LogoBrit from '../../../assets/logo-brit.svg?react'
 import IconCoinDollarSyncFill from '../../../assets/icons/icon-coin-dollar-sync-fill.svg?react'
 import type { HomeViewModel } from '../types'
 import type { SplitGroup } from '../../trade/types'
-import { formatAmount } from '../utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import { getHomeActiveTradeCopy } from '../../trade/copy'
-import { HomeInstallBanner } from './HomeInstallBanner'
+import { HomeInstallBanner } from '../../pwa/components/HomeInstallBanner'
 
 interface HomeActiveTradeCopy {
   badge: string

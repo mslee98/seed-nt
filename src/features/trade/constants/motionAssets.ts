@@ -2,6 +2,7 @@ import type { LottieAssetKey } from '../../../assets/lottie/lottieRegistry'
 
 export type MotionAssetKey =
   | 'matching'
+  | 'matchingSearch'
   | 'completed'
   | 'waitingConfirm'
   | 'paymentTransfer'
@@ -26,6 +27,11 @@ export const MOTION_ASSETS: Record<MotionAssetKey, MotionAsset> = {
   matching: {
     type: 'apng',
     src: '/motion/moneybag-rotate.v1.apng',
+    defaultLoop: true,
+  },
+  matchingSearch: {
+    type: 'apng',
+    src: '/motion/coin-exchange-usd.v1.apng',
     defaultLoop: true,
   },
   completed: {

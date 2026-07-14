@@ -9,7 +9,6 @@ import {
 } from 'seed-design/ui/app-bar'
 import { AppScreen, AppScreenContent, type AppScreenProps } from 'seed-design/ui/app-screen'
 
-import { APP_LAYOUT } from '../../shared/constants/app-layout'
 import { BottomCTA, type BottomCTABehavior } from '../../shared/ui/BottomCTA'
 
 interface ActivityScreenLayoutProps {
@@ -24,6 +23,11 @@ interface ActivityScreenLayoutProps {
   children: ReactNode
 }
 
+/**
+ * Activity 공통 레이아웃.
+ * 하단 CTA는 AppScreen Layer 안 in-flow로 두어 스택 z-index에 가려지지 않게 하고,
+ * keyboardAdaptive 시 `--keyboard-inset`으로 키패드 위에 올린다.
+ */
 export function ActivityScreenLayout({
   title = '',
   onBack,
@@ -34,10 +38,6 @@ export function ActivityScreenLayout({
   showAppBar = true,
   children,
 }: ActivityScreenLayoutProps) {
-  const scrollPaddingBottom = fixedBottom
-    ? `calc(${APP_LAYOUT.fixedBottom.minHeight}px + var(--keyboard-inset, 0px) + env(safe-area-inset-bottom, 0px) + var(--seed-dimension-x4, 16px))`
-    : undefined
-
   return (
     <AppScreen {...appScreenProps}>
       {showAppBar && (
@@ -58,24 +58,17 @@ export function ActivityScreenLayout({
             </VStack>
           )}
 
-          <VStack
-            flexGrow
-            style={{
-              minHeight: 0,
-              overflow: 'auto',
-              paddingBottom: scrollPaddingBottom,
-            }}
-          >
+          <VStack flexGrow style={{ minHeight: 0, overflow: 'auto' }}>
             {children}
           </VStack>
+
+          {fixedBottom && (
+            <BottomCTA behavior={bottomCTABehavior} variant="inline">
+              {fixedBottom}
+            </BottomCTA>
+          )}
         </VStack>
       </AppScreenContent>
-
-      {fixedBottom && (
-        <BottomCTA behavior={bottomCTABehavior} variant="fixed">
-          {fixedBottom}
-        </BottomCTA>
-      )}
     </AppScreen>
   )
 }

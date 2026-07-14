@@ -1,9 +1,9 @@
 import { Badge, Text, VStack } from '@seed-design/react'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
-import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinUnit } from '../../../shared/utils/formatAmount'
 import { getTradeStatusCopy } from '../copy'
-import type { TradeStatus } from '../../home/types'
+import type { TradeStatus } from '../types'
 import { getMockTransactionById } from '../../transactions/mocks/transactions.mock'
 
 interface TradeDetailScreenProps {

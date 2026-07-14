@@ -1,5 +1,5 @@
-import type { TradeSide, TradeStatus } from '../../home/types'
-import { formatAmount } from '../../home/utils/formatAmount'
+import type { TradeSide, TradeStatus } from '../types'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import type { MatchingPhase } from '../matching/types'
 import type { SplitGroup } from '../types'
 

@@ -8,11 +8,6 @@ declare module '@stackflow/config' {
     Detail: {
       id: string
     }
-    TradeConfirm: {
-      side: string
-      amountKrw: string
-      splitMode?: string
-    }
     Trade: {
       tradeId?: string
       splitGroupId?: string
@@ -42,10 +37,6 @@ export const config = defineConfig({
     {
       name: 'Detail',
       route: '/detail/:id',
-    },
-    {
-      name: 'TradeConfirm',
-      route: '/trade/confirm',
     },
     {
       name: 'Trade',

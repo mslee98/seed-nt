@@ -3,7 +3,7 @@ import { Callout } from 'seed-design/ui/callout'
 import { PageBanner } from 'seed-design/ui/page-banner'
 import { ResultSection } from 'seed-design/ui/result-section'
 
-import { formatAmount, formatCoinAmount, formatCoinUnit } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinAmount, formatCoinUnit } from '../../../shared/utils/formatAmount'
 import { getPaymentReportedBuyerBadge } from '../copy'
 import type { TradeDetailViewModel } from '../types'
 import { TradeHeroMotion } from './TradeHeroMotion'

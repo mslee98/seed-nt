@@ -1,7 +1,7 @@
 import { Badge, Box, HStack, Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import type { SplitLegViewModel } from '../types/splitDashboard'
 import { getSplitLegActionLabel } from '../utils/mapSplitDashboard'
 

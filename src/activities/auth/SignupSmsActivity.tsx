@@ -8,6 +8,7 @@ import { NumericKeypad } from '../../features/auth/components/NumericKeypad'
 import { PinField } from 'seed-design/ui/pin-field'
 import { useSignupSmsVerification } from '../../features/auth/hooks/useSignupSmsVerification'
 import { TextLinkButton } from '../../shared/components/TextLinkButton'
+import { BottomActionButton } from '../../shared/ui/BottomActionButton'
 
 const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
   const {
@@ -18,9 +19,12 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
     introSheetOpen,
     isActive,
     timerLabel,
+    showContinueToAccount,
     handleResend,
     handleIntroSheetOpenChange,
     handleIntroConfirm,
+    handleIntroSkip,
+    handleContinueToAccount,
     handleDigit,
     handleBackspace,
   } = useSignupSmsVerification()
@@ -30,6 +34,19 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
       <ActivityScreenLayout
         title="휴대폰 인증"
         progress={<SignupProgressHeader type="sms" />}
+        bottomCTABehavior="fixed"
+        fixedBottom={
+          showContinueToAccount ? (
+            <BottomActionButton
+              size="large"
+              variant="brandSolid"
+              flexGrow
+              onClick={handleContinueToAccount}
+            >
+              계좌 등록하기
+            </BottomActionButton>
+          ) : undefined
+        }
       >
         <VStack px="spacingX.globalGutter" py="x4" gap="x6">
           <VStack gap="spacingY.betweenText">
@@ -65,6 +82,7 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
           open={introSheetOpen}
           onOpenChange={handleIntroSheetOpenChange}
           onConfirm={handleIntroConfirm}
+          onSkip={handleIntroSkip}
         />
       )}
     </>

@@ -57,9 +57,9 @@ CANCELLED*     EXPIRED
 
 | UI | 컴포넌트 | 위치 |
 |----|----------|------|
-| 금액 입력·확인 시트 | `HomeTradeInput`, `TradeConfirmBottomSheet` | Home |
+| 금액 입력·확인 다이얼로그 | `HomeTradeInput`, `TradeConfirmAlertDialog` | Home |
 | Split 위젯 리스트 | `SplitTradeLegCards` (예정) | Trade |
-| 매칭 피드·스켈레톤 | `MatchingFeed` | Trade leg 상세 |
+| 매칭 피드 | `MatchingFeed` — 가로 히어로(APNG)·leave-ok 바·후보 리스트·인라인 Push·결과 시 하단 제안 CTA | Trade leg 상세 |
 | 글로벌 배너 | `GlobalActiveTradeBanner` | App (Trade 복귀) |
 | 결제 시트 | `TradePaymentBottomSheet` | Trade |
 
@@ -70,10 +70,10 @@ Activity: [`HomeActivity`](../../src/activities/HomeActivity.tsx) → [`TradeAct
 
 | Activity | Route | 용도 |
 |----------|-------|------|
-| `Home` | `/` | 잔액·금액 입력·확인 시트 (허브) |
+| `Home` | `/` | 잔액·금액 입력·확인 다이얼로그 (허브) |
 | `Trade` | `/trade?splitGroupId=` | 위젯 리스트·매칭·입금 (C2C 핵심) |
 | `Detail` | `/detail/:id` | 거래내역, MY, 스토어, 커뮤니티 |
-| `TradeConfirm` | `/trade/confirm` | **deprecated** — Home 시트로 대체 |
+| `TradeConfirm` | `/trade/confirm` | **deprecated** — Home 확인 다이얼로그로 대체 |
 
 ## 주요 store API (tradeSession)
 
@@ -89,9 +89,10 @@ Activity: [`HomeActivity`](../../src/activities/HomeActivity.tsx) → [`TradeAct
 
 ## Consumer UX
 
-- 매칭 독 = 홈 **핵심 모션 1곳**
+- 매칭 피드 = Trade 안 **대기/결과 모드** 분리 (찾는 중 → 정확 일치·비슷한 상대 → 승인 대기), 결과 시 하단 제안 CTA + 히어로 APNG 1곳
+- 매칭 독 = 홈 **핵심 모션 1곳** (피드에서는 `matchingSearch` APNG만)
 - 매칭 중 잔액 숫자 replay 억제 (`useHomeScreen`)
-- Push: `PushEnableCard` 인라인만 (진입 직후 권한 X)
+- Push: `PushEnableCard` 인라인만 (진입 직후 권한 X). leave-ok는 「요청 유지」만 (푸시 단정·시간 약속 금지)
 
 ## 관련 문서
 

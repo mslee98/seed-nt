@@ -12,7 +12,7 @@ import {
 import { List, ListDivider, ListItem } from 'seed-design/ui/list'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
-import { formatAmount, formatCoinAmount } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinAmount } from '../../../shared/utils/formatAmount'
 import type { MatchingCandidate } from '../matching/types'
 import { MatchingCandidateTagGroup } from './MatchingCandidateTagGroup'
 

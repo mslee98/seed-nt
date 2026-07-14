@@ -67,6 +67,8 @@ const TradeActivity: ActivityComponentType<'Trade'> = () => {
             onContinueTrade={screen.handleSingleTradeContinue}
             onGoHome={screen.handleGoHome}
             onSelectMatchingCandidate={screen.openAcceptForCandidate}
+            onBrowseStore={screen.handleBrowseStore}
+            onBrowseCommunity={screen.handleBrowseCommunity}
             onCopyAccount={screen.handleCopyAccount}
             onCopyFailed={screen.handleCopyAccountFailed}
             onContactSupport={screen.handleContactSupport}

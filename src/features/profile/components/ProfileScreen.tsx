@@ -1,7 +1,7 @@
 import { Badge, Text, VStack } from '@seed-design/react'
 import { List, ListItem } from 'seed-design/ui/list'
 
-import { formatAmount, formatCoinUnit } from '../../home/utils/formatAmount'
+import { formatAmount, formatCoinUnit } from '../../../shared/utils/formatAmount'
 import { useProfileViewModel } from '../hooks/useProfileViewModel'
 
 export function ProfileScreen() {

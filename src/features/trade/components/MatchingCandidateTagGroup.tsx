@@ -17,7 +17,7 @@ function getMannerTrustLabel(temperature: number): string {
   const levelNumber = Number.parseInt(level.slice(1), 10)
   if (levelNumber >= 8) return '신뢰온도 높음'
   if (levelNumber >= 5) return '신뢰온도 보통'
-  return '신뢰온도 낮음'
+  return '신뢰도 확인 필요'
 }
 
 export function MatchingCandidateTagGroup({ candidate }: MatchingCandidateTagGroupProps) {

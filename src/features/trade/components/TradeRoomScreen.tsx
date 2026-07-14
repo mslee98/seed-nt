@@ -11,6 +11,8 @@ interface TradeRoomScreenProps {
   onContinueTrade?: () => void
   onGoHome: () => void
   onSelectMatchingCandidate?: (candidate: MatchingCandidate) => void
+  onBrowseStore?: () => void
+  onBrowseCommunity?: () => void
   onCopyAccount?: () => void
   onCopyFailed?: () => void
   onContactSupport?: () => void
@@ -28,6 +30,8 @@ export function TradeRoomScreen({
   onContinueTrade,
   onGoHome,
   onSelectMatchingCandidate,
+  onBrowseStore,
+  onBrowseCommunity,
   onCopyAccount,
   onCopyFailed,
   onContactSupport,
@@ -37,6 +41,8 @@ export function TradeRoomScreen({
       <TradeLegMatchingScreen
         trade={trade}
         onSelectCandidate={onSelectMatchingCandidate}
+        onBrowseStore={onBrowseStore}
+        onBrowseCommunity={onBrowseCommunity}
       />
     )
   }

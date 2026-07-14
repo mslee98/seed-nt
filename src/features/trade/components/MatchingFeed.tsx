@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react'
-import { useFlow } from '@stackflow/react'
-import { Badge, HStack, ScrollFog, Text, VStack } from '@seed-design/react'
+import { Box, HStack, ScrollFog, Text, VStack } from '@seed-design/react'
+import { ActionButton } from 'seed-design/ui/action-button'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
 import { TextLinkButton } from '../../../shared/components/TextLinkButton'
 import { usePrefersReducedMotion } from '../../../shared/hooks/usePrefersReducedMotion'
-import { formatAmount } from '../../home/utils/formatAmount'
+import { BottomCTA } from '../../../shared/ui/BottomCTA'
 import { usePushNotification } from '../../pwa/hooks/usePushNotification'
 import {
   useMatchingSession,
@@ -17,24 +17,31 @@ import {
   getVisibleRevealedCandidates,
   hasRevealedExact,
   isQueueLocked,
+  partitionRevealedCandidates,
 } from '../matching/utils/matchingPhase'
 import type { TradeRecord } from '../types'
-import { getMatchingHeroCopy } from '../copy'
+import { getMatchingHeroCopy, getMatchingUiMode, MATCHING_LEAVE_OK_HINT } from '../copy'
 import { MatchingCandidateList } from './MatchingCandidateList'
-import { PushEnableCard } from './PushEnableCard'
+import { PushEnableCard } from '../../pwa/components/PushEnableCard'
 import { TradeMotion } from './TradeMotion'
 import { WhileYouWaitSection } from './WhileYouWaitSection'
 
 const SCROLL_FOG_CANDIDATE_THRESHOLD = 5
+const HERO_MOTION_SIZE = 56
 
 interface MatchingFeedProps {
   trade: TradeRecord
-  onNavigateAway?: () => void
+  onBrowseStore?: () => void
+  onBrowseCommunity?: () => void
   onSelectCandidate?: (candidate: MatchingCandidate) => void
 }
 
-export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: MatchingFeedProps) {
-  const { push } = useFlow()
+export function MatchingFeed({
+  trade,
+  onBrowseStore,
+  onBrowseCommunity,
+  onSelectCandidate,
+}: MatchingFeedProps) {
   const matchingSession = useMatchingSession()
   const { withdrawProposal } = useMatchingSessionActions()
   const { eligibility, canShowWhileYouWait, requestPermission } = usePushNotification()
@@ -49,25 +56,32 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
   )
 
   const hasExact = hasRevealedExact(matchingSession)
-  const heroCopy = getMatchingHeroCopy({
+  const { exact, near } = useMemo(
+    () => partitionRevealedCandidates(revealedCandidates, trade.amountKrw),
+    [revealedCandidates, trade.amountKrw],
+  )
+
+  const uiMode = getMatchingUiMode({
     queueLocked,
     revealedCount: revealedCandidates.length,
     hasExact,
+  })
+
+  const heroCopy = getMatchingHeroCopy({
+    mode: uiMode,
+    amountKrw: trade.amountKrw,
+    exactCount: exact.length,
+    nearCount: near.length,
     role: trade.role,
   })
 
+  const primaryCandidate = exact[0] ?? near[0] ?? null
+  const isResultMode = uiMode === 'RESULT_EXACT' || uiMode === 'RESULT_NEAR'
+  const showBottomCta =
+    isResultMode && primaryCandidate !== null && Boolean(onSelectCandidate)
+
   const showSectionHeader = queueLocked || revealedCandidates.length > 0
   const showScrollFog = revealedCandidates.length >= SCROLL_FOG_CANDIDATE_THRESHOLD
-
-  const handleStoreClick = () => {
-    onNavigateAway?.()
-    push('Detail', { id: 'store' })
-  }
-
-  const handleCommunityClick = () => {
-    onNavigateAway?.()
-    push('Detail', { id: 'community' })
-  }
 
   useEffect(() => {
     if (!prefersReducedMotion || !matchingSession) {
@@ -76,8 +90,6 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
     if (queueLocked) return
     revealAllCandidates()
   }, [prefersReducedMotion, matchingSession?.tradeId, queueLocked])
-
-  const statusBadgeLabel = queueLocked ? '승인 대기 중' : '매칭 중'
 
   const primarySection = (
     <VStack gap="x4" width="full">
@@ -124,10 +136,10 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
 
   const secondarySection = (
     <>
-      {!queueLocked && canShowWhileYouWait && (
+      {!queueLocked && canShowWhileYouWait && onBrowseStore && onBrowseCommunity && (
         <WhileYouWaitSection
-          onStoreClick={handleStoreClick}
-          onCommunityClick={handleCommunityClick}
+          onStoreClick={onBrowseStore}
+          onCommunityClick={onBrowseCommunity}
         />
       )}
 
@@ -137,29 +149,65 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
     </>
   )
 
+  const heroMotion =
+    uiMode === 'PENDING' ? (
+      prefersReducedMotion ? (
+        <Box
+          width={`${HERO_MOTION_SIZE}px`}
+          height={`${HERO_MOTION_SIZE}px`}
+          borderRadius="full"
+          bg="bg.brandWeak"
+          flexShrink={0}
+        />
+      ) : (
+        <TradeMotion variant="waitingConfirm" size={HERO_MOTION_SIZE} />
+      )
+    ) : prefersReducedMotion ? (
+      <Box
+        width={`${HERO_MOTION_SIZE}px`}
+        height={`${HERO_MOTION_SIZE}px`}
+        borderRadius="full"
+        bg="bg.brandWeak"
+        flexShrink={0}
+      />
+    ) : (
+      <TradeMotion variant="matchingSearch" size={HERO_MOTION_SIZE} />
+    )
+
   return (
     <VStack gap="x4" width="full" className="matching-feed" flexGrow minHeight="full">
-      <VStack gap="x3" align="center" width="full" flexShrink={0}>
-        <TradeMotion
-          variant={queueLocked ? 'waitingConfirm' : 'matching'}
-          size={48}
-        />
-        <VStack gap="x1" align="center" width="full">
-          <Badge tone="warning" variant="weak" size="medium">
-            {statusBadgeLabel}
-          </Badge>
-          <Text textStyle="t6Bold" color="fg.neutral">
-            {heroCopy.title}
-          </Text>
-          {heroCopy.description && (
-            <Text textStyle="t4Regular" color="fg.neutralSubtle">
-              {heroCopy.description}
+      <VStack gap="x3" width="full" flexShrink={0} px="x1">
+        <HStack gap="x3" align="center" width="full">
+          {heroMotion}
+          <VStack gap="x1" align="flex-start" flexGrow minWidth="0">
+            <Text textStyle="t6Bold" color="fg.neutral">
+              {heroCopy.title}
             </Text>
-          )}
-          <Text textStyle="t4Regular" color="fg.neutralMuted" className="tabular-nums">
-            {formatAmount(trade.amountKrw)}
+            {heroCopy.description && (
+              <Text textStyle="t4Regular" color="fg.neutralSubtle">
+                {heroCopy.description}
+              </Text>
+            )}
+            {heroCopy.summary && (
+              <Text textStyle="t4Regular" color="fg.neutralMuted">
+                {heroCopy.summary}
+              </Text>
+            )}
+          </VStack>
+        </HStack>
+
+        <HStack
+          width="full"
+          px="x3"
+          py="x2"
+          bg="bg.neutralWeak"
+          borderRadius="r2"
+          align="center"
+        >
+          <Text textStyle="t3Regular" color="fg.neutralMuted">
+            {MATCHING_LEAVE_OK_HINT}
           </Text>
-        </VStack>
+        </HStack>
       </VStack>
 
       <div className="matching-feed-scroll-host">
@@ -170,6 +218,19 @@ export function MatchingFeed({ trade, onNavigateAway, onSelectCandidate }: Match
           </VStack>
         </ScrollFog>
       </div>
+
+      {showBottomCta && primaryCandidate && (
+        <BottomCTA variant="inline" behavior="fixed">
+          <ActionButton
+            size="large"
+            variant="brandSolid"
+            flexGrow
+            onClick={() => onSelectCandidate?.(primaryCandidate)}
+          >
+            가장 적합한 상대에게 제안하기
+          </ActionButton>
+        </BottomCTA>
+      )}
     </VStack>
   )
 }

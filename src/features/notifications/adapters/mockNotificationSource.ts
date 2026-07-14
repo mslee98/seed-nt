@@ -1,5 +1,5 @@
 import { getActivityFromPathname } from '../../../app/layouts/LayoutContext'
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 import { getMatchingSession, subscribeMatchingSession } from '../../trade/matching/matchingSession.store'
 import {
   getActiveTrade,

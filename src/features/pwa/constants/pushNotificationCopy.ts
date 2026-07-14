@@ -13,7 +13,8 @@ export const WHILE_YOU_WAIT_COPY = {
 } as const
 
 export const PUSH_ENABLE_COPY = {
-  title: '알림을 켜두면 매칭될 때 바로 알려드려요',
-  cta: '알림 받기',
+  title: '더 좋은 상대가 나타나면 알려드릴게요',
+  description: '알림을 켜두면 바로 확인할 수 있어요.',
+  cta: '알림 설정',
   denied: '알림이 꺼져 있어요. 기기 설정에서 Brit 알림을 켜주세요.',
 } as const

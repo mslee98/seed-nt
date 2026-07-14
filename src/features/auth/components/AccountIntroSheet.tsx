@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useActivityZIndexBase } from '@seed-design/stackflow'
-import { Box, Portal, Text, VStack } from '@seed-design/react'
+import { Box, HStack, Portal, Text, VStack } from '@seed-design/react'
 
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import {
@@ -19,6 +19,8 @@ interface AccountIntroSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onConfirm: () => void
+  /** intro만 스킵하고 계좌 등록으로 진행 */
+  onSkip: () => void
 }
 
 const INTRO_ITEMS = [
@@ -27,7 +29,12 @@ const INTRO_ITEMS = [
   '환전할 때 한 번 더 확인해요',
 ]
 
-export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntroSheetProps) {
+export function AccountIntroSheet({
+  open,
+  onOpenChange,
+  onConfirm,
+  onSkip,
+}: AccountIntroSheetProps) {
   const portalContainerRef = useRef<HTMLElement | null>(
     typeof document !== 'undefined' ? document.getElementById('app-frame-portal') : null,
   )
@@ -68,16 +75,14 @@ export function AccountIntroSheet({ open, onOpenChange, onConfirm }: AccountIntr
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <BottomActionButton
-              size="large"
-              variant="brandSolid"
-              flexGrow
-              onClick={() => {
-                onConfirm()
-              }}
-            >
-              확인했어요
-            </BottomActionButton>
+            <HStack gap="x2" width="full">
+              <BottomActionButton size="large" variant="neutralWeak" onClick={onSkip}>
+                나중에
+              </BottomActionButton>
+              <BottomActionButton size="large" variant="brandSolid" flexGrow onClick={onConfirm}>
+                확인했어요
+              </BottomActionButton>
+            </HStack>
           </BottomSheetFooter>
         </BottomSheetContent>
       </Portal>

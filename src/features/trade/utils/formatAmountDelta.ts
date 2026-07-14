@@ -1,4 +1,4 @@
-import { formatAmountNumber } from '../../home/utils/formatAmount'
+import { formatAmountNumber } from '../../../shared/utils/formatAmount'
 
 export function formatAmountDelta(
   requestedAmountKrw: number,

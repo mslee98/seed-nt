@@ -1,4 +1,4 @@
-import type { TradeSide } from '../../home/types'
+import type { TradeSide } from '../types'
 
 /** fixture `docs/fixtures/trades/split-group-*.json` uiPhase */
 export type SplitLegUiPhase =

@@ -7,11 +7,15 @@ import { MatchingFeed } from './MatchingFeed'
 interface TradeLegMatchingScreenProps {
   trade: TradeDetailViewModel
   onSelectCandidate?: (candidate: MatchingCandidate) => void
+  onBrowseStore?: () => void
+  onBrowseCommunity?: () => void
 }
 
 export function TradeLegMatchingScreen({
   trade,
   onSelectCandidate,
+  onBrowseStore,
+  onBrowseCommunity,
 }: TradeLegMatchingScreenProps) {
   return (
     <VStack
@@ -22,7 +26,12 @@ export function TradeLegMatchingScreen({
       gap="x6"
       style={{ minHeight: 0 }}
     >
-      <MatchingFeed trade={trade} onSelectCandidate={onSelectCandidate} />
+      <MatchingFeed
+        trade={trade}
+        onSelectCandidate={onSelectCandidate}
+        onBrowseStore={onBrowseStore}
+        onBrowseCommunity={onBrowseCommunity}
+      />
     </VStack>
   )
 }

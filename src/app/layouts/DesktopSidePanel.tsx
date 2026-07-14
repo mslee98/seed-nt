@@ -2,8 +2,8 @@ import { Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
-import { usePwaInstallPrompt } from '../../features/home/hooks/usePwaInstallPrompt'
-import { getInstallGuideSteps } from '../../features/home/utils/detectInstallPlatform'
+import { usePwaInstallPrompt } from '../../features/pwa/hooks/usePwaInstallPrompt'
+import { getInstallGuideSteps } from '../../features/pwa/services/detectInstallPlatform'
 
 export function DesktopSidePanel() {
   const { deferredPrompt, installApp, isInstalled, isPrompting } = usePwaInstallPrompt()

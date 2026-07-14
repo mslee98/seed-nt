@@ -3,7 +3,6 @@ import {
   MATCH_COUNTERPARTY_ACCEPT_DELAY_MS,
   MATCH_NEAR_AUTO_PROPOSE_MS,
 } from '../constants'
-import { createMockCandidates } from './matchingSession.mock'
 import type { MatchingCandidate, MatchingSession, MatchingSuggestionReason } from './types'
 import {
   getClosestNearCandidate,
@@ -15,6 +14,8 @@ type Listener = () => void
 
 type MatchConfirmedHandler = (payload: { tradeId: string; amountKrw: number }) => void
 
+type MatchingCandidateFactory = (requestedAmountKrw: number) => MatchingCandidate[]
+
 const REVEAL_INTERVAL_MS = 1500
 
 const listeners = new Set<Listener>()
@@ -24,6 +25,12 @@ let nearAutoProposeTimerId: ReturnType<typeof setTimeout> | null = null
 let approvalTimeoutId: ReturnType<typeof setTimeout> | null = null
 let counterpartyAcceptTimerId: ReturnType<typeof setTimeout> | null = null
 let onMatchConfirmed: MatchConfirmedHandler | null = null
+let candidateFactory: MatchingCandidateFactory = () => []
+
+/** DEV/mock — 후보 생성기 주입. 미주입 시 빈 목록. */
+export function setMatchingCandidateFactory(factory: MatchingCandidateFactory) {
+  candidateFactory = factory
+}
 
 function notify() {
   listeners.forEach((listener) => listener())
@@ -263,7 +270,7 @@ export function startMatchingSession(input: {
     tradeId: input.tradeId,
     requestedAmountKrw: input.amountKrw,
     phase: 'BROWSING',
-    candidates: createMockCandidates(input.amountKrw),
+    candidates: candidateFactory(input.amountKrw),
     revealedCandidateIds: [],
     dismissedCandidateIds: [],
     pendingMatch: null,

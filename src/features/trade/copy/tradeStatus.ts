@@ -1,4 +1,4 @@
-import type { TradeStatus } from '../../home/types'
+import type { TradeStatus } from '../types'
 
 interface TradeStatusCopy {
   badge: string

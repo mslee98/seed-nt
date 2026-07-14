@@ -11,7 +11,7 @@ import {
 import { Callout } from 'seed-design/ui/callout'
 
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
-import { formatAmount } from '../../home/utils/formatAmount'
+import { formatAmount } from '../../../shared/utils/formatAmount'
 
 interface DisputePlaceholderBottomSheetProps {
   open: boolean

@@ -7,9 +7,9 @@ import { AmountHeroField } from '../../../shared/ui/AmountHeroField'
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import { MotionChipButton, TapSegmentedControlItem } from '../../../shared/motion'
 import { QUICK_AMOUNTS } from '../constants'
-import { formatAmount, formatAmountNumber } from '../utils/formatAmount'
+import { formatAmount, formatAmountNumber } from '../../../shared/utils/formatAmount'
 import type { SplitRecommendation } from '../utils/splitRecommendation'
-import type { TradeSide } from '../types'
+import type { TradeSide } from '../../trade/types'
 
 interface HomeTradeInputProps {
   side: TradeSide
@@ -25,7 +25,6 @@ interface HomeTradeInputProps {
   splitRecommendation: SplitRecommendation | null
   onSideChange: (side: TradeSide) => void
   onAmountInputChange: (value: string) => void
-  onAmountBlur: () => void
   onQuickAmountSelect: (amount: number) => void
   onSplitSellEnabledChange: (enabled: boolean) => void
   onSubmit: () => void
@@ -52,7 +51,6 @@ export function HomeTradeInput({
   splitRecommendation,
   onSideChange,
   onAmountInputChange,
-  onAmountBlur,
   onQuickAmountSelect,
   onSplitSellEnabledChange,
   onSubmit,
@@ -107,7 +105,6 @@ export function HomeTradeInput({
           description={helperText}
           errorMessage={amountError ?? undefined}
           invalid={!!amountError}
-          onBlur={onAmountBlur}
         />
 
         <HStack gap="x2" flexWrap="wrap">

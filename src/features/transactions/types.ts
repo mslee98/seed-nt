@@ -1,4 +1,4 @@
-import type { TradeSide, TradeStatus } from '../home/types'
+import type { TradeSide, TradeStatus } from '../trade/types'
 
 export interface TransactionItem {
   id: string

@@ -1,4 +1,18 @@
-import type { SplitMode, TradeSide, TradeStatus } from '../home/types'
+/**
+ * Trade domain types — source of truth for side/status/split.
+ */
+export type TradeSide = 'BUY' | 'SELL'
+
+export type TradeStatus =
+  | 'MATCHING'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_REPORTED'
+  | 'DISPUTED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+
+export type SplitMode = 'AUTO' | 'CUSTOM' | 'NONE'
 
 export type TradeRole = 'BUYER' | 'SELLER'
 

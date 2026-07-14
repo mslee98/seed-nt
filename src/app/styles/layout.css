@@ -11,6 +11,7 @@
   /* SEED layer(2) ~ bottom sheet step(7) 사이: 콘텐츠 위, 모달 아래 */
   --app-chrome-z-index: 3;
   --app-sticky-header-z-index: 4;
+  /* Activity CTA는 Layer 안 inline — fixed 변형 예비용 */
   --app-sticky-footer-z-index: 4;
   --app-content-bottom-padding: calc(
     var(--app-bottom-navigation-height) + env(safe-area-inset-bottom, 0px) + 16px
@@ -23,6 +24,7 @@
   --keyboard-inset: 0px;
 }
 
+/* variant="fixed" 전용 — Activity는 inline 사용. Layer 밖이면 스택 z-index에 가려질 수 있음 */
 .bottom-cta {
   position: fixed;
   left: 50%;

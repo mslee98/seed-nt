@@ -1,7 +1,7 @@
 /**
  * HomeActivity
  *
- * 책임: 홈 화면 JSX 조립 (입력·잔액·확인 시트)
+ * 책임: 홈 화면 JSX 조립 (입력·잔액·확인 다이얼로그)
  * 비책임: 매칭·split 진행 UI (→ TradeActivity)
  *
  * @see docs/stackflow/README.md
@@ -17,7 +17,7 @@ import { HomeHeader } from '../features/home/components/HomeHeader'
 import { HomeSafetyBanner } from '../features/home/components/HomeSafetyBanner'
 import { HomeTradeInput } from '../features/home/components/HomeTradeInput'
 import { useHomeScreen } from '../features/home/hooks/useHomeScreen'
-import { TradeConfirmBottomSheet } from '../features/trade/components/TradeConfirmBottomSheet'
+import { TradeConfirmAlertDialog } from '../features/trade/components/TradeConfirmAlertDialog'
 
 const HomeActivity: ActivityComponentType<'Home'> = () => {
   const screen = useHomeScreen()
@@ -75,7 +75,6 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                       splitRecommendation={screen.tradeInput.splitRecommendation}
                       onSideChange={screen.tradeInput.setSide}
                       onAmountInputChange={screen.tradeInput.handleAmountInputChange}
-                      onAmountBlur={screen.tradeInput.handleAmountBlur}
                       onQuickAmountSelect={screen.tradeInput.handleQuickAmountSelect}
                       onSplitSellEnabledChange={screen.tradeInput.setSplitSellEnabled}
                       onSubmit={screen.handleSubmit}
@@ -92,7 +91,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
       </AppScreen>
 
       {screen.tradeInput.amountKrw !== null && (
-        <TradeConfirmBottomSheet
+        <TradeConfirmAlertDialog
           open={screen.confirmOpen}
           onOpenChange={screen.handleConfirmOpenChange}
           side={screen.tradeInput.side}

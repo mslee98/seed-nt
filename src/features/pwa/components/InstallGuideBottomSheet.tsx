@@ -14,7 +14,7 @@ import {
   detectInstallGuidePlatform,
   getInstallGuideDescription,
   getInstallGuideSteps,
-} from '../utils/detectInstallPlatform'
+} from '../services/detectInstallPlatform'
 
 interface InstallGuideBottomSheetProps {
   open: boolean

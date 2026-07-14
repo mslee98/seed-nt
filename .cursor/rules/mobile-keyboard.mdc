@@ -14,16 +14,22 @@ alwaysApply: false
 |------|------|
 | [`useKeyboardInset.ts`](src/shared/hooks/useKeyboardInset.ts) | VisualViewport → `--keyboard-inset` |
 | [`KeyboardInsetProvider`](src/app/providers/KeyboardInsetProvider.tsx) | 앱 루트 1회 구독 ([`App.tsx`](src/App.tsx)) |
-| [`BottomCTA`](src/shared/ui/BottomCTA.tsx) | Activity viewport 하단 고정 CTA |
+| [`BottomCTA`](src/shared/ui/BottomCTA.tsx) | Activity Layer **안** in-flow CTA (`variant="inline"`) |
 | [`BottomSheetBottomCTA`](src/shared/ui/BottomSheetBottomCTA.tsx) | `BottomSheetFooter` 내부 inset |
+| [`index.html`](index.html) viewport | `interactive-widget=resizes-content` (Android Chromium) |
 
 Android Chromium: `navigator.virtualKeyboard.overlaysContent = true` (optional, feature detect).
+
+## 왜 Layer 안 inline인가
+
+AppScreen Layer는 `z-index: base+2`(푸시 Activity면 ≥7). Layer 밖 `position: fixed` + `z-index: 4`는 CTA가 가려진다.
+Activity CTA는 반드시 `AppScreenContent` 안 `variant="inline"`.
 
 ## BottomCTA behavior
 
 | behavior | 용도 |
 |----------|------|
-| `keyboardAdaptive` (기본) | TextField 있는 Activity — CTA가 키보드 위로 |
+| `keyboardAdaptive` (기본) | TextField 있는 Activity — `--keyboard-inset`으로 키패드 위 |
 | `fixed` | 입력 없는 완료·확인 화면, 대부분 BottomSheet |
 | `hiddenWhenKeyboard` | 긴 폼 예외 — 키보드 열리면 CTA 숨김 |
 
@@ -38,7 +44,7 @@ Android Chromium: `navigator.virtualKeyboard.overlaysContent = true` (optional, 
 >
 ```
 
-입력 없음 → `bottomCTABehavior="fixed"` (SignupComplete, TradeConfirm).
+입력 없음 → `bottomCTABehavior="fixed"` (SignupComplete, SMS 완료 CTA).
 
 ### BottomSheet
 
@@ -52,21 +58,24 @@ Android Chromium: `navigator.virtualKeyboard.overlaysContent = true` (optional, 
 
 ## 플랫폼
 
-- **iOS Safari / PWA**: `visualViewport` resize + scroll, rAF 디바운스
-- **Android Chrome**: VisualViewport + optional VirtualKeyboard API
-- **Desktop**: inset ≈ 0 → safe-area만
+| 환경 | 대응 |
+|------|------|
+| Android Chrome / PWA | `interactive-widget=resizes-content` + VisualViewport / VirtualKeyboard |
+| iOS Safari / PWA | VisualViewport resize·scroll → `--keyboard-inset` (필수) |
+| Desktop | inset ≈ 0 → safe-area만 |
 
 ## 금지
 
+- Activity CTA를 AppScreen Layer **밖**에 `position: fixed`로 두기
 - `paddingBottom: 300px` 하드코딩
 - 화면마다 키보드 listener 중복 (Provider 1곳만)
 - `100vh` — shell은 `min-h-dvh` ([`MobileFrame`](src/app/layouts/MobileFrame.tsx))
 
 ## 테스트
 
-1. SignupIdentity — 이름/전화 입력 시 CTA가 키보드 위
+1. SignupIdentity — 홈에서 push 후 이름 입력 시 CTA 보임 + 키보드 위
 2. SignupAccount — 계좌번호 입력
 3. iOS PWA standalone + Android Chrome
-4. Desktop — CTA 위치·너비(616px) 정상
+4. Desktop MobileFrame — CTA가 프레임 안에 있음
 
 관련: [mobile-motion.mdc](mobile-motion.mdc), [consumer-ux.mdc](consumer-ux.mdc)
