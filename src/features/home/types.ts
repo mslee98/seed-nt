@@ -1,4 +1,4 @@
-import type { SplitMode, TradeSide, TradeStatus } from '../trade/types'
+import type { TradeSide, TradeStatus } from '../trade/types'
 
 export interface HomeViewModel {
   user: {
@@ -9,6 +9,8 @@ export interface HomeViewModel {
   wallet: {
     coinBalance: number
     estimatedKrwValue: number
+    availableCoin: number
+    escrowCoin: number
   }
   unreadNotificationCount: number
   activeTrade?: {
@@ -27,11 +29,4 @@ export interface HomeViewModel {
     coinAmount: number
     completedAt: string
   }>
-}
-
-export interface TradeInputState {
-  side: TradeSide
-  amountKrw: number | null
-  splitMode: SplitMode
-  customSplitAmount?: number
 }

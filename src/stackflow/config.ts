@@ -13,6 +13,9 @@ declare module '@stackflow/config' {
       splitGroupId?: string
       focusLeg?: string
     }
+    TradeCompose: {
+      side: 'BUY' | 'SELL'
+    }
     SignupIdentity: {}
     SignupSms: {
       phone: string
@@ -37,6 +40,10 @@ export const config = defineConfig({
     {
       name: 'Detail',
       route: '/detail/:id',
+    },
+    {
+      name: 'TradeCompose',
+      route: '/trade/compose',
     },
     {
       name: 'Trade',

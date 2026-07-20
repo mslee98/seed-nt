@@ -1,7 +1,6 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useAmountReplay } from '../../../shared/hooks/useAmountReplay'
-import { TRADE_LIMITS } from '../constants'
 import {
   formatAmountInputDisplay,
   formatAmountNumber,
@@ -10,11 +9,14 @@ import {
   krwToCoin,
   parseAmountInput,
 } from '../../../shared/utils/formatAmount'
-import { getSplitRecommendation } from '../utils/splitRecommendation'
-import type { SplitMode, TradeSide } from '../../trade/types'
+import { getSplitRecommendation } from '../../home/utils/splitRecommendation'
+import { TRADE_LIMITS } from '../constants/tradeCompose'
+import type { SplitMode, TradeSide } from '../types'
 
 interface UseTradeInputStateOptions {
   coinBalance: number
+  /** Activity params에서 온 초기 side */
+  initialSide?: TradeSide
 }
 
 function getAmountError(
@@ -44,12 +46,15 @@ function getAmountError(
 }
 
 /**
- * 홈 거래 입력 상태.
+ * 거래 금액 입력 상태.
  * 라이브 천 단위 콤마 + 검증 실패 시 경고·CTA 비활성만 (값은 자르지 않음).
  * SELL + 100만 원 이상일 때만 `splitSellEnabled` 토글을 노출합니다 (기본 켜짐).
  */
-export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
-  const [side, setSide] = useState<TradeSide>('BUY')
+export function useTradeInputState({
+  coinBalance,
+  initialSide = 'BUY',
+}: UseTradeInputStateOptions) {
+  const [side, setSide] = useState<TradeSide>(initialSide)
   const [amountKrw, setAmountKrw] = useState<number | null>(null)
   const [amountInput, setAmountInput] = useState('')
   const [amountStartKrw, setAmountStartKrw] = useState(0)
@@ -63,16 +68,8 @@ export function useTradeInputState({ coinBalance }: UseTradeInputStateOptions) {
 
   const showSplitSellToggle = side === 'SELL' && splitRecommendation !== null
 
-  const splitMode: SplitMode = useMemo(() => {
-    if (!showSplitSellToggle) return 'NONE'
-    return splitSellEnabled ? 'AUTO' : 'NONE'
-  }, [showSplitSellToggle, splitSellEnabled])
-
-  useEffect(() => {
-    if (!showSplitSellToggle) {
-      setSplitSellEnabled(true)
-    }
-  }, [showSplitSellToggle])
+  const splitMode: SplitMode =
+    showSplitSellToggle && splitSellEnabled ? 'AUTO' : 'NONE'
 
   const amountError = useMemo(
     () => getAmountError(amountKrw, side, coinBalance),

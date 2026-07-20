@@ -6,7 +6,9 @@
   },
   "wallet": {
     "coinBalance": 2000000,
-    "estimatedKrwValue": 2000000
+    "estimatedKrwValue": 2000000,
+    "availableCoin": 2000000,
+    "escrowCoin": 0
   },
   "unreadNotificationCount": 2,
   "activeTrade": {

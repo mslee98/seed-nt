@@ -17,6 +17,7 @@ const FG_COLOR_VAR: Partial<Record<string, string>> = {
   'fg.neutral': 'var(--seed-color-fg-neutral)',
   'fg.neutralMuted': 'var(--seed-color-fg-neutral-muted)',
   'fg.neutralSubtle': 'var(--seed-color-fg-neutral-subtle)',
+  'fg.neutralInverted': 'var(--seed-color-fg-neutral-inverted)',
 }
 
 interface AnimatedAmountProps {
@@ -30,7 +31,7 @@ interface AnimatedAmountProps {
   useGrouping?: boolean
   minimumFractionDigits?: number
   maximumFractionDigits?: number
-  /** inline: SEED textStyle preset, hero: 홈 입력 등 대형 금액 */
+  /** inline: SEED textStyle, hero: 입력 대형 금액, balance: 홈 월렛 잔액 */
   variant?: AmountTypographyVariant
   /** inline variant에서 AnimateNumber·fallback 공통 타이포 소스 */
   numberTextStyle?: TextStyle
@@ -76,12 +77,13 @@ function joinClassNames(...classes: Array<string | undefined>) {
 /**
  * 금액 표시 + breeze `AnimateNumber` 래퍼.
  *
- * `variant="inline"`은 `numberTextStyle`, `variant="hero"`는 `.amount-hero` preset을 사용합니다.
+ * `variant="inline"`은 `numberTextStyle`, `hero`는 `.amount-hero`, `balance`는 `.balance-amount`.
  * `replayKey`가 바뀌면 `startValue`에서 `value`로 재생합니다.
  *
  * @example
  * ```tsx
  * <AnimatedAmount value={amountKrw} variant="hero" suffix="원" replayKey={replayKey} />
+ * <AnimatedAmount value={available} variant="balance" replayKey={replayKey} />
  * <AnimatedAmount value={balance} numberTextStyle="t5Bold" replayKey={replayKey} />
  * ```
  */
@@ -107,17 +109,17 @@ export function AnimatedAmount({
 }: AnimatedAmountProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const supportsIntegerAnimation = Number.isInteger(value) && Number.isInteger(startValue)
-  const isHero = variant === 'hero'
+  const usesCssPreset = variant === 'hero' || variant === 'balance'
   const animatedColor =
     FG_COLOR_VAR[String(textColor)] ?? 'var(--seed-color-fg-neutral)'
   const resolvedTypography = resolveAnimateNumberTypography(variant, numberTextStyle)
   const resolvedFontSize = fontSize ?? resolvedTypography.fontSize
   const resolvedFontWeight = fontWeight ?? resolvedTypography.fontWeight
   const numberClassName = joinClassNames(
-    isHero ? 'amount-hero' : 'tabular-nums',
+    variant === 'hero' ? 'amount-hero' : variant === 'balance' ? 'balance-amount' : 'tabular-nums',
     className,
   )
-  const suffixClassName = isHero ? 'amount-hero-suffix' : undefined
+  const suffixClassName = variant === 'hero' ? 'amount-hero-suffix' : undefined
 
   const fallbackText = formatStaticAmount({
     value,
@@ -133,7 +135,7 @@ export function AnimatedAmount({
     if (suffix) {
       return (
         <HStack align="center" gap="x1" className={className}>
-          {isHero ? (
+          {usesCssPreset ? (
             <span className={numberClassName} style={{ color: animatedColor }}>
               {fallbackText}
             </span>
@@ -142,10 +144,12 @@ export function AnimatedAmount({
               {fallbackText}
             </Text>
           )}
-          {isHero ? (
+          {usesCssPreset && suffixClassName ? (
             <span className={suffixClassName} style={{ color: animatedColor }}>
               {suffix}
             </span>
+          ) : usesCssPreset ? (
+            <span style={{ color: animatedColor }}>{suffix}</span>
           ) : (
             <Text textStyle={suffixTextStyle} color={textColor}>
               {suffix}
@@ -155,7 +159,7 @@ export function AnimatedAmount({
       )
     }
 
-    if (isHero) {
+    if (usesCssPreset) {
       return (
         <span className={numberClassName} style={{ color: animatedColor }}>
           {fallbackText}
@@ -183,10 +187,12 @@ export function AnimatedAmount({
         className={numberClassName}
       />
       {suffix &&
-        (isHero ? (
+        (usesCssPreset && suffixClassName ? (
           <span className={suffixClassName} style={{ color: animatedColor }}>
             {suffix}
           </span>
+        ) : usesCssPreset ? (
+          <span style={{ color: animatedColor }}>{suffix}</span>
         ) : (
           <Text textStyle={suffixTextStyle} color={textColor}>
             {suffix}

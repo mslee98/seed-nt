@@ -14,8 +14,10 @@ export function useHomeViewModel(): HomeViewModel & {
   const [data, setData] = useState(() => createHomeViewModel(isVerified))
 
   const wallet = useSyncExternalStore(subscribeHomeWallet, getHomeWallet, () => ({
-    coinBalance: 2_000_000,
-    estimatedKrwValue: 2_000_000,
+    coinBalance: 550_000,
+    estimatedKrwValue: 550_000,
+    availableCoin: 520_000,
+    escrowCoin: 30_000,
   }))
 
   useEffect(() => {

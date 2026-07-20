@@ -25,13 +25,13 @@ export function BottomNavigationItem({
     <button
       type="button"
       onClick={onClick}
-      className="relative flex flex-1 flex-col items-center justify-center gap-x0_5 border-none bg-transparent py-x2"
+      className="relative flex flex-1 flex-col items-center justify-center gap-x0_5 border-none bg-transparent py-x1"
       aria-current={active ? 'page' : undefined}
     >
       <span className="relative inline-flex">
         <Icon
           svg={icon}
-          size="x6"
+          size="x5"
           color={active ? 'fg.brand' : 'fg.neutralSubtle'}
         />
         {badge && (
@@ -43,7 +43,7 @@ export function BottomNavigationItem({
         )}
       </span>
       <Text
-        textStyle="t2Medium"
+        textStyle={active ? 't2Medium' : 't2Regular'}
         color={active ? 'fg.brand' : 'fg.neutralSubtle'}
       >
         {label}
@@ -59,7 +59,7 @@ export interface BottomNavigationProps {
 export function BottomNavigation({ children }: BottomNavigationProps) {
   return (
     <nav
-      className="flex h-[var(--app-bottom-navigation-height)] border-t border-stroke-neutral-weak bg-bg-layer-default shadow-[0_-4px_12px_rgba(0,0,0,0.04)]"
+      className="flex h-[var(--app-bottom-navigation-height)] border-t border-stroke-neutral-weak bg-bg-layer-default"
       aria-label="하단 탐색"
     >
       {children}

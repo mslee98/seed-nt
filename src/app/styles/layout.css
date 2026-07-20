@@ -3,8 +3,8 @@
   --app-frame-max-width: 616px;
   --app-desktop-side-panel-width: 360px;
   --app-desktop-side-panel-gap: 16px;
-  --app-navigation-height: 64px;
-  --app-bottom-navigation-height: 64px;
+  --app-navigation-height: 56px;
+  --app-bottom-navigation-height: 56px;
   --app-fixed-bottom-min-height: 88px;
   --sticky-header-height: 64px;
   --sticky-header-height-compact: 48px;

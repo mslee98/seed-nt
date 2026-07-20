@@ -18,6 +18,17 @@
   --app-typo-amount-hero-weight: 750;
   --app-typo-amount-hero-tracking: -0.03em;
   --app-typo-amount-hero-line-height: 1.15;
+
+  /* 홈 월렛 잔액 — SEED t 스케일 밖 (~40px / lh 1.2) */
+  --app-typo-balance-amount-size: 2.5rem;
+  --app-typo-balance-amount-weight: 700;
+  --app-typo-balance-amount-tracking: -0.03em;
+  --app-typo-balance-amount-line-height: 1.2;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .typo-title-tight {
@@ -30,6 +41,14 @@
   font-weight: var(--app-typo-amount-hero-weight);
   letter-spacing: var(--app-typo-amount-hero-tracking);
   line-height: var(--app-typo-amount-hero-line-height);
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-amount {
+  font-size: var(--app-typo-balance-amount-size);
+  font-weight: var(--app-typo-balance-amount-weight);
+  letter-spacing: var(--app-typo-balance-amount-tracking);
+  line-height: var(--app-typo-balance-amount-line-height);
   font-variant-numeric: tabular-nums;
 }
 

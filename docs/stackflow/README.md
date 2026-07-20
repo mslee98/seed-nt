@@ -42,6 +42,7 @@ flowchart LR
 | `Home` | `/` | — |
 | `Detail` | `/detail/:id` | `id: string` |
 | `Trade` | `/trade` | `tradeId?`, `splitGroupId?`, `focusLeg?` |
+| `TradeCompose` | `/trade/compose` | `side: 'BUY' \| 'SELL'` |
 | `SignupIdentity` | `/auth/signup/identity` | — |
 | `SignupSms` | `/auth/signup/sms` | `phone: string` |
 | `SignupAccount` | `/auth/signup/account` | `step?: SignupAccountStep` |
@@ -53,8 +54,9 @@ flowchart LR
 
 ### Trade 라우트 예시
 
-홈에서 거래 확인 후 `useHomeScreen`이 `push('Trade', params)`로 이동합니다.
+홈 퀵액션(구매/판매) → `push('TradeCompose', { side })` → 확인 후 `replace('Trade', params)`.
 
+- 금액 입력: `/trade/compose?side=BUY` (또는 `SELL`)
 - 분할 판매: `/trade?splitGroupId=split-xxx`
 - 단건 거래: `/trade?tradeId=trade-xxx`
 - leg 딥링크: `/trade?splitGroupId=split-xxx&focusLeg=2`

@@ -41,7 +41,7 @@ function getConfirmDescription(side: TradeSide, amountKrw: number, splitMode: Sp
 }
 
 /**
- * 홈 거래 시작 확인 — AlertDialog (닫기 / 매칭 시작하기).
+ * TradeCompose 거래 시작 확인 — AlertDialog (닫기 / 매칭 시작하기).
  * 단건·분할 모두 짧은 설명만 두고, 상세 리스트는 Trade 화면에 맡긴다.
  */
 export function TradeConfirmAlertDialog({

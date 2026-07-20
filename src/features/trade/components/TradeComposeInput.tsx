@@ -6,12 +6,12 @@ import { SegmentedControl } from 'seed-design/ui/segmented-control'
 import { AmountHeroField } from '../../../shared/ui/AmountHeroField'
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import { MotionChipButton, TapSegmentedControlItem } from '../../../shared/motion'
-import { QUICK_AMOUNTS } from '../constants'
 import { formatAmount, formatAmountNumber } from '../../../shared/utils/formatAmount'
-import type { SplitRecommendation } from '../utils/splitRecommendation'
-import type { TradeSide } from '../../trade/types'
+import type { SplitRecommendation } from '../../home/utils/splitRecommendation'
+import { QUICK_AMOUNTS } from '../constants/tradeCompose'
+import type { TradeSide } from '../types'
 
-interface HomeTradeInputProps {
+interface TradeComposeInputProps {
   side: TradeSide
   amountKrw: number | null
   amountInput: string
@@ -37,7 +37,8 @@ function formatQuickAmountLabel(amount: number): string {
   return `${formatAmountNumber(amount)}원`
 }
 
-export function HomeTradeInput({
+/** TradeCompose — 금액 입력·구매/판매 전환·분할 토글·제출 CTA */
+export function TradeComposeInput({
   side,
   amountKrw,
   amountInput,
@@ -54,7 +55,7 @@ export function HomeTradeInput({
   onQuickAmountSelect,
   onSplitSellEnabledChange,
   onSubmit,
-}: HomeTradeInputProps) {
+}: TradeComposeInputProps) {
   const ctaLabel = !amountKrw
     ? '금액을 입력해 주세요'
     : side === 'BUY'

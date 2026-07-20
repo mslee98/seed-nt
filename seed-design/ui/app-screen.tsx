@@ -47,7 +47,7 @@ export interface AppScreenContentProps extends SeedAppScreen.LayerProps {
   onPtrRefresh?: () => Promise<void>;
 }
 
-const APP_SCREEN_LAYER_BG = "var(--seed-color-bg-neutral-weak)";
+const APP_SCREEN_LAYER_BG = "var(--seed-color-bg-layer-default)";
 
 export const AppScreenContent = forwardRef<HTMLDivElement, AppScreenContentProps>(
   ({ children, ptr, onPtrReady, onPtrRefresh, style, ...otherProps }, ref) => {

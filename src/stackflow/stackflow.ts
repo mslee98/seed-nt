@@ -12,6 +12,7 @@ import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
 import TradeActivity from '../activities/TradeActivity'
+import TradeComposeActivity from '../activities/TradeComposeActivity'
 import { detectTheme } from '../shared/utils/detectTheme'
 import { config } from './config'
 
@@ -29,6 +30,7 @@ export const { Stack, actions } = stackflow({
     Home: HomeActivity,
     Detail: DetailActivity,
     Trade: TradeActivity,
+    TradeCompose: TradeComposeActivity,
     SignupIdentity: SignupIdentityActivity,
     SignupSms: SignupSmsActivity,
     SignupAccount: SignupAccountActivity,

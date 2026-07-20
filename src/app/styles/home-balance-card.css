@@ -1,0 +1,22 @@
+/* 월렛 카드 우측 장식 코인 — 브랜드 장식(작·낮은 대비), 모션 없음 */
+.home-balance-card__coin-decor {
+  position: absolute;
+  top: 42%;
+  right: -8px;
+  z-index: 0;
+  width: 76px;
+  height: auto;
+  max-height: 76px;
+  object-fit: contain;
+  object-position: center;
+  transform: translateY(-50%);
+  opacity: 0.22;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-balance-card__coin-decor {
+    opacity: 0.18;
+  }
+}
