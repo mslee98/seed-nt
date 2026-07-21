@@ -24,7 +24,9 @@ const SignupIdentityActivity: ActivityComponentType<'SignupIdentity'> = () => {
     <>
       <ActivityScreenLayout
         title="가입하기"
+        leftAction={screen.leftAction}
         onBack={screen.handleBack}
+        onClose={screen.handleBack}
         progress={<SignupProgressHeader type="identity" step={screen.activeStep} />}
         fixedBottom={
           screen.showBottomCta ? (

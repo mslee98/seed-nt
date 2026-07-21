@@ -19,7 +19,11 @@ const DetailActivity: ActivityComponentType<'Detail'> = () => {
 
   if (id === 'transactions') {
     return (
-      <AppScreen layerOffsetTop="safeArea">
+      <AppScreen>
+        <AppBar>
+          <AppBarMain title="거래내역" />
+          <AppBarRight />
+        </AppBar>
         <AppScreenContent>
           <TransactionsScreen />
         </AppScreenContent>
@@ -29,7 +33,11 @@ const DetailActivity: ActivityComponentType<'Detail'> = () => {
 
   if (id === 'profile') {
     return (
-      <AppScreen layerOffsetTop="safeArea">
+      <AppScreen>
+        <AppBar>
+          <AppBarMain title="MY" />
+          <AppBarRight />
+        </AppBar>
         <AppScreenContent>
           <ProfileScreen />
         </AppScreenContent>

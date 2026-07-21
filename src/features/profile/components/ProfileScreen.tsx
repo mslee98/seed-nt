@@ -10,14 +10,10 @@ export function ProfileScreen() {
   return (
     <VStack
       px="spacingX.globalGutter"
-      pt="spacingY.navToTitle"
+      pt="x4"
       gap="x6"
       style={{ paddingBottom: 'var(--app-content-bottom-padding)' }}
     >
-      <Text textStyle="t7Bold" color="fg.neutral">
-        MY
-      </Text>
-
       <VStack
         p="x5"
         gap="x3"
