@@ -11,8 +11,8 @@ alwaysApply: false
 ## APNG
 
 - 경로: `public/motion/`
-- 렌더: **`<img>` only** — [`ApngPlayer`](src/shared/components/ApngPlayer.tsx)
-- 금지: CSS `background-image`, canvas, 이미지 최적화 래퍼
+- 렌더: **[`ApngPlayer`](src/shared/components/ApngPlayer.tsx)** — fetch→blob→`<img>` (SW Cache API 응답을 `src`에 직접 넣지 않음)
+- 금지: CSS `background-image`, canvas, 이미지 최적화 래퍼, `/motion/*.apng`를 `<img src>`에 직접 연결
 - 파일명: **버저닝 필수** — 예: `moneybag-rotate.v1.apng` (교체 시 `v2`로 올려 SW 캐시 무효화)
 - 레지스트리: [`motionAssets.ts`](src/features/trade/constants/motionAssets.ts)
 
@@ -28,7 +28,8 @@ alwaysApply: false
 ## PWA Cache
 
 - motion precache **금지** — [`vite.config.ts`](vite.config.ts) `globIgnores: ['**/motion/**', ...]`
-- runtime: `/motion/*.apng` → **CacheFirst** + 파일명 버저닝 (`brit-motion`)
+- runtime: `/motion/*.apng` → **CacheFirst** (`brit-motion-v2`, statuses `[200]` only) + 파일명 버저닝
+- Chromium: Cache API→`<img src>` 직접 연결 시 APNG 정지 → `ApngPlayer` blob 재생
 - Lottie는 번들 import → `/lotties/` runtime rule 없음
 - dev: SW 활성 시 에셋 교체는 **파일명 vN bump**로 검증
 
