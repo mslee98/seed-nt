@@ -13,7 +13,7 @@ export function MatchingBottomActions({
     <ActionButton
       size="large"
       variant="neutralOutline"
-      width="full"
+      style={{ width: '100%' }}
       disabled={disabled}
       onClick={onStopMatching}
     >
