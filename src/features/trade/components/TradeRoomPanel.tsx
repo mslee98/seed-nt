@@ -79,7 +79,7 @@ export function TradeRoomPanel({
         <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
           {legLabel} {sideLabel}
         </Text>
-        <Text textStyle="t5Regular" color="fg.neutralMuted" className="tabular-nums">
+        <Text textStyle="t3Regular" color="fg.neutralMuted" className="tabular-nums">
           {formatCoinUnit(trade.coinAmount)}
         </Text>
       </VStack>

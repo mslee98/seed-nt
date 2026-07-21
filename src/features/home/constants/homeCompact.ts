@@ -12,8 +12,6 @@ export const HOME_COMPACT = {
   hero: {
     padding: 'x5',
     radius: 'r6',
-    amountFontSize: '2.5rem',
-    amountLineHeight: 1.2,
   },
   quickAction: {
     height: 72,

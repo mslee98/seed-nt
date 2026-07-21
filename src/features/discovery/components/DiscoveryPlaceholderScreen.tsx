@@ -1,6 +1,7 @@
 import { Text, VStack } from '@seed-design/react'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
+
 const COPY = {
   store: {
     title: 'Brit 스토어',
@@ -29,10 +30,10 @@ export function DiscoveryPlaceholderScreen({ variant }: DiscoveryPlaceholderScre
       gap="x6"
     >
       <VStack gap="spacingY.betweenText">
-        <Text textStyle="screenTitle" color="fg.neutral">
+        <Text textStyle="t7Bold" color="fg.neutral">
           {copy.title}
         </Text>
-        <Text textStyle="t5Regular" color="fg.neutralMuted">
+        <Text textStyle="t3Regular" color="fg.neutralMuted">
           {copy.description}
         </Text>
       </VStack>

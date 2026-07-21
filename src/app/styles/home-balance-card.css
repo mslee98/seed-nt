@@ -1,22 +1,40 @@
-/* 월렛 카드 우측 장식 코인 — 브랜드 장식(작·낮은 대비), 모션 없음 */
+/* 월렛 카드 우측 장식 코인 — 읽히는 크기·대비 (텍스트 위계는 z-index로 유지) */
 .home-balance-card__coin-decor {
   position: absolute;
-  top: 42%;
-  right: -8px;
+  top: 40%;
+  right: -28px;
   z-index: 0;
-  width: 76px;
+  width: 200px;
   height: auto;
-  max-height: 76px;
+  max-height: 200px;
   object-fit: contain;
   object-position: center;
   transform: translateY(-50%);
-  opacity: 0.22;
+  opacity: 0.45;
   pointer-events: none;
-  mix-blend-mode: soft-light;
+}
+
+/*
+ * 세로 Divider는 flex stretch 높이 필요.
+ * 색은 Divider color="palette.staticWhiteAlpha300" (브랜드 블루용;
+ * 기본 stroke.neutralMuted는 라이트 면 전용)
+ */
+.home-balance-card__divider--vertical {
+  align-self: stretch;
+  height: auto;
+}
+
+/* 파란 면 위 흰 글자 위계 — 금액만 100%, 라벨·설명·메타는 낮춤 */
+.home-balance-card__muted {
+  opacity: 0.75;
+}
+
+.home-balance-card__meta-value {
+  opacity: 0.88;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-balance-card__coin-decor {
-    opacity: 0.18;
+    opacity: 0.38;
   }
 }

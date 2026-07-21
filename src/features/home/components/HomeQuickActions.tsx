@@ -43,11 +43,11 @@ export function HomeQuickActions({ disabledTrade = false, onAction }: HomeQuickA
           <Box
             key={action.id}
             flexGrow
-            minWidth={0}
+            minWidth="0"
             bg="bg.layerDefault"
             borderRadius={qa.radius}
             boxShadow="s1"
-            opacity={disabled ? 0.5 : 1}
+            style={{ opacity: disabled ? 0.5 : 1 }}
           >
             <PressableScale
               disabled={disabled}

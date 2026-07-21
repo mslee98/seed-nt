@@ -51,7 +51,7 @@ export function InstitutionSelectPanel({ onSelect }: InstitutionSelectPanelProps
           <Text textStyle="screenTitle" color="fg.neutral">
             어느 금융기관 계좌인가요?
           </Text>
-          <Text textStyle="t5Regular" color="fg.neutralMuted">
+          <Text textStyle="t3Regular" color="fg.neutralMuted">
             계좌가 있는 기관을 선택해 주세요.
           </Text>
         </VStack>

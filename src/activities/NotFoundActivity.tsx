@@ -2,6 +2,7 @@ import type { ActivityComponentType } from '@stackflow/react'
 import { useFlow } from '@stackflow/react'
 import { Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
+
 import {
   AppBar,
   AppBarLeft,
@@ -29,7 +30,7 @@ const NotFoundActivity: ActivityComponentType<'NotFound'> = () => {
           gap="spacingY.componentDefault"
           px="spacingX.globalGutter"
         >
-          <Text textStyle="screenTitle" color="fg.neutral">
+          <Text textStyle="t7Bold" color="fg.neutral">
             페이지를 찾을 수 없습니다
           </Text>
           <ActionButton onClick={() => replace('Home', {})}>

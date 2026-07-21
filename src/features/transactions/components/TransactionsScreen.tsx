@@ -82,7 +82,7 @@ export function TransactionsScreen() {
       style={{ paddingBottom: 'var(--app-content-bottom-padding)' }}
     >
       <VStack pb="x4">
-        <Text textStyle="screenTitle" color="fg.neutral">
+        <Text textStyle="t7Bold" color="fg.neutral">
           거래내역
         </Text>
       </VStack>

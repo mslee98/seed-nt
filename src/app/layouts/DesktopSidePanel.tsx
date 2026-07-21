@@ -43,10 +43,10 @@ export function DesktopSidePanel() {
             </>
           ) : (
             <>
-              <Text textStyle="t4Bold" color="fg.neutral">
+              <Text textStyle="t5Bold" color="fg.neutral">
                 브라우저 앱 설치하기
               </Text>
-              <Text textStyle="t4Regular" color="fg.neutralMuted" style={{ textAlign: 'center' }}>
+              <Text textStyle="t3Regular" color="fg.neutralMuted" style={{ textAlign: 'center' }}>
                 설치 버튼이 곧 활성화되거나, 주소창 오른쪽 설치 아이콘(⊕)을 이용해 주세요.
               </Text>
               {manualSteps && (

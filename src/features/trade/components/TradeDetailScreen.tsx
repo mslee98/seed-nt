@@ -21,10 +21,10 @@ export function TradeDetailScreen({ tradeId }: TradeDetailScreenProps) {
         pb="spacingY.screenBottom"
         gap="spacingY.betweenText"
       >
-        <Text textStyle="screenTitle" color="fg.neutral">
+        <Text textStyle="t7Bold" color="fg.neutral">
           거래를 찾을 수 없어요
         </Text>
-        <Text textStyle="t5Regular" color="fg.neutralMuted">
+        <Text textStyle="t3Regular" color="fg.neutralMuted">
           거래 ID: {tradeId}
         </Text>
       </VStack>
@@ -49,10 +49,10 @@ export function TradeDetailScreen({ tradeId }: TradeDetailScreenProps) {
         <Badge tone={isTerminal ? 'neutral' : 'warning'} variant="weak" size="medium">
           {statusCopy.badge}
         </Badge>
-        <Text textStyle="screenTitle" color="fg.neutral" className="tabular-nums">
+        <Text textStyle="t7Bold" color="fg.neutral" className="tabular-nums">
           {formatAmount(trade.amountKrw)} {sideLabel}
         </Text>
-        <Text textStyle="t5Regular" color="fg.neutralMuted" className="tabular-nums">
+        <Text textStyle="t3Regular" color="fg.neutralMuted" className="tabular-nums">
           {formatCoinUnit(trade.coinAmount)}
         </Text>
       </VStack>
