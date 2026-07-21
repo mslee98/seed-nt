@@ -8,13 +8,14 @@ import { useFlow } from '@stackflow/react'
 import { useState, type MouseEvent } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
+import type { ActivityAppBarLeftAction } from '../../../app/layouts/ActivityScreenLayout'
+import { showSnackbar } from '../../../shared/utils/showSnackbar'
 import { sendSmsCode } from '../api/auth.api'
 import type { CarrierCode, SignupIdentityStep } from '../constants'
 import { NEXT_IDENTITY_STEP, PREV_IDENTITY_STEP } from '../constants'
-import { canProceedIdentityStep, useSignupForm } from './useSignupForm'
 import { resetSignupDraft } from '../stores/signupDraft.store'
 import { formatPhoneInput } from '../utils/formatPhone'
-import { showSnackbar } from '../../../shared/utils/showSnackbar'
+import { canProceedIdentityStep, useSignupForm } from './useSignupForm'
 
 export function useSignupIdentityScreen() {
   const { push, pop } = useFlow()
@@ -27,7 +28,7 @@ export function useSignupIdentityScreen() {
   const canGoNext = canProceedIdentityStep(activeStep, draft)
   const showBottomCta = activeStep !== 'carrier'
   /** 첫 step은 플로우 종료(Close), 이후는 History Back */
-  const leftAction = PREV_IDENTITY_STEP[activeStep] ? 'back' : 'close'
+  const leftAction: ActivityAppBarLeftAction = PREV_IDENTITY_STEP[activeStep] ? 'back' : 'close'
 
   const advanceStep = () => {
     const next = NEXT_IDENTITY_STEP[activeStep]

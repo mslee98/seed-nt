@@ -44,7 +44,7 @@ export function TradePaymentProgressSteps({ currentStep }: TradePaymentProgressS
           state === 'pending' ? 'fg.neutralMuted' : state === 'current' ? 'fg.informative' : 'fg.neutral'
 
         return (
-          <HStack key={step.key} align="center" gap="x1" flexGrow={index < STEPS.length - 1}>
+          <HStack key={step.key} align="center" gap="x1" flexGrow={index < STEPS.length - 1 ? 1 : 0}>
             <VStack gap="x1" align="center" flexShrink={0}>
               <Text textStyle="t4Medium" color={color} aria-hidden>
                 {mark}

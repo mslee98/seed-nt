@@ -119,7 +119,7 @@ function FooterAction({ action }: { action: MatchingCandidateFooterAction }) {
     <ActionButton
       size="medium"
       variant={action.kind === 'cancel' ? 'neutralWeak' : 'brandSolid'}
-      width="full"
+      style={{ width: '100%' }}
       onClick={action.onClick}
     >
       {action.label}
