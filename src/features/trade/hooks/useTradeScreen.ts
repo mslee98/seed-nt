@@ -1,8 +1,9 @@
-import { useActivity, useActivityParams, useFlow } from '@stackflow/react'
+import { useActivity, useActivityParams, useFlow, useStack } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 import { showSnackbar } from '../../../shared/utils/showSnackbar'
+import { navigateToRootHome } from '../../../stackflow/navigateToRootHome'
 import {
   cancelTrade,
   focusSplitLegTrade,
@@ -29,6 +30,7 @@ export function useTradeScreen() {
   const { isActive } = useActivity()
   const { tradeId, splitGroupId, focusLeg } = useActivityParams<'Trade'>()
   const { push, replace } = useFlow()
+  const { activities } = useStack()
   const snackbar = useSnackbarAdapter()
 
   const [paymentSheetTradeId, setPaymentSheetTradeId] = useState<string | null>(null)
@@ -146,8 +148,10 @@ export function useTradeScreen() {
   }, [push])
 
   const handleGoHome = useCallback(() => {
-    replace('Home', {}, { animate: true })
-  }, [replace])
+    setPaymentSheetTradeId(null)
+    setDisputeSheetLeg(null)
+    navigateToRootHome(activities.length)
+  }, [activities.length])
 
   const handleChangeMatchingConditions = useCallback(async () => {
     if (!tradeId) return
@@ -166,8 +170,10 @@ export function useTradeScreen() {
     if (!trade) return
 
     await cancelTrade(trade.id, trade.version)
-    replace('Home', {}, { animate: true })
-  }, [replace, tradeId])
+    setPaymentSheetTradeId(null)
+    setDisputeSheetLeg(null)
+    navigateToRootHome(activities.length)
+  }, [activities.length, tradeId])
 
   const handleCopyAccount = useCallback(async () => {
     const targetId = tradeId ?? paymentSheetTradeId

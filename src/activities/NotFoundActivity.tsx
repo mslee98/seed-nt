@@ -1,5 +1,5 @@
 import type { ActivityComponentType } from '@stackflow/react'
-import { useFlow } from '@stackflow/react'
+import { useStack } from '@stackflow/react'
 import { Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 
@@ -10,9 +10,10 @@ import {
   AppBarRight,
 } from 'seed-design/ui/app-bar'
 import { AppScreen, AppScreenContent } from 'seed-design/ui/app-screen'
+import { navigateToRootHome } from '../stackflow/navigateToRootHome'
 
 const NotFoundActivity: ActivityComponentType<'NotFound'> = () => {
-  const { replace } = useFlow()
+  const { activities } = useStack()
 
   return (
     <AppScreen>
@@ -33,7 +34,7 @@ const NotFoundActivity: ActivityComponentType<'NotFound'> = () => {
           <Text textStyle="t7Bold" color="fg.neutral">
             페이지를 찾을 수 없습니다
           </Text>
-          <ActionButton onClick={() => replace('Home', {})}>
+          <ActionButton onClick={() => navigateToRootHome(activities.length)}>
             홈으로 돌아가기
           </ActionButton>
         </VStack>
