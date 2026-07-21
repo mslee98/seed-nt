@@ -9,6 +9,7 @@ import { setMatchingCandidateFactory } from './features/trade/matching/matchingS
 import { setOnTradeCompleted, setTradeSessionDevHooks } from './features/trade/stores/tradeSession.store'
 import './app/styles/typography.css'
 import './app/styles/amount-hero-field.css'
+import './app/styles/trade-compose.css'
 import './app/styles/layout.css'
 import './app/styles/toss-theme.css'
 import './app/styles/home-header.css'

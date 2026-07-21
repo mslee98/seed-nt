@@ -70,6 +70,17 @@ export function TradeRoomPanel({
     )
   }
 
+  if (trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER') {
+    return (
+      <TradePaymentBuyerWaitingPanel
+        trade={trade}
+        motionMountWhen={motionMountWhen}
+        onAccountCopied={onAccountCopied}
+        onCopyFailed={onCopyFailed}
+      />
+    )
+  }
+
   return (
     <VStack gap="x5" width="full">
       <VStack gap="spacingY.betweenText">
@@ -103,16 +114,6 @@ export function TradeRoomPanel({
             description="입금이 확인되면 알려드릴게요."
           />
         </VStack>
-      )}
-
-      {trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER' && (
-        <TradePaymentBuyerWaitingPanel
-          trade={trade}
-          motionMountWhen={motionMountWhen}
-          embedded
-          onAccountCopied={onAccountCopied}
-          onCopyFailed={onCopyFailed}
-        />
       )}
 
       {trade.status === 'PAYMENT_REPORTED' && trade.role === 'SELLER' && (

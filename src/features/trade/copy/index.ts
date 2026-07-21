@@ -7,6 +7,18 @@ export {
   getMatchingUiMode,
   getMatchingStatusBadgeLabel,
   MATCHING_LEAVE_OK_HINT,
+  MATCHING_EXACT_PRIORITY_HINT,
+  MATCHING_NO_RESTRICTION_HINT,
+  MATCHING_PROPOSAL_START_NOTICE,
+  formatMatchingElapsed,
+  formatMatchingCountdown,
+  getMatchingProposalMatchBadge,
+  getMatchingProposalTitle,
+  getMatchingProposalSubtitle,
+  getMatchingProposalTrustLine,
+  getMatchingProposalCtaLabel,
+  getMatchingResultHeroCopy,
+  getMatchingLiveAnnounce,
 } from './matching'
 export type { MatchingHeroCopy, MatchingUiMode } from './matching'
 export {
@@ -18,6 +30,9 @@ export {
   getPaymentReportedBuyerTitle,
   getPaymentReportedBuyerDescription,
   getPaymentReportedBuyerOutcome,
+  getPaymentReportedBuyerAssetProtection,
+  getPaymentReportedBuyerNextSteps,
+  getPaymentReportedBuyerCancelHint,
   getPaymentReportedBuyerStatusLine,
   getPaymentReportedBuyerReassuranceLines,
   getPaymentReportedBuyerDelayHint,

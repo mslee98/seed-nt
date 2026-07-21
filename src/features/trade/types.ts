@@ -54,6 +54,8 @@ export interface TradeRecord {
   matchingStartedAt: string
   updatedAt: string
   paymentDeadline?: string
+  /** 구매자 입금 보고 후 판매자 확인 기한 */
+  sellerConfirmDeadline?: string
   reportedAt?: string
   completedAt?: string
   splitGroupId?: string
@@ -76,6 +78,8 @@ export interface CreateTradeOrderInput {
   side: TradeSide
   amountKrw: number
   splitMode?: SplitMode
+  /** splitMode CUSTOM일 때 한 거래당 단위 금액 */
+  unitAmountKrw?: number
 }
 
 export interface CreateTradeOrderResult {

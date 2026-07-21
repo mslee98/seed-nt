@@ -70,6 +70,15 @@ export default defineConfig({
               cacheableResponse: { statuses: [200] },
             },
           },
+          {
+            urlPattern: /\/apng\/.+\.png$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'brit-motion-v2',
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
         ],
       },
       devOptions: {

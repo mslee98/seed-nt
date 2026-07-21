@@ -26,6 +26,7 @@ const TradeActivity: ActivityComponentType<'Trade'> = () => {
       acceptCandidate={screen.acceptCandidate}
       onAcceptOpenChange={screen.onAcceptOpenChange}
       onAcceptConfirm={screen.onAcceptConfirm}
+      onAcceptSkip={screen.onAcceptSkip}
       onPaymentOpenChange={(open) => {
         if (!open) screen.closePaymentSheet()
       }}
@@ -61,17 +62,29 @@ const TradeActivity: ActivityComponentType<'Trade'> = () => {
     return (
       <>
         {overlays}
-        <ActivityScreenLayout title="거래" appScreenProps={{ preventSwipeBack }}>
+        <ActivityScreenLayout
+          title={
+            trade.status === 'MATCHING'
+              ? '매칭 중'
+              : trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER'
+                ? '거래 진행'
+                : '거래'
+          }
+          appScreenProps={{ preventSwipeBack }}
+        >
           <TradeRoomScreen
             trade={trade}
             onContinueTrade={screen.handleSingleTradeContinue}
             onGoHome={screen.handleGoHome}
             onSelectMatchingCandidate={screen.openAcceptForCandidate}
+            onChangeMatchingConditions={screen.handleChangeMatchingConditions}
+            onStopMatching={screen.handleStopMatching}
             onBrowseStore={screen.handleBrowseStore}
             onBrowseCommunity={screen.handleBrowseCommunity}
             onCopyAccount={screen.handleCopyAccount}
             onCopyFailed={screen.handleCopyAccountFailed}
             onContactSupport={screen.handleContactSupport}
+            onOpenDispute={screen.handleOpenBuyerDispute}
           />
         </ActivityScreenLayout>
       </>

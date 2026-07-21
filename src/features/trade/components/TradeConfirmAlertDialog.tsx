@@ -7,7 +7,7 @@ import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import { formatAmount, formatAmountNumber } from '../../../shared/utils/formatAmount'
 import type { SplitMode, TradeSide } from '../types'
-import { buildSplitPlan } from '../utils/splitPlan'
+import { buildSplitPlan, buildSplitPlanWithUnit } from '../utils/splitPlan'
 import {
   AlertDialogContent,
   AlertDialogDescription,
@@ -23,11 +23,22 @@ interface TradeConfirmAlertDialogProps {
   side: TradeSide
   amountKrw: number
   splitMode: SplitMode
+  unitAmountKrw?: number
   onConfirm: () => Promise<void>
 }
 
-function getConfirmDescription(side: TradeSide, amountKrw: number, splitMode: SplitMode): string {
-  const splitPlan = splitMode === 'AUTO' ? buildSplitPlan(amountKrw) : null
+function getConfirmDescription(
+  side: TradeSide,
+  amountKrw: number,
+  splitMode: SplitMode,
+  unitAmountKrw?: number,
+): string {
+  const splitPlan =
+    splitMode === 'CUSTOM' && unitAmountKrw != null
+      ? buildSplitPlanWithUnit(amountKrw, unitAmountKrw)
+      : splitMode === 'AUTO'
+        ? buildSplitPlan(amountKrw)
+        : null
 
   if (splitPlan && splitPlan.legCount > 1) {
     return `${formatAmount(amountKrw)}을 ${formatAmountNumber(splitPlan.unitAmountKrw)}원씩 ${splitPlan.legCount}건으로 나눠 동시에 매칭할게요.`
@@ -50,6 +61,7 @@ export function TradeConfirmAlertDialog({
   side,
   amountKrw,
   splitMode,
+  unitAmountKrw,
   onConfirm,
 }: TradeConfirmAlertDialogProps) {
   const portalContainerRef = useRef<HTMLElement | null>(
@@ -66,7 +78,8 @@ export function TradeConfirmAlertDialog({
       ? `${formatAmount(amountKrw)} 구매할까요?`
       : `${formatAmount(amountKrw)} 판매 등록할까요?`
 
-  const description = error ?? getConfirmDescription(side, amountKrw, splitMode)
+  const description =
+    error ?? getConfirmDescription(side, amountKrw, splitMode, unitAmountKrw)
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && loading) return

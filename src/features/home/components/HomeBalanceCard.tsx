@@ -33,7 +33,7 @@ export function HomeBalanceCard({
     <VStack
       position="relative"
       p={hero.padding}
-      gap="x3"
+      gap="x2"
       bg="bg.brandSolid"
       borderRadius={hero.radius}
       color="fg.neutralInverted"
@@ -46,7 +46,7 @@ export function HomeBalanceCard({
         className="home-balance-card__coin-decor"
       />
 
-      <VStack position="relative" gap="x3" style={{ zIndex: 1 }}>
+      <VStack position="relative" gap="x2" style={{ zIndex: 1 }}>
         {hasBalance ? (
           <VStack gap="x1" pr="x16">
             <Text

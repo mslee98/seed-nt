@@ -1,9 +1,10 @@
-import { HStack, VStack } from '@seed-design/react'
+import { VStack } from '@seed-design/react'
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 
 import type { MatchingCandidate } from '../matching/types'
 import type { TradeDetailViewModel } from '../types'
 import { TradeLegMatchingScreen } from './TradeLegMatchingScreen'
+import { TradePaymentBuyerWaitingPanel } from './TradePaymentBuyerWaitingPanel'
 import { TradeRoomPanel } from './TradeRoomPanel'
 
 interface TradeRoomScreenProps {
@@ -11,11 +12,14 @@ interface TradeRoomScreenProps {
   onContinueTrade?: () => void
   onGoHome: () => void
   onSelectMatchingCandidate?: (candidate: MatchingCandidate) => void
+  onChangeMatchingConditions?: () => void | Promise<void>
+  onStopMatching?: () => void | Promise<void>
   onBrowseStore?: () => void
   onBrowseCommunity?: () => void
   onCopyAccount?: () => void
   onCopyFailed?: () => void
   onContactSupport?: () => void
+  onOpenDispute?: () => void
 }
 
 function getContinueTradeLabel(trade: TradeDetailViewModel): string | null {
@@ -30,19 +34,20 @@ export function TradeRoomScreen({
   onContinueTrade,
   onGoHome,
   onSelectMatchingCandidate,
-  onBrowseStore,
-  onBrowseCommunity,
+  onChangeMatchingConditions,
+  onStopMatching,
   onCopyAccount,
   onCopyFailed,
   onContactSupport,
+  onOpenDispute,
 }: TradeRoomScreenProps) {
   if (trade.status === 'MATCHING') {
     return (
       <TradeLegMatchingScreen
         trade={trade}
         onSelectCandidate={onSelectMatchingCandidate}
-        onBrowseStore={onBrowseStore}
-        onBrowseCommunity={onBrowseCommunity}
+        onChangeConditions={onChangeMatchingConditions}
+        onStopMatching={onStopMatching}
       />
     )
   }
@@ -68,8 +73,40 @@ export function TradeRoomScreen({
   }
 
   const continueLabel = getContinueTradeLabel(trade)
-  const isBuyerWaiting =
-    trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER'
+  const isBuyerWaiting = trade.status === 'PAYMENT_REPORTED' && trade.role === 'BUYER'
+
+  if (isBuyerWaiting) {
+    return (
+      <VStack
+        flexGrow
+        minHeight="full"
+        px="spacingX.globalGutter"
+        pt="spacingY.navToTitle"
+        pb="spacingY.screenBottom"
+        gap="x6"
+      >
+        <TradePaymentBuyerWaitingPanel
+          trade={trade}
+          onAccountCopied={onCopyAccount}
+          onCopyFailed={onCopyFailed}
+          onContactSupport={onContactSupport}
+          onOpenDispute={onOpenDispute}
+        />
+        <VStack gap="x2" flexGrow justify="flex-end">
+          {onCopyAccount && (
+            <BottomActionButton size="large" variant="neutralWeak" onClick={onCopyAccount}>
+              입금 정보 보기
+            </BottomActionButton>
+          )}
+          {onContactSupport && (
+            <BottomActionButton size="large" variant="neutralOutline" onClick={onContactSupport}>
+              문제가 있나요?
+            </BottomActionButton>
+          )}
+        </VStack>
+      </VStack>
+    )
+  }
 
   return (
     <VStack
@@ -85,28 +122,6 @@ export function TradeRoomScreen({
         onAccountCopied={onCopyAccount}
         onCopyFailed={onCopyFailed}
       />
-      {isBuyerWaiting && trade.sellerAccount && onCopyAccount && onContactSupport && (
-        <VStack gap="x3" flexGrow justify="flex-end">
-          <HStack gap="x2" width="full">
-            <BottomActionButton
-              size="large"
-              variant="neutralWeak"
-              flexGrow
-              onClick={onCopyAccount}
-            >
-              계좌 다시 보기
-            </BottomActionButton>
-            <BottomActionButton
-              size="large"
-              variant="neutralOutline"
-              flexGrow
-              onClick={onContactSupport}
-            >
-              문의하기
-            </BottomActionButton>
-          </HStack>
-        </VStack>
-      )}
       {continueLabel && onContinueTrade && (
         <VStack gap="x3" flexGrow justify="flex-end">
           <BottomActionButton size="large" variant="brandSolid" onClick={onContinueTrade}>

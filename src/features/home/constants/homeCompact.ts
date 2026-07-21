@@ -7,10 +7,12 @@ export const HOME_COMPACT = {
     sectionGap: 'x6',
     itemGap: 'x2',
     quickToSectionPt: 'x6',
-    headerBottomPb: 'x2',
+    /** 헤더(AppBar)와 잔액 카드 사이 — 12px */
+    headerBottomPb: 'x3',
   },
   hero: {
-    padding: 'x5',
+    /** 상하 패딩 축소로 카드 체감 높이 회수 (x5→x4) */
+    padding: 'x4',
     radius: 'r6',
   },
   quickAction: {

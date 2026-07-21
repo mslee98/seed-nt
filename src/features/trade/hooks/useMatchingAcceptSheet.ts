@@ -13,75 +13,110 @@ interface UseMatchingAcceptSheetOptions {
 }
 
 /**
- * 매칭 확인 시트 — MatchingFeed 밖 overlay 계층에서 suggestion을 처리합니다.
- * 중첩 portal/z-index 충돌을 피하기 위해 TradeLegOverlays에서 사용합니다.
+ * 매칭 확인 시트 — Exact 최초 suggestion만 자동 오픈.
+ * 닫기 = 목록 유지 / 건너뛰기 = dismiss.
  */
 export function useMatchingAcceptSheet({ enabled, tradeId }: UseMatchingAcceptSheetOptions) {
   const matchingSession = useMatchingSession()
-  const { proposeMatch, consumeSuggestion } = useMatchingSessionActions()
+  const { proposeMatch, consumeSuggestion, skipCandidate } = useMatchingSessionActions()
   const [open, setOpen] = useState(false)
   const [candidate, setCandidate] = useState<MatchingCandidate | null>(null)
-  const consumedSuggestionIdRef = useRef<string | null>(null)
+  const blockedAutoOpenIdsRef = useRef<Set<string>>(new Set())
+  const lastAutoOpenedIdRef = useRef<string | null>(null)
 
   const queueLocked = isQueueLocked(matchingSession)
 
-  const resolveSuggestionCandidate = useCallback(() => {
+  const resolveExactSuggestionCandidate = useCallback(() => {
     if (!matchingSession?.suggestion || queueLocked) return null
+    if (matchingSession.suggestion.reason !== 'EXACT_REVEALED') return null
     if (tradeId && matchingSession.tradeId !== tradeId) return null
-    return (
+
+    const next =
       matchingSession.candidates.find(
         (item) => item.id === matchingSession.suggestion?.candidateId,
       ) ?? null
-    )
+
+    if (!next || next.matchType !== 'EXACT') return null
+    if (blockedAutoOpenIdsRef.current.has(next.id)) return null
+    return next
   }, [matchingSession, queueLocked, tradeId])
 
-  const openAcceptForCandidate = useCallback((nextCandidate: MatchingCandidate) => {
-    if (queueLocked) return
-    setCandidate(nextCandidate)
-    setOpen(true)
-  }, [queueLocked])
+  const openAcceptForCandidate = useCallback(
+    (nextCandidate: MatchingCandidate) => {
+      if (queueLocked) return
+      setCandidate(nextCandidate)
+      setOpen(true)
+    },
+    [queueLocked],
+  )
 
   useEffect(() => {
     if (!enabled || queueLocked) return
 
     const suggestionId = matchingSession?.suggestion?.candidateId
-    if (!suggestionId || consumedSuggestionIdRef.current === suggestionId) return
+    if (!suggestionId) return
+    if (lastAutoOpenedIdRef.current === suggestionId) return
 
-    const nextCandidate = resolveSuggestionCandidate()
+    const nextCandidate = resolveExactSuggestionCandidate()
     if (!nextCandidate) return
 
-    consumedSuggestionIdRef.current = suggestionId
+    lastAutoOpenedIdRef.current = suggestionId
     setCandidate(nextCandidate)
     setOpen(true)
   }, [
     enabled,
     matchingSession?.suggestion,
     queueLocked,
-    resolveSuggestionCandidate,
+    resolveExactSuggestionCandidate,
   ])
 
   useEffect(() => {
     if (enabled) return
     setOpen(false)
     setCandidate(null)
-    consumedSuggestionIdRef.current = null
+    lastAutoOpenedIdRef.current = null
+    blockedAutoOpenIdsRef.current = new Set()
   }, [enabled])
 
-  const handleOpenChange = useCallback((nextOpen: boolean) => {
-    setOpen(nextOpen)
-    if (!nextOpen) {
-      setCandidate(null)
+  const closeSheet = useCallback(() => {
+    if (candidate) {
+      blockedAutoOpenIdsRef.current.add(candidate.id)
     }
-  }, [])
+    consumeSuggestion()
+    setCandidate(null)
+    setOpen(false)
+  }, [candidate, consumeSuggestion])
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) {
+        setOpen(true)
+        return
+      }
+      closeSheet()
+    },
+    [closeSheet],
+  )
 
   const handleConfirm = useCallback(
     async (candidateId: string) => {
       proposeMatch(candidateId)
       consumeSuggestion()
+      blockedAutoOpenIdsRef.current.add(candidateId)
       setCandidate(null)
       setOpen(false)
     },
     [consumeSuggestion, proposeMatch],
+  )
+
+  const handleSkip = useCallback(
+    (candidateId: string) => {
+      skipCandidate(candidateId)
+      blockedAutoOpenIdsRef.current.add(candidateId)
+      setCandidate(null)
+      setOpen(false)
+    },
+    [skipCandidate],
   )
 
   return {
@@ -89,6 +124,7 @@ export function useMatchingAcceptSheet({ enabled, tradeId }: UseMatchingAcceptSh
     acceptCandidate: candidate,
     onAcceptOpenChange: handleOpenChange,
     onAcceptConfirm: handleConfirm,
+    onAcceptSkip: handleSkip,
     openAcceptForCandidate,
   }
 }

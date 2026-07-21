@@ -22,16 +22,38 @@ function pickMannerTemperature(index: number): number {
   return values[index % values.length]
 }
 
+function pickCompletionRatePct(index: number): number {
+  return 96 - (index % 4) * 2
+}
+
+function pickAvgResponseSec(index: number): number {
+  return 42 + index * 8
+}
+
+function buildCandidate(
+  partial: Omit<MatchingCandidate, 'completionRatePct' | 'avgResponseSec' | 'rating' | 'tradeCount' | 'mannerTemperature'> & {
+    index: number
+  },
+): MatchingCandidate {
+  const { index, ...rest } = partial
+  return {
+    ...rest,
+    rating: pickRating(index),
+    tradeCount: pickTradeCount(index),
+    mannerTemperature: pickMannerTemperature(index),
+    completionRatePct: pickCompletionRatePct(index),
+    avgResponseSec: pickAvgResponseSec(index),
+  }
+}
+
 export function createMockCandidates(requestedAmountKrw: number): MatchingCandidate[] {
-  const exact: MatchingCandidate = {
+  const exact = buildCandidate({
     id: `candidate-exact-${requestedAmountKrw}`,
     nickname: pickNickname(0),
     amountKrw: requestedAmountKrw,
-    rating: pickRating(0),
-    tradeCount: pickTradeCount(0),
-    mannerTemperature: pickMannerTemperature(0),
     matchType: 'EXACT',
-  }
+    index: 0,
+  })
 
   const seenAmounts = new Set<number>([requestedAmountKrw])
   const nearCandidates: MatchingCandidate[] = []
@@ -40,15 +62,15 @@ export function createMockCandidates(requestedAmountKrw: number): MatchingCandid
     const amountKrw = Math.max(10_000, requestedAmountKrw + offset)
     if (seenAmounts.has(amountKrw)) return
     seenAmounts.add(amountKrw)
-    nearCandidates.push({
-      id: `candidate-near-${index}-${amountKrw}`,
-      nickname: pickNickname(index + 1),
-      amountKrw,
-      rating: pickRating(index + 1),
-      tradeCount: pickTradeCount(index + 1),
-      mannerTemperature: pickMannerTemperature(index + 1),
-      matchType: 'NEAR',
-    })
+    nearCandidates.push(
+      buildCandidate({
+        id: `candidate-near-${index}-${amountKrw}`,
+        nickname: pickNickname(index + 1),
+        amountKrw,
+        matchType: 'NEAR',
+        index: index + 1,
+      }),
+    )
   })
 
   const sortedNear = [...nearCandidates].sort(

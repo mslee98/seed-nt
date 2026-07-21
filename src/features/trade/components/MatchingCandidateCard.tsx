@@ -1,20 +1,30 @@
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { IconChevronRightLine } from '@karrotmarket/react-monochrome-icon'
 import { Badge, Box, HStack, Icon, Text, VStack } from '@seed-design/react'
+import { ActionButton } from 'seed-design/ui/action-button'
 
-import { formatAmount } from '../../../shared/utils/formatAmount'
+import { TextLinkButton } from '../../../shared/components/TextLinkButton'
+import { formatAmount, formatCoinAmount } from '../../../shared/utils/formatAmount'
 import type { MatchingCandidate } from '../matching/types'
 import { formatAmountDelta } from '../utils/formatAmountDelta'
 import { MatchingCandidateTagGroup } from './MatchingCandidateTagGroup'
 
 export type MatchingCandidateCardVariant = 'default' | 'pending' | 'locked'
 
+export type MatchingCandidateFooterAction =
+  | { kind: 'button'; label: string; onClick: () => void }
+  | { kind: 'link'; label: string; onClick: () => void }
+  | { kind: 'cancel'; label: string; onClick: () => void }
+
 interface MatchingCandidateCardProps {
   candidate: MatchingCandidate
   requestedAmountKrw: number
   variant?: MatchingCandidateCardVariant
   animate?: boolean
+  /** Exact 신규 제안 강조 */
+  showNewBadge?: boolean
   onSelect?: (candidate: MatchingCandidate) => void
+  footerAction?: MatchingCandidateFooterAction
 }
 
 function resolveBorderColor(
@@ -29,10 +39,12 @@ function CandidateContent({
   candidate,
   requestedAmountKrw,
   variant,
+  showNewBadge,
 }: {
   candidate: MatchingCandidate
   requestedAmountKrw: number
   variant: MatchingCandidateCardVariant
+  showNewBadge?: boolean
 }) {
   const isExact = candidate.matchType === 'EXACT'
   const amountDelta = formatAmountDelta(requestedAmountKrw, candidate.amountKrw)
@@ -40,33 +52,45 @@ function CandidateContent({
   return (
     <VStack gap="x2" align="flex-start" width="full" flexGrow={1}>
       <HStack justify="space-between" align="center" width="full" gap="x2">
-        {isExact ? (
-          <Badge tone="brand" variant="weak" size="medium">
-            가장 적합한 상대
+        <HStack gap="x2" align="center" flexWrap="wrap">
+          {showNewBadge && (
+            <Badge tone="informative" variant="weak" size="medium">
+              새 제안
+            </Badge>
+          )}
+          {isExact ? (
+            <Badge tone="brand" variant="weak" size="medium">
+              정확 매칭
+            </Badge>
+          ) : (
+            <Text textStyle="t5Bold" color="fg.neutral">
+              {candidate.nickname}
+            </Text>
+          )}
+        </HStack>
+        {!isExact && (
+          <Badge tone="neutral" variant="weak" size="medium">
+            비슷한 금액
           </Badge>
-        ) : (
-          <Text textStyle="t6Bold" color="fg.neutral">
-            {candidate.nickname}
-          </Text>
         )}
-        <Badge tone={isExact ? 'brand' : 'neutral'} variant="weak" size="medium">
-          {isExact ? '금액 정확히 일치' : '비슷한 금액'}
-        </Badge>
       </HStack>
 
       {isExact && (
-        <Text textStyle="t6Bold" color="fg.neutral">
-          {candidate.nickname}
+        <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
+          {formatCoinAmount(candidate.amountKrw)}
+        </Text>
+      )}
+
+      {!isExact && (
+        <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
+          {formatAmount(candidate.amountKrw)}
         </Text>
       )}
 
       <VStack gap="x0_5" align="flex-start" width="full">
-        <Text textStyle="t6Bold" color="fg.neutral" className="tabular-nums">
-          {formatAmount(candidate.amountKrw)}
-        </Text>
-        {isExact && !amountDelta ? (
-          <Text textStyle="t4Regular" color="fg.neutralMuted">
-            요청 금액과 정확히 일치해요
+        {isExact ? (
+          <Text textStyle="t4Regular" color="fg.neutralMuted" className="tabular-nums">
+            {`입금 ${formatAmount(candidate.amountKrw)} · 수수료 없어요`}
           </Text>
         ) : amountDelta ? (
           <Text textStyle="t4Regular" color="fg.neutralMuted" className="tabular-nums">
@@ -78,11 +102,28 @@ function CandidateContent({
       <MatchingCandidateTagGroup candidate={candidate} />
 
       {variant === 'pending' && (
-        <Text textStyle="t4Regular" color="fg.brand">
+        <Text textStyle="t4Regular" color="fg.informative">
           상대 확인 중이에요
         </Text>
       )}
     </VStack>
+  )
+}
+
+function FooterAction({ action }: { action: MatchingCandidateFooterAction }) {
+  if (action.kind === 'link') {
+    return <TextLinkButton onClick={action.onClick}>{action.label}</TextLinkButton>
+  }
+
+  return (
+    <ActionButton
+      size="medium"
+      variant={action.kind === 'cancel' ? 'neutralWeak' : 'brandSolid'}
+      width="full"
+      onClick={action.onClick}
+    >
+      {action.label}
+    </ActionButton>
   )
 }
 
@@ -91,11 +132,13 @@ export function MatchingCandidateCard({
   requestedAmountKrw,
   variant = 'default',
   animate = false,
+  showNewBadge = false,
   onSelect,
+  footerAction,
 }: MatchingCandidateCardProps) {
   const isLocked = variant === 'locked'
   const isExact = candidate.matchType === 'EXACT'
-  const isSelectable = Boolean(onSelect) && !isLocked && variant !== 'pending'
+  const isSelectable = Boolean(onSelect) && !isLocked && variant !== 'pending' && !footerAction
 
   const rootClassName = [
     animate ? 'matching-candidate-item--enter' : '',
@@ -119,6 +162,36 @@ export function MatchingCandidateCard({
     }
   }
 
+  let body: ReactNode = (
+    <HStack width="full" gap="x3" align="center">
+      <CandidateContent
+        candidate={candidate}
+        requestedAmountKrw={requestedAmountKrw}
+        variant={variant}
+        showNewBadge={showNewBadge}
+      />
+      {isSelectable && (
+        <Box flexShrink={0}>
+          <Icon svg={<IconChevronRightLine />} size="x5" color="fg.neutralSubtle" />
+        </Box>
+      )}
+    </HStack>
+  )
+
+  if (footerAction) {
+    body = (
+      <VStack gap="x3" width="full" align="stretch">
+        <CandidateContent
+          candidate={candidate}
+          requestedAmountKrw={requestedAmountKrw}
+          variant={variant}
+          showNewBadge={showNewBadge}
+        />
+        <FooterAction action={footerAction} />
+      </VStack>
+    )
+  }
+
   return (
     <HStack
       className={rootClassName || undefined}
@@ -135,16 +208,7 @@ export function MatchingCandidateCard({
       onClick={isSelectable ? handleClick : undefined}
       onKeyDown={isSelectable ? handleKeyDown : undefined}
     >
-      <CandidateContent
-        candidate={candidate}
-        requestedAmountKrw={requestedAmountKrw}
-        variant={variant}
-      />
-      {isSelectable && (
-        <Box flexShrink={0}>
-          <Icon svg={<IconChevronRightLine />} size="x5" color="fg.neutralSubtle" />
-        </Box>
-      )}
+      {body}
     </HStack>
   )
 }

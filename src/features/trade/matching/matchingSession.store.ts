@@ -178,6 +178,16 @@ function dismissCandidate(candidateId: string) {
   }
 }
 
+/** 제안 건너뛰기 — 목록에서 제외하고 탐색 계속 */
+export function skipCandidate(candidateId: string) {
+  if (!session) return
+  dismissCandidate(candidateId)
+  if (session.suggestion?.candidateId === candidateId) {
+    session = { ...session, suggestion: null }
+  }
+  notify()
+}
+
 function tryConfirmMatch() {
   if (!session?.pendingMatch) return
 

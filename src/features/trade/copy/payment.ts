@@ -21,7 +21,7 @@ export function getPaymentReportedBuyerBadge(): string {
 }
 
 export function getPaymentReportedBuyerTitle(): string {
-  return '입금 완료를 알렸어요'
+  return '판매자 확인을 기다리고 있어요'
 }
 
 export function getPaymentReportedBuyerDescription(): string {
@@ -29,7 +29,23 @@ export function getPaymentReportedBuyerDescription(): string {
 }
 
 export function getPaymentReportedBuyerOutcome(coinLabel: string): string {
-  return `확인이 완료되면 ${coinLabel}이 자동으로 지급돼요.`
+  return `판매자가 입금을 확인하면\n${coinLabel}이 자동으로 지급돼요.`
+}
+
+export function getPaymentReportedBuyerAssetProtection(coinLabel: string): string {
+  return `판매자의 ${coinLabel}은 거래용으로 보류돼 있어요.`
+}
+
+export function getPaymentReportedBuyerNextSteps(): readonly [string, string, string] {
+  return [
+    '판매자가 입금을 확인해요',
+    '확인되면 Coin이 자동 지급돼요',
+    '제한시간이 지나면 추가 확인을 요청할 수 있어요',
+  ]
+}
+
+export function getPaymentReportedBuyerCancelHint(): string {
+  return '입금 후에는 거래를 임의로 취소할 수 없어요.'
 }
 
 export function getPaymentReportedBuyerStatusLine(): string {
