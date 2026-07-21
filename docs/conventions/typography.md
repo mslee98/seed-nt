@@ -1,7 +1,7 @@
 # Typography Conventions
 
 Brit UI 타이포그래피는 [SEED Design](https://seed-design.io) 토큰을 따릅니다.  
-px·Tailwind `text-*` 직접 지정은 예외적으로만 사용합니다.
+**밀도·역할은 Toss에 맞추고**, 스케일/weight는 SEED만 사용합니다 (토스 TDS px·SemiBold 직접 도입 금지).
 
 ## Font
 
@@ -18,27 +18,62 @@ Pretendard는 [`src/main.tsx`](../../src/main.tsx)에서 `pretendardvariable-dyn
 ### 전역 톤
 
 - `body`: `letter-spacing: var(--app-typo-body-tracking)` (`-0.01em`)
-- 화면 H1 자간 보강: `className="typo-title-tight"` (`-0.02em`, SEED `screenTitle` 크기 유지)
+- 화면 H1 자간 보강: `className="typo-title-tight"` (`-0.02em`)
+- AppBar 타이틀: Toss 탑바 근사 → SEED `t5Medium` ([`typography.css`](../../src/app/styles/typography.css) 오버라이드)
 - iOS/Android 글자 크기: [`vite.config.ts`](../../vite.config.ts) `seedDesignPlugin({ fontScaling: true })`
+
+## 색상 (Toss) × 타이포 (SEED)
+
+- **타이포**: JSX는 SEED `textStyle` **직접** 사용 (`textStyle="t7Bold"`)
+- **역할 참조**: [`SEED_TYPO_ROLES`](../../src/shared/constants/typography.ts) — 홈 preset·새 화면에서 어떤 토큰을 쓸지 조회
+- **텍스트 색**: SEED `color="fg.*"` API 유지, 값은 [`toss-theme.css`](../../src/app/styles/toss-theme.css)에서 Toss grey로 오버라이드
+  - `fg.neutral` → grey800 `#333d4b` (기본 본문·제목, 순수 `#000` 사용 금지)
+  - `fg.neutralMuted` → grey700 / `fg.neutralSubtle` → grey600
+  - 상수 참조: [`TOSS_FG`](../../src/shared/constants/toss-colors.ts)
 
 ## 기본 원칙
 
-1. **`<Text textStyle="…" color="fg.*">`** — 역할 색상 + 스케일/시맨틱 토큰
-2. **시맨틱 우선** — 화면 제목 등 역할이 정해진 경우 `screenTitle` 등 시맨틱 스타일 사용
-3. **DS 컴포넌트 위임** — `AppBar`, `ListItem`, `TextField`, `ResultSection`, `ActionButton` 등은 내부 타이포 유지
-4. **숫자** — 금액·카운트에 `tabular-nums` (또는 `className="tabular-nums"`)
+1. **`<Text textStyle="t7Bold" color="fg.*">`** — SEED 토큰 직접
+2. **`screenTitle`은 가입·온보딩 히어로만** — 탭/목록 H1은 `t7Bold`
+3. **DS 컴포넌트** — `ListItem`, `TextField`, `ResultSection`, `ActionButton` 등은 내부 타이포 유지. AppBar만 Toss 밀도 오버라이드
+4. **숫자** — 금액·카운트에 `tabular-nums`
+
+### Toss → SEED 매칭
+
+| Toss | SEED `textStyle` | `SEED_TYPO_ROLES` |
+|------|------------------|-------------------|
+| 탑 네비 15 SemiBold | `t5Medium` | `navTitle` |
+| 리스트 헤더 20 Bold | `t7Bold` | `pageTitle` |
+| 헤더 보조 13 Regular | `t3Regular` | `pageDesc` |
+| SemiBold(600) | Medium(500) | — |
+
+```tsx
+import { SEED_TYPO_ROLES } from '../../shared/constants/typography'
+
+// 화면: SEED textStyle 직접
+<Text textStyle="t7Bold" color="fg.neutral">거래내역</Text>
+<Text textStyle="t3Regular" color="fg.neutralMuted">설명</Text>
+
+// preset: 역할 카탈로그 참조
+sectionTitle: SEED_TYPO_ROLES.pageTitle // 't7Bold'
+```
 
 ## 계층표
 
 | 역할 | textStyle / variant | color 예시 | 사용처 |
 |------|---------------------|------------|--------|
-| 화면 H1 | `screenTitle` (+ `typo-title-tight` 선택) | `fg.neutral` | 홈 헤더, 탭 화면, 가입 폼 |
-| 부제 | `t5Regular` | `fg.neutralMuted` | H1 아래 설명 (`spacingY.betweenText`) |
+| 탑 네비 | AppBar → `t5Medium` | `fg.neutral` | Stack `ActivityScreenLayout` |
+| 화면 H1 | `t7Bold` | `fg.neutral` | 프로필, 거래내역, 탐색, 거래 화면 |
+| H1 히어로 | `screenTitle` | `fg.neutral` | 가입·인증·기관 선택 |
+| 부제 | `t3Regular` | `fg.neutralMuted` | H1 아래 설명 |
+| 섹션 헤더 | `t7Bold` | `fg.neutral` | 홈 리스트, WhileYouWait, 매칭 피드 |
+| 섹션 보조 | `t3Regular` | `fg.neutralMuted` | 섹션 헤더 아래 |
+| 행·카드 타이틀 | `t5Bold` | `fg.neutral` | 홈 task, Push/Install 카드 |
 | 히어로 금액 | `AnimatedAmount variant="hero"` | `fg.neutral` | 홈 거래 금액 입력 |
-| 문맥 금액 | `t6Bold` / `AnimatedAmount` inline | `fg.neutral` | 거래 상세, 입금, 매칭 카드 |
-| 카드/섹션 소제목 | `t4Bold` | `fg.neutral` | "거래할 금액", WhileYouWait 섹션 |
-| 본문·메타 | `t4Regular` / `t4Medium` | `fg.neutralSubtle` / `fg.neutralMuted` | 도움말, 상세 라벨 |
-| 3차 캡션 | `t3Regular` | `fg.neutralMuted` | 진행 중 거래 메타 |
+| 홈 월렛 잔액 | `variant="balance"` (~44px / 750) | inverted 100% | 라벨 `t3Regular` muted, 단위 `t5Medium`, 메타 `t3`+`t5Bold` |
+| 문맥 금액 | `t6Bold` | `fg.neutral` | 거래 상세, 입금, 매칭 카드 |
+| 본문·메타 | `t4Regular` / `t4Medium` | `fg.neutralSubtle` / `Muted` | 도움말, 상세 라벨 |
+| 캡션 | `t3Regular` | `fg.neutralMuted` | 메타, 배너 보조 |
 | 에러 | `t4Regular` | `fg.critical` | 입력 검증 메시지 |
 | 링크 | `t4Medium` | `fg.brand` | `TextLinkButton` |
 
@@ -82,9 +117,10 @@ breeze `AnimateNumber`는 `variant` 또는 `numberTextStyle`을 타이포 소스
 ## PR 체크
 
 - [ ] `--font-sans` 순서 유지 (system → Pretendard Variable)
-- [ ] 새 화면 H1이 `screenTitle`인가?
+- [ ] 탭/목록 H1이 `t7Bold`인가? (`screenTitle`은 히어로만)
+- [ ] 섹션 헤더가 `t7Bold`, 보조가 `t3Regular`인가?
 - [ ] 히어로 금액은 `variant="hero"`, 문맥 금액은 `t6Bold`/inline인가?
-- [ ] raw `fontSize`/`font-weight` CSS가 없는가?
+- [ ] raw `fontSize`/`font-weight` CSS가 없는가? (AppBar·amount 예외 제외)
 - [ ] 금액에 `tabular-nums`가 적용되는가?
 
 ## 참고

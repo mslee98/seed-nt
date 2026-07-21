@@ -104,11 +104,11 @@ export function MatchingFeed({
 
       {showSectionHeader && (
         <HStack justify="space-between" width="full">
-          <Text textStyle="t4Bold" color="fg.neutral">
+          <Text textStyle="t7Bold" color="fg.neutral">
             {queueLocked ? '제안한 상대' : '찾은 상대'}
           </Text>
           {!queueLocked && (
-            <Text textStyle="t4Regular" color="fg.neutralMuted">
+            <Text textStyle="t3Regular" color="fg.neutralMuted">
               {revealedCandidates.length}명
             </Text>
           )}

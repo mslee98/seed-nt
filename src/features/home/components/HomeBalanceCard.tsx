@@ -1,4 +1,4 @@
-import { HStack, Text, VStack } from '@seed-design/react'
+import { Divider, HStack, Text, VStack } from '@seed-design/react'
 
 import coinDecor from '../../../assets/home/31_exchange1_0.png'
 import { AnimatedAmount } from '../../../shared/ui/AnimatedAmount'
@@ -16,7 +16,7 @@ interface HomeBalanceCardProps {
   balanceAnimated?: boolean
 }
 
-/** 홈 월렛 히어로 — r6, shadow 없음, compact 밀도 */
+/** 홈 월렛 히어로 — 금액 앵커, 라벨·메타는 muted (Toss 월렛 위계) */
 export function HomeBalanceCard({
   availableCoin,
   coinBalance,
@@ -48,8 +48,12 @@ export function HomeBalanceCard({
 
       <VStack position="relative" gap="x3" style={{ zIndex: 1 }}>
         {hasBalance ? (
-          <VStack gap="x1" pr="x10">
-            <Text textStyle={t.heroAvailableLabel} color="fg.neutralInverted">
+          <VStack gap="x1" pr="x16">
+            <Text
+              textStyle={t.heroAvailableLabel}
+              color="fg.neutralInverted"
+              className="home-balance-card__muted"
+            >
               사용 가능 Coin
             </Text>
             <HStack gap="x1" style={{ alignItems: 'baseline' }}>
@@ -69,48 +73,72 @@ export function HomeBalanceCard({
             </HStack>
           </VStack>
         ) : (
-          <VStack gap="x1" pr="x10">
+          <VStack gap="x1" pr="x16">
             <Text textStyle={t.heroEmptyTitle} color="fg.neutralInverted">
-              아직 보유한 코인이 없어요
+              필요한 Coin을 구매해 보세요
             </Text>
-            <Text textStyle={t.heroEmptyDesc} color="fg.neutralInverted">
-              필요한 만큼 구매해서 사용할 수 있어요.
+            <Text
+              textStyle={t.heroEmptyDesc}
+              color="fg.neutralInverted"
+              className="home-balance-card__muted"
+            >
+              구매하면 여기서 잔액을 확인할 수 있어요.
             </Text>
           </VStack>
         )}
 
         {hasBalance && (
-          <HStack
-            pt="x3"
-            borderTopWidth="1"
-            borderColor="stroke.neutralMuted"
-            justify="space-between"
-            gap="x4"
-          >
-            <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
-              <Text textStyle={t.metaLabel} color="fg.neutralInverted">
-                총 보유
-              </Text>
-              <Text textStyle={t.metaValue} color="fg.neutralInverted" className="tabular-nums">
-                {formatAmountNumber(coinBalance)} Coin
-              </Text>
-            </VStack>
-            <VStack
-              gap="x0_5"
-              flexGrow
-              pl="x4"
-              borderLeftWidth="1"
-              borderColor="stroke.neutralMuted"
-              style={{ minWidth: 0 }}
-            >
-              <Text textStyle={t.metaLabel} color="fg.neutralInverted">
-                거래 보류
-              </Text>
-              <Text textStyle={t.metaValue} color="fg.neutralInverted" className="tabular-nums">
-                {formatAmountNumber(escrowCoin)} Coin
-              </Text>
-            </VStack>
-          </HStack>
+          <>
+            <Divider
+              as="div"
+              aria-hidden
+              orientation="horizontal"
+              thickness={1}
+              color="palette.staticWhiteAlpha300"
+            />
+            <HStack align="stretch" justify="space-between" gap="x4" width="full">
+              <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
+                <Text
+                  textStyle={t.metaLabel}
+                  color="fg.neutralInverted"
+                  className="home-balance-card__muted"
+                >
+                  총 보유
+                </Text>
+                <Text
+                  textStyle={t.metaValue}
+                  color="fg.neutralInverted"
+                  className="tabular-nums home-balance-card__meta-value"
+                >
+                  {formatAmountNumber(coinBalance)} Coin
+                </Text>
+              </VStack>
+              <Divider
+                as="div"
+                aria-hidden
+                orientation="vertical"
+                thickness={1}
+                color="palette.staticWhiteAlpha300"
+                className="home-balance-card__divider--vertical"
+              />
+              <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
+                <Text
+                  textStyle={t.metaLabel}
+                  color="fg.neutralInverted"
+                  className="home-balance-card__muted"
+                >
+                  거래 보류
+                </Text>
+                <Text
+                  textStyle={t.metaValue}
+                  color="fg.neutralInverted"
+                  className="tabular-nums home-balance-card__meta-value"
+                >
+                  {formatAmountNumber(escrowCoin)} Coin
+                </Text>
+              </VStack>
+            </HStack>
+          </>
         )}
       </VStack>
     </VStack>

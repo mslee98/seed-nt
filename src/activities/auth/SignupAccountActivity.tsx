@@ -62,7 +62,7 @@ const SignupAccountActivity: ActivityComponentType<'SignupAccount'> = () => {
           <Text textStyle="screenTitle" color="fg.neutral">
             계좌번호를 입력해 주세요
           </Text>
-          <Text textStyle="t5Regular" color="fg.neutralMuted">
+          <Text textStyle="t3Regular" color="fg.neutralMuted">
             {screen.draft.bankName} 계좌의 번호를 입력해 주세요.
           </Text>
         </VStack>

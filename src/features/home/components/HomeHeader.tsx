@@ -8,7 +8,7 @@ import {
 } from '@seed-design/react'
 
 import { PressableScale } from '../../../shared/ui/PressableScale'
-import LogoBrit from '../../../assets/logo-brit.svg?react'
+import LogoBrit from '../../../assets/icons/brand/logo-brit.svg?react'
 import { HomeInstallBanner } from '../../pwa/components/HomeInstallBanner'
 import { HOME_COMPACT } from '../constants/homeCompact'
 

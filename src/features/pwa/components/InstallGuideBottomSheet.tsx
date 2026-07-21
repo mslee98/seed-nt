@@ -43,7 +43,7 @@ export function InstallGuideBottomSheet({ open, onOpenChange }: InstallGuideBott
         >
           <BottomSheetBody>
             <VStack gap="spacingY.betweenText">
-              <Text textStyle="t5Regular" color="fg.neutralMuted">
+              <Text textStyle="t3Regular" color="fg.neutralMuted">
                 브라우저 메뉴에서 홈 화면에 추가하면, 앱처럼 더 빠르게 거래를 확인할 수 있어요.
               </Text>
               {steps && (

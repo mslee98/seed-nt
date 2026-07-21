@@ -2,7 +2,7 @@
 
 ## 결론
 
-거래 플로우 모션(APNG/Lottie)은 **precache 대상에서 제외**합니다. APNG는 **runtime CacheFirst + 파일명 버저닝**, Lottie는 **`src/assets/lottie` 번들 import**로 제공합니다. 접근성 설정(`prefers-reduced-motion`)에서는 애니메이션을 줄이고 텍스트 UI로 상태를 전달합니다.
+거래 플로우 모션(APNG/Lottie)은 **precache 대상에서 제외**합니다. APNG는 **runtime CacheFirst + 파일명 버저닝**, 재생은 **`ApngPlayer` fetch→blob URL**(Cache API→`<img src>` 직접 연결 시 Chromium 정지 프레임 이슈 회피). Lottie는 **`src/assets/lottie` 번들 import**로 제공합니다. 접근성 설정(`prefers-reduced-motion`)에서는 애니메이션을 줄이고 텍스트 UI로 상태를 전달합니다.
 
 ## precache 제외 이유
 
@@ -15,10 +15,13 @@
 
 | 경로 | handler | cacheName | maxEntries |
 |------|---------|-----------|------------|
-| `/motion/*.apng` | CacheFirst | `brit-motion` | 24 |
+| `/motion/*.apng` | CacheFirst | `brit-motion-v2` | 24 |
 
 - TTL: 30일
+- `cacheableResponse.statuses: [200]`만 — opaque(`0`)·오류 응답 캐시 금지
 - **에셋 교체 시 파일명 `vN` bump** (예: `moneybag-rotate.v2.apng`) — stale cache 방지
+- 캐시 이름 `v2` bump: 과거 `brit-motion`에 오염된 항목이 있으면 무시
+- 재생: [`ApngPlayer`](../../src/shared/components/ApngPlayer.tsx) blob URL (SW 캐시와 `<img>` 직접 연결 금지)
 - Lottie: `src/assets/lottie/` import → runtime rule 없음 (JS chunk)
 
 ## Lottie 로딩

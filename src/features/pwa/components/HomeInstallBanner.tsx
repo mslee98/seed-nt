@@ -74,7 +74,7 @@ export function HomeInstallBanner() {
           </Box>
 
           <Box flexGrow style={{ minWidth: 0 }}>
-            <Text textStyle="t4Bold" color="fg.neutral">
+            <Text textStyle="t5Bold" color="fg.neutral">
               앱처럼 더 편하게 거래해요
             </Text>
           </Box>

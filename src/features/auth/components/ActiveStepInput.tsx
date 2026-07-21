@@ -220,7 +220,7 @@ export function ActiveStepInput({
         <Text textStyle="screenTitle" color="fg.neutral">
           {activeCopy.screenTitle}
         </Text>
-        <Text textStyle="t5Regular" color="fg.neutralMuted">
+        <Text textStyle="t3Regular" color="fg.neutralMuted">
           {activeCopy.screenSubtitle}
         </Text>
       </VStack>

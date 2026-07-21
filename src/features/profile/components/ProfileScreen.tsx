@@ -14,7 +14,7 @@ export function ProfileScreen() {
       gap="x6"
       style={{ paddingBottom: 'var(--app-content-bottom-padding)' }}
     >
-      <Text textStyle="screenTitle" color="fg.neutral">
+      <Text textStyle="t7Bold" color="fg.neutral">
         MY
       </Text>
 

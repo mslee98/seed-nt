@@ -11,8 +11,25 @@ src/
   features/       # 도메인 모듈
   shared/         # cross-feature
   stackflow/      # config + Stack bootstrap
-  icons/ assets/  # 정적 리소스
+  assets/         # 번들 정적 리소스 (icons · lottie · 기타)
 ```
+
+### assets/
+
+```text
+assets/
+  icons/
+    ui/                 # 앱 UI SVG — import …?react
+    brand/              # 로고 등 브랜드 SVG — import …?react
+    institution/        # 금융기관 로고 — new URL(..., import.meta.url)
+      bank/
+      securities/
+      insurance/
+  lottie/               # Lottie JSON + registry (mobile-motion 룰)
+```
+
+- 모노크롬 UI 아이콘은 `@karrotmarket/react-monochrome-icon` 사용 (assets에 복사하지 않음)
+- PWA/런타임 아이콘은 `public/icons/` (src 밖)
 
 ## Feature module
 

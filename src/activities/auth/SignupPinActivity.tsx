@@ -30,7 +30,7 @@ const SignupPinActivity: ActivityComponentType<'SignupPin'> = () => {
           <Text textStyle="screenTitle" color="fg.neutral">
             {copy.title}
           </Text>
-          <Text textStyle="t5Regular" color="fg.neutralMuted">
+          <Text textStyle="t3Regular" color="fg.neutralMuted">
             {copy.description}
           </Text>
         </VStack>

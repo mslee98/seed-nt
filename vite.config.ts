@@ -57,14 +57,17 @@ export default defineConfig({
         globIgnores: ['**/motion/**', '**/apng/**', '**/lotties/**'],
         maximumFileSizeToCacheInBytes: 1_500_000,
         navigateFallback: '/index.html',
+        // APNG: CacheFirst 유지(오프라인). opaque(0) 캐시 금지 — 오염 응답이 애니메이션을 깨뜨림.
+        // <img src>로 Cache API 응답을 직접 쓰면 Chromium에서 정지 프레임만 나와
+        // ApngPlayer는 fetch→blob URL로 재생한다.
         runtimeCaching: [
           {
             urlPattern: /\/motion\/.+\.apng$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'brit-motion',
+              cacheName: 'brit-motion-v2',
               expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
+              cacheableResponse: { statuses: [200] },
             },
           },
         ],

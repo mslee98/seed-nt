@@ -53,7 +53,7 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
             <Text textStyle="screenTitle" color="fg.neutral">
               인증번호를 입력해 주세요
             </Text>
-            <Text textStyle="t5Regular" color="fg.neutralMuted">
+            <Text textStyle="t3Regular" color="fg.neutralMuted">
               {phone}로 보낸 6자리 숫자예요.
             </Text>
           </VStack>

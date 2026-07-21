@@ -31,10 +31,10 @@ export function SplitTradeDashboard({
     >
       <VStack gap="x3" width="full">
         <VStack gap="x1">
-          <Text textStyle="screenTitle" color="fg.neutral" className="tabular-nums">
+          <Text textStyle="t7Bold" color="fg.neutral" className="tabular-nums">
             {formatAmount(dashboard.totalAmountKrw)} {sideLabel} 중
           </Text>
-          <Text textStyle="t5Regular" color="fg.neutralMuted" className="tabular-nums">
+          <Text textStyle="t3Regular" color="fg.neutralMuted" className="tabular-nums">
             {formatAmount(dashboard.completedKrw)} / {formatAmount(dashboard.totalAmountKrw)}
           </Text>
         </VStack>

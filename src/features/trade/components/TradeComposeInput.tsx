@@ -83,7 +83,7 @@ export function TradeComposeInput({
             borderRadius="full"
             bg="bg.brandSolid"
           />
-          <Text textStyle="t4Bold" color="fg.neutral">
+          <Text textStyle="t7Bold" color="fg.neutral">
             거래할 금액
           </Text>
         </HStack>

@@ -19,11 +19,11 @@
   --app-typo-amount-hero-tracking: -0.03em;
   --app-typo-amount-hero-line-height: 1.15;
 
-  /* 홈 월렛 잔액 — SEED t 스케일 밖 (~40px / lh 1.2) */
-  --app-typo-balance-amount-size: 2.5rem;
-  --app-typo-balance-amount-weight: 700;
+  /* 홈 월렛 잔액 — SEED t 스케일 밖 (~44px / lh 1.15, 금액 앵커) */
+  --app-typo-balance-amount-size: 2.75rem;
+  --app-typo-balance-amount-weight: 750;
   --app-typo-balance-amount-tracking: -0.03em;
-  --app-typo-balance-amount-line-height: 1.2;
+  --app-typo-balance-amount-line-height: 1.15;
 }
 
 html {
@@ -54,4 +54,15 @@ html {
 
 input[inputmode='numeric'] {
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * AppBar 타이틀 — Toss 탑 네비(~15 SemiBold) 근사
+ * SEED 기본 t6 Bold(18/700) → t5 Medium(16/500)
+ */
+.seed-app-bar-main__title--layout_titleOnly,
+.seed-app-bar-main__title--layout_withSubtitle {
+  font-size: var(--seed-font-size-t5);
+  font-weight: var(--seed-font-weight-medium);
+  line-height: var(--seed-line-height-t5);
 }

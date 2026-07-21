@@ -129,3 +129,14 @@ export const TOSS_BRAND = {
   primaryPressed: TOSS_COLORS.blue[600],
   primaryWeak: TOSS_COLORS.blue[50],
 } as const
+
+/**
+ * SEED `fg.*` ↔ Toss grey. `toss-theme.css`의 `--seed-color-fg-*`와 동일 hex를 유지하세요.
+ */
+export const TOSS_FG = {
+  neutral: TOSS_COLORS.grey[800],
+  neutralMuted: TOSS_COLORS.grey[700],
+  neutralSubtle: TOSS_COLORS.grey[600],
+  placeholder: TOSS_COLORS.grey[500],
+  disabled: TOSS_COLORS.grey[400],
+} as const

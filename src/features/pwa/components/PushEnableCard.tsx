@@ -60,7 +60,7 @@ export function PushEnableCard({ eligibility, onRequestPermission }: PushEnableC
         <Icon svg={<IconBellFill />} size="x5" color="fg.brand" />
       </Box>
       <VStack gap="x0_5" align="flex-start" flexGrow minWidth="0">
-        <Text textStyle="t4Bold" color="fg.neutral">
+        <Text textStyle="t5Bold" color="fg.neutral">
           {PUSH_ENABLE_COPY.title}
         </Text>
         <Text textStyle="t3Regular" color="fg.neutralMuted">

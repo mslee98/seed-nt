@@ -87,7 +87,7 @@ const TradeActivity: ActivityComponentType<'Trade'> = () => {
           pt="spacingY.navToTitle"
           gap="spacingY.betweenText"
         >
-          <Text textStyle="screenTitle" color="fg.neutral">
+          <Text textStyle="t7Bold" color="fg.neutral">
             거래를 찾을 수 없어요
           </Text>
         </VStack>

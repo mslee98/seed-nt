@@ -13,10 +13,10 @@ export function WhileYouWaitSection({ onStoreClick, onCommunityClick }: WhileYou
   return (
     <VStack gap="x3" width="full">
       <VStack gap="x1">
-        <Text textStyle="t4Bold" color="fg.neutral">
+        <Text textStyle="t7Bold" color="fg.neutral">
           {WHILE_YOU_WAIT_COPY.title}
         </Text>
-        <Text textStyle="t4Regular" color="fg.neutralMuted">
+        <Text textStyle="t3Regular" color="fg.neutralMuted">
           {WHILE_YOU_WAIT_COPY.description}
         </Text>
       </VStack>
