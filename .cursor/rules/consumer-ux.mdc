@@ -36,7 +36,8 @@ Push/설치 유도: PWA 룰과 동일 — **진입 직후 권한 요청 금지**
 - 화면당 **핵심 모션/그래픽 1곳** (거래: 매칭 독만, 시트는 텍스트·DS 컴포넌트)
 - 문맥과 맞는 에셋 (대기=진행 중, 완료=성공 — 성공 애니를 로딩에 쓰지 않음)
 - 부정·호소·과한 이펙트·장식 파티클 지양
-- APNG/Lottie: lazy load, PWA motion 캐시 — [mobile-motion.mdc](mobile-motion.mdc), [`runtimeCaching`](vite.config.ts), `prefers-reduced-motion` 준수
+- APNG/Lottie: lazy load, PWA motion 캐시 — [mobile-motion.mdc](mobile-motion.mdc), [`runtimeCaching`](vite.config.ts)
+- `prefers-reduced-motion`: **상태 그래픽(APNG/Lottie)은 현재 결정 B로 풀 재생** (예외·리스크는 mobile-motion). 금액·탭 등 마이크로 모션은 reduce 존중
 - 토스 제공 그래픽은 앱인토스 제휴 범위 내 UI만 (저작권)
 
 ## 해상도

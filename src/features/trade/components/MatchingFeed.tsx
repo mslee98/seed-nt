@@ -1,17 +1,15 @@
-import { useEffect, useMemo } from 'react'
-import { Box, HStack, ScrollFog, Text, VStack } from '@seed-design/react'
+import { useMemo } from 'react'
+import { HStack, ScrollFog, Text, VStack } from '@seed-design/react'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { PageBanner } from 'seed-design/ui/page-banner'
 
 import { TextLinkButton } from '../../../shared/components/TextLinkButton'
-import { usePrefersReducedMotion } from '../../../shared/hooks/usePrefersReducedMotion'
 import { BottomCTA } from '../../../shared/ui/BottomCTA'
 import { usePushNotification } from '../../pwa/hooks/usePushNotification'
 import {
   useMatchingSession,
   useMatchingSessionActions,
 } from '../matching/hooks/useMatchingSession'
-import { revealAllCandidates } from '../matching/matchingSession.store'
 import type { MatchingCandidate } from '../matching/types'
 import {
   getVisibleRevealedCandidates,
@@ -45,7 +43,6 @@ export function MatchingFeed({
   const matchingSession = useMatchingSession()
   const { withdrawProposal } = useMatchingSessionActions()
   const { eligibility, canShowWhileYouWait, requestPermission } = usePushNotification()
-  const prefersReducedMotion = usePrefersReducedMotion()
 
   const queueLocked = isQueueLocked(matchingSession)
   const pendingCandidateId = matchingSession?.pendingMatch?.candidateId ?? null
@@ -83,14 +80,6 @@ export function MatchingFeed({
   const showSectionHeader = queueLocked || revealedCandidates.length > 0
   const showScrollFog = revealedCandidates.length >= SCROLL_FOG_CANDIDATE_THRESHOLD
 
-  useEffect(() => {
-    if (!prefersReducedMotion || !matchingSession) {
-      return
-    }
-    if (queueLocked) return
-    revealAllCandidates()
-  }, [prefersReducedMotion, matchingSession?.tradeId, queueLocked])
-
   const primarySection = (
     <VStack gap="x4" width="full">
       {queueLocked && (
@@ -125,7 +114,7 @@ export function MatchingFeed({
           requestedAmountKrw={trade.amountKrw}
           pendingCandidateId={pendingCandidateId}
           queueLocked={queueLocked}
-          animate={!prefersReducedMotion}
+          animate
           onSelectCandidate={queueLocked ? undefined : onSelectCandidate}
         />
       )}
@@ -149,27 +138,10 @@ export function MatchingFeed({
     </>
   )
 
+  // prefers-reduced-motion여도 히어로 APNG 유지 (제품 결정 B — ApngPlayer/mobile-motion 참고)
   const heroMotion =
     uiMode === 'PENDING' ? (
-      prefersReducedMotion ? (
-        <Box
-          width={`${HERO_MOTION_SIZE}px`}
-          height={`${HERO_MOTION_SIZE}px`}
-          borderRadius="full"
-          bg="bg.brandWeak"
-          flexShrink={0}
-        />
-      ) : (
-        <TradeMotion variant="waitingConfirm" size={HERO_MOTION_SIZE} />
-      )
-    ) : prefersReducedMotion ? (
-      <Box
-        width={`${HERO_MOTION_SIZE}px`}
-        height={`${HERO_MOTION_SIZE}px`}
-        borderRadius="full"
-        bg="bg.brandWeak"
-        flexShrink={0}
-      />
+      <TradeMotion variant="waitingConfirm" size={HERO_MOTION_SIZE} />
     ) : (
       <TradeMotion variant="matchingSearch" size={HERO_MOTION_SIZE} />
     )

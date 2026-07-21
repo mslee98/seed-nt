@@ -2,8 +2,6 @@ import LottieImport from 'lottie-react'
 import type { LottieComponentProps } from 'lottie-react'
 import { useEffect, useState, type ComponentType } from 'react'
 
-import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
-
 const Lottie = (
   'default' in LottieImport ? LottieImport.default : LottieImport
 ) as ComponentType<LottieComponentProps>
@@ -23,6 +21,18 @@ interface LottiePlayerProps {
   size?: number
 }
 
+/**
+ * Lottie 재생 플레이어.
+ *
+ * prefers-reduced-motion (제품 결정 B — 의도적 예외):
+ * OS 「동작 줄이기」여도 `loop`/`autoplay` prop을 덮어쓰지 않고 호출부 설정을 그대로 따릅니다.
+ * (이전: reduce 시 autoplay/loop off → 첫 프레임만. APNG와 정책을 맞춰 상태 그래픽이 끊기지 않게 함.)
+ *
+ * 접근성 리스크·탈출 경로(A 정적 / C 앱 토글)는 ApngPlayer와 동일합니다.
+ *
+ * @see .cursor/rules/mobile-motion.mdc
+ * @see docs/pwa/trade-motion-diagnosis.md
+ */
 export function LottiePlayer({
   animationData: animationDataProp,
   loadAnimation,
@@ -32,7 +42,6 @@ export function LottiePlayer({
   autoplay = true,
   size = 80,
 }: LottiePlayerProps) {
-  const prefersReducedMotion = usePrefersReducedMotion()
   const [loadedAnimationData, setLoadedAnimationData] = useState<object | null>(
     animationDataProp ?? null,
   )
@@ -64,14 +73,11 @@ export function LottiePlayer({
 
   if (!mountWhen || !loadedAnimationData) return null
 
-  const shouldLoop = prefersReducedMotion ? false : loop
-  const shouldAutoplay = prefersReducedMotion ? false : autoplay
-
   return (
     <Lottie
       animationData={loadedAnimationData}
-      loop={shouldLoop}
-      autoplay={shouldAutoplay}
+      loop={loop}
+      autoplay={autoplay}
       className={className}
       style={{ width: size, height: size }}
       rendererSettings={DEFAULT_RENDERER_SETTINGS}

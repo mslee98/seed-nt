@@ -321,7 +321,7 @@ export function clearMatchingSession() {
   notify()
 }
 
-/** prefers-reduced-motion: stagger 없이 전체 공개 */
+/** 후보 stagger를 건너뛰고 전부 공개합니다. (수동/디버그·특수 UX용) */
 export function revealAllCandidates() {
   if (!session || isQueueLocked()) return
 

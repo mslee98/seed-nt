@@ -32,8 +32,13 @@
 
 ## reduced-motion 처리
 
-- [`ApngPlayer`](../../src/shared/components/ApngPlayer.tsx): `reduce` 시 렌더링 생략
-- [`LottiePlayer`](../../src/shared/components/LottiePlayer.tsx): `autoplay=false`, `loop=false` (첫 프레임)
+**제품 결정 B (일시적 예외)**: OS `prefers-reduced-motion`이어도 상태 그래픽(APNG/Lottie)은 숨기지 않고 풀 재생합니다.
+
+- [`ApngPlayer`](../../src/shared/components/ApngPlayer.tsx): reduce여도 fetch→blob→`<img>` 재생 (이전: `null`)
+- [`LottiePlayer`](../../src/shared/components/LottiePlayer.tsx): `loop`/`autoplay` prop 그대로 (이전: reduce 시 둘 다 off)
+- 매칭 히어로: reduce용 빈 `Box` 제거 → 항상 `TradeMotion`
+- 금액·탭 스케일 등 마이크로 인터랙션은 별도 — reduce 존중 유지
+- 리스크: 전정계 민감 사용자에게 루프 모션 노출. 탈출 경로 A(정적 포스터) / C(앱 토글) — 플레이어 헤더 주석 참고
 
 ## 모션 배치 (현재)
 
@@ -44,7 +49,7 @@
 ## 남은 리스크
 
 - 오프라인 최초 진입 시 APNG 미캐시 → 텍스트/Badge fallback
-- APNG는 CSS로 정지 불가 → reduced-motion에서 이미지 대신 텍스트 의존
+- 결정 B: reduce여도 APNG 루프가 계속됨 — 정적 포스터(A) 도입 전까지 a11y 리스크 잔존
 
 ## 다음 작업 제안
 
