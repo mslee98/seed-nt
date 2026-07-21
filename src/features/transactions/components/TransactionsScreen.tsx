@@ -78,14 +78,9 @@ export function TransactionsScreen() {
   return (
     <VStack
       px="spacingX.globalGutter"
-      pt="spacingY.navToTitle"
+      pt="x2"
       style={{ paddingBottom: 'var(--app-content-bottom-padding)' }}
     >
-      <VStack pb="x4">
-        <Text textStyle="t7Bold" color="fg.neutral">
-          거래내역
-        </Text>
-      </VStack>
       <List>
         {items.map((item) => {
           const label = getTransactionLabel(item)

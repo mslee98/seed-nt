@@ -69,7 +69,7 @@ sectionTitle: SEED_TYPO_ROLES.pageTitle // 't7Bold'
 | 섹션 헤더 | `t7Bold` | `fg.neutral` | 홈 리스트, WhileYouWait, 매칭 피드 |
 | 섹션 보조 | `t3Regular` | `fg.neutralMuted` | 섹션 헤더 아래 |
 | 행·카드 타이틀 | `t5Bold` | `fg.neutral` | 홈 task, Push/Install 카드 |
-| 히어로 금액 | `AnimatedAmount variant="hero"` | `fg.neutral` | 홈 거래 금액 입력 |
+| 히어로 금액 | `AnimatedAmount variant="hero"` | `fg.neutral` | TradeCompose 금액 입력 (`AmountHeroField`) |
 | 홈 월렛 잔액 | `variant="balance"` (~44px / 750) | inverted 100% | 라벨 `t3Regular` muted, 단위 `t5Medium`, 메타 `t3`+`t5Bold` |
 | 문맥 금액 | `t6Bold` | `fg.neutral` | 거래 상세, 입금, 매칭 카드 |
 | 본문·메타 | `t4Regular` / `t4Medium` | `fg.neutralSubtle` / `Muted` | 도움말, 상세 라벨 |
@@ -87,7 +87,7 @@ sectionTitle: SEED_TYPO_ROLES.pageTitle // 't7Bold'
 breeze `AnimateNumber`는 `variant` 또는 `numberTextStyle`을 타이포 소스로 사용합니다.
 
 ```tsx
-// 히어로 (홈 입력): 32px / 750 / tabular-nums — CSS `.amount-hero`
+// 히어로 (TradeCompose 금액 입력): 32px / 750 / tabular-nums — CSS `.amount-hero`
 <AnimatedAmount value={amountKrw} variant="hero" suffix="원" replayKey={replayKey} />
 
 // 인라인 (잔액 등): SEED t5Bold preset
@@ -96,12 +96,13 @@ breeze `AnimateNumber`는 `variant` 또는 `numberTextStyle`을 타이포 소스
 
 - **금지:** 소비처에서 `fontSize`/`fontWeight` px 하드코딩
 - preset: [`src/shared/constants/typography.ts`](../../src/shared/constants/typography.ts)
+- 화면별 역할: 홈 [`homeTypography.ts`](../../src/features/home/constants/homeTypography.ts), 구매/판매 [`tradeComposeTypography.ts`](../../src/features/trade/constants/tradeComposeTypography.ts)
 - `hero` fallback은 SEED `textStyle` 대신 `.amount-hero` class (크기 덮어쓰기 방지)
 - `prefers-reduced-motion` fallback도 animated 경로와 동일 variant 사용
 
-### AmountHeroField (홈 입력)
+### AmountHeroField (TradeCompose 금액 입력)
 
-[AmountHeroField](../../src/shared/ui/AmountHeroField.tsx) — TextField 셸 고정. focus 시 hero inherit input, blur 시 .amount-hero static 표시. **칩 replay 직후에만** breeze AnimatedAmount. suffix 원은 TextField만 사용.
+[AmountHeroField](../../src/shared/ui/AmountHeroField.tsx) — TextField 셸 고정. focus 시 hero inherit input, blur 시 .amount-hero static 표시. **칩 replay 직후에만** breeze AnimatedAmount. suffix 원은 TextField만 사용. helper 카피는 필드 밖 `t3Regular`(`pageDesc`)로 홈과 동일 역할.
 
 `input-host` wrapper가 SEED `TextFieldInput` `:first-child` 패딩을 대신하므로, 좌측 여백은 `amount-hero-field.css`의 `__input-host` `padding-left`(`--seed-dimension-x4`)로 input·blur overlay를 함께 맞춥니다. SEED 업그레이드 시 `compat`로 회귀 확인하세요.
 

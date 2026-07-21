@@ -4,6 +4,7 @@ import {
   consumeSuggestion,
   proposeMatch,
   getMatchingSession,
+  skipCandidate,
   subscribeMatchingSession,
   withdrawProposal,
 } from '../matchingSession.store'
@@ -18,5 +19,6 @@ export function useMatchingSessionActions() {
     proposeMatch,
     withdrawProposal,
     consumeSuggestion,
+    skipCandidate,
   }
 }

@@ -10,7 +10,7 @@ import { LottiePlayer } from '../../shared/components/LottiePlayer'
 import { RESULT_HERO_LOTTIE_SIZE } from '../../shared/constants/motion'
 import { setAuthStatus } from '../../features/auth/stores/authSession.store'
 import { resetSignupDraft } from '../../features/auth/stores/signupDraft.store'
-import { actions } from '../../stackflow/stackflow'
+import { navigateToRootHome } from '../../stackflow/navigateToRootHome'
 
 const SIGNUP_COMPLETE_LOTTIE = LOTTIE_ASSETS.success
 
@@ -20,12 +20,7 @@ const SignupCompleteActivity: ActivityComponentType<'SignupComplete'> = () => {
   const handleStart = () => {
     setAuthStatus('authenticated')
     resetSignupDraft()
-
-    const popCount = Math.max(0, activities.length - 1)
-    if (popCount > 0) {
-      actions.pop(popCount, { animate: false })
-    }
-    actions.replace('Home', {}, { animate: true })
+    navigateToRootHome(activities.length)
   }
 
   return (

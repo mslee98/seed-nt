@@ -11,6 +11,7 @@ interface TradeLegOverlaysProps {
   acceptCandidate: MatchingCandidate | null
   onAcceptOpenChange: (open: boolean) => void
   onAcceptConfirm: (candidateId: string) => void | Promise<void>
+  onAcceptSkip: (candidateId: string) => void
   onPaymentOpenChange: (open: boolean) => void
   onDisputeOpenChange: (open: boolean) => void
 }
@@ -22,6 +23,7 @@ export function TradeLegOverlays({
   acceptCandidate,
   onAcceptOpenChange,
   onAcceptConfirm,
+  onAcceptSkip,
   onPaymentOpenChange,
   onDisputeOpenChange,
 }: TradeLegOverlaysProps) {
@@ -32,6 +34,7 @@ export function TradeLegOverlays({
         onOpenChange={onAcceptOpenChange}
         candidate={acceptCandidate}
         onConfirm={onAcceptConfirm}
+        onSkip={onAcceptSkip}
       />
       <TradePaymentBottomSheet
         open={paymentSheetTradeId !== null}

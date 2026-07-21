@@ -12,3 +12,6 @@ export const MATCH_COUNTERPARTY_ACCEPT_DELAY_MS = 1_500
 
 /** mock: 입금 대기 기한 (분) */
 export const PAYMENT_DEADLINE_MINUTES = 30
+
+/** mock: 구매자 입금 보고 후 판매자 확인 기한 (분) */
+export const SELLER_CONFIRM_DEADLINE_MINUTES = 3

@@ -2,14 +2,14 @@
  * Trade session mutations — create / payment / cancel / focus.
  */
 import { krwToCoin } from '../../../shared/utils/formatAmount'
-import { PAYMENT_DEADLINE_MINUTES } from '../constants'
+import { PAYMENT_DEADLINE_MINUTES, SELLER_CONFIRM_DEADLINE_MINUTES } from '../constants'
 import {
   clearMatchingSession,
   getMatchingSession,
   startMatchingSession,
 } from '../matching/matchingSession.store'
 import type { CreateTradeOrderInput, CreateTradeOrderResult, TradeRecord } from '../types'
-import { buildSplitPlan } from '../utils/splitPlan'
+import { buildSplitPlan, buildSplitPlanWithUnit } from '../utils/splitPlan'
 import {
   activeSplitGroup,
   activeTrade,
@@ -74,9 +74,14 @@ export async function createTradeOrder(
     throw new Error('ACTIVE_TRADE_LIMIT')
   }
 
-  const shouldSplit = input.splitMode === 'AUTO'
-  const splitPlan = shouldSplit ? buildSplitPlan(input.amountKrw) : null
-  if (splitPlan && splitPlan.legCount > 1) {
+  const shouldSplit = input.splitMode === 'AUTO' || input.splitMode === 'CUSTOM'
+  const splitPlan =
+    input.splitMode === 'CUSTOM' && input.unitAmountKrw != null
+      ? buildSplitPlanWithUnit(input.amountKrw, input.unitAmountKrw)
+      : input.splitMode === 'AUTO'
+        ? buildSplitPlan(input.amountKrw)
+        : null
+  if (shouldSplit && splitPlan && splitPlan.legCount > 1) {
     return createSplitTradeOrder(input, splitPlan)
   }
 
@@ -106,6 +111,7 @@ export async function reportPayment(tradeId: string, version: number): Promise<T
     version: activeTrade!.version + 1,
     updatedAt: now,
     reportedAt: now,
+    sellerConfirmDeadline: addMinutes(now, SELLER_CONFIRM_DEADLINE_MINUTES),
   }
   setTradeRecord(updated)
   notify()

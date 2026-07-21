@@ -20,6 +20,10 @@ export interface MatchingCandidate {
   tradeCount: number
   mannerTemperature: number
   matchType: CandidateMatchType
+  /** 완료율 % (0–100) */
+  completionRatePct: number
+  /** 평균 응답 초 */
+  avgResponseSec: number
 }
 
 export interface PendingMatch {

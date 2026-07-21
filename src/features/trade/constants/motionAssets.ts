@@ -31,7 +31,7 @@ export const MOTION_ASSETS: Record<MotionAssetKey, MotionAsset> = {
   },
   matchingSearch: {
     type: 'apng',
-    src: '/motion/coin-exchange-usd.v1.apng',
+    src: '/apng/earth-travel-airplane-apng.png',
     defaultLoop: true,
   },
   completed: {

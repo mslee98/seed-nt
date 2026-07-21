@@ -178,6 +178,16 @@ function dismissCandidate(candidateId: string) {
   }
 }
 
+/** 제안 건너뛰기 — 목록에서 제외하고 탐색 계속 */
+export function skipCandidate(candidateId: string) {
+  if (!session) return
+  dismissCandidate(candidateId)
+  if (session.suggestion?.candidateId === candidateId) {
+    session = { ...session, suggestion: null }
+  }
+  notify()
+}
+
 function tryConfirmMatch() {
   if (!session?.pendingMatch) return
 
@@ -321,7 +331,7 @@ export function clearMatchingSession() {
   notify()
 }
 
-/** prefers-reduced-motion: stagger 없이 전체 공개 */
+/** 후보 stagger를 건너뛰고 전부 공개합니다. (수동/디버그·특수 UX용) */
 export function revealAllCandidates() {
   if (!session || isQueueLocked()) return
 

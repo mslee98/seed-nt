@@ -5,7 +5,11 @@ import { ListHeader } from 'seed-design/ui/list-header'
 
 import type { MatchingCandidate } from '../matching/types'
 import { partitionRevealedCandidates } from '../matching/utils/matchingPhase'
-import { MatchingCandidateCard, type MatchingCandidateCardVariant } from './MatchingCandidateCard'
+import {
+  MatchingCandidateCard,
+  type MatchingCandidateCardVariant,
+  type MatchingCandidateFooterAction,
+} from './MatchingCandidateCard'
 
 interface MatchingCandidateListProps {
   candidates: MatchingCandidate[]
@@ -13,7 +17,13 @@ interface MatchingCandidateListProps {
   pendingCandidateId: string | null
   queueLocked: boolean
   animate: boolean
+  /** Near·행 탭용 — Exact는 footerAction 우선 */
   onSelectCandidate?: (candidate: MatchingCandidate) => void
+  getFooterAction?: (candidate: MatchingCandidate) => MatchingCandidateFooterAction | undefined
+  /** Exact에 새 제안 Badge */
+  newExactIds?: ReadonlySet<string>
+  exactTitle?: string
+  nearTitle?: string
 }
 
 function RevealedCard({ children, animate }: { children: ReactNode; animate: boolean }) {
@@ -32,47 +42,44 @@ function RevealedCard({ children, animate }: { children: ReactNode; animate: boo
   )
 }
 
-function CandidateSection({
-  title,
-  candidates,
-  requestedAmountKrw,
-  pendingCandidateId,
-  queueLocked,
-  animate,
-  onSelectCandidate,
-}: {
-  title: string
-  candidates: MatchingCandidate[]
+function renderCard(params: {
+  candidate: MatchingCandidate
   requestedAmountKrw: number
   pendingCandidateId: string | null
   queueLocked: boolean
   animate: boolean
   onSelectCandidate?: (candidate: MatchingCandidate) => void
+  getFooterAction?: (candidate: MatchingCandidate) => MatchingCandidateFooterAction | undefined
+  newExactIds?: ReadonlySet<string>
 }) {
-  if (candidates.length === 0) return null
+  const {
+    candidate,
+    requestedAmountKrw,
+    pendingCandidateId,
+    queueLocked,
+    animate,
+    onSelectCandidate,
+    getFooterAction,
+    newExactIds,
+  } = params
+
+  const variant: MatchingCandidateCardVariant =
+    pendingCandidateId === candidate.id ? 'pending' : queueLocked ? 'locked' : 'default'
+  const footerAction = getFooterAction?.(candidate)
+  const showNewBadge = Boolean(newExactIds?.has(candidate.id))
 
   return (
-    <VStack gap="x3" width="full">
-      <ListHeader as="h3" variant="mediumWeak">
-        {title}
-      </ListHeader>
-      {candidates.map((candidate) => {
-        const variant: MatchingCandidateCardVariant =
-          pendingCandidateId === candidate.id ? 'pending' : queueLocked ? 'locked' : 'default'
-
-        return (
-          <RevealedCard key={candidate.id} animate={animate}>
-            <MatchingCandidateCard
-              candidate={candidate}
-              requestedAmountKrw={requestedAmountKrw}
-              variant={variant}
-              animate={animate}
-              onSelect={onSelectCandidate}
-            />
-          </RevealedCard>
-        )
-      })}
-    </VStack>
+    <RevealedCard key={candidate.id} animate={animate}>
+      <MatchingCandidateCard
+        candidate={candidate}
+        requestedAmountKrw={requestedAmountKrw}
+        variant={variant}
+        animate={animate}
+        showNewBadge={showNewBadge}
+        onSelect={footerAction ? undefined : onSelectCandidate}
+        footerAction={footerAction}
+      />
+    </RevealedCard>
   )
 }
 
@@ -83,60 +90,53 @@ export function MatchingCandidateList({
   queueLocked,
   animate,
   onSelectCandidate,
+  getFooterAction,
+  newExactIds,
+  exactTitle = '정확 매칭',
+  nearTitle = '비슷한 조건',
 }: MatchingCandidateListProps) {
   const { exact, near } = partitionRevealedCandidates(candidates, requestedAmountKrw)
-  const showSectionTitles = exact.length > 0 && near.length > 0
-
-  if (!showSectionTitles) {
-    const soleTitle = exact.length > 0 ? '가장 적합한 상대' : near.length > 0 ? '비슷한 상대' : null
-
-    return (
-      <VStack gap="x3" width="full">
-        {soleTitle && (
-          <ListHeader as="h3" variant="mediumWeak">
-            {soleTitle}
-          </ListHeader>
-        )}
-        {candidates.map((candidate) => {
-          const variant: MatchingCandidateCardVariant =
-            pendingCandidateId === candidate.id ? 'pending' : queueLocked ? 'locked' : 'default'
-
-          return (
-            <RevealedCard key={candidate.id} animate={animate}>
-              <MatchingCandidateCard
-                candidate={candidate}
-                requestedAmountKrw={requestedAmountKrw}
-                variant={variant}
-                animate={animate}
-                onSelect={onSelectCandidate}
-              />
-            </RevealedCard>
-          )
-        })}
-      </VStack>
-    )
-  }
 
   return (
     <VStack gap="x5" width="full">
-      <CandidateSection
-        title="가장 적합한 상대"
-        candidates={exact}
-        requestedAmountKrw={requestedAmountKrw}
-        pendingCandidateId={pendingCandidateId}
-        queueLocked={queueLocked}
-        animate={animate}
-        onSelectCandidate={onSelectCandidate}
-      />
-      <CandidateSection
-        title="비슷한 상대"
-        candidates={near}
-        requestedAmountKrw={requestedAmountKrw}
-        pendingCandidateId={pendingCandidateId}
-        queueLocked={queueLocked}
-        animate={animate}
-        onSelectCandidate={onSelectCandidate}
-      />
+      {exact.length > 0 && (
+        <VStack gap="x3" width="full">
+          <ListHeader as="h3" variant="mediumWeak">
+            {exactTitle}
+          </ListHeader>
+          {exact.map((candidate) =>
+            renderCard({
+              candidate,
+              requestedAmountKrw,
+              pendingCandidateId,
+              queueLocked,
+              animate,
+              onSelectCandidate,
+              getFooterAction,
+              newExactIds,
+            }),
+          )}
+        </VStack>
+      )}
+      {near.length > 0 && (
+        <VStack gap="x3" width="full">
+          <ListHeader as="h3" variant="mediumWeak">
+            {`${nearTitle} ${near.length}건`}
+          </ListHeader>
+          {near.map((candidate) =>
+            renderCard({
+              candidate,
+              requestedAmountKrw,
+              pendingCandidateId,
+              queueLocked,
+              animate,
+              onSelectCandidate,
+              getFooterAction: undefined,
+              newExactIds,
+            }),
+          )}
+        </VStack>
+      )}
     </VStack>
   )
 }

@@ -1,14 +1,20 @@
-import { Box, HStack, Text, VStack } from '@seed-design/react'
+import { IconQuestionmarkCircleFill } from '@karrotmarket/react-monochrome-icon'
+import { HStack, Text, VStack } from '@seed-design/react'
+import { Callout } from 'seed-design/ui/callout'
 import { Chip } from 'seed-design/ui/chip'
-import { List, ListSwitchItem } from 'seed-design/ui/list'
+import {
+  RadioSelectBoxItem,
+  RadioSelectBoxRadiomark,
+  RadioSelectBoxRoot,
+} from 'seed-design/ui/select-box'
 import { SegmentedControl } from 'seed-design/ui/segmented-control'
 
 import { AmountHeroField } from '../../../shared/ui/AmountHeroField'
-import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
 import { MotionChipButton, TapSegmentedControlItem } from '../../../shared/motion'
-import { formatAmount, formatAmountNumber } from '../../../shared/utils/formatAmount'
-import type { SplitRecommendation } from '../../home/utils/splitRecommendation'
-import { QUICK_AMOUNTS } from '../constants/tradeCompose'
+import { formatAmountNumber } from '../../../shared/utils/formatAmount'
+import { QUICK_AMOUNTS, TRADE_COMPOSE_MATCHING_TIP } from '../constants/tradeCompose'
+import { TRADE_COMPOSE_TYPOGRAPHY } from '../constants/tradeComposeTypography'
+import type { SellMethod } from '../hooks/useTradeInputState'
 import type { TradeSide } from '../types'
 
 interface TradeComposeInputProps {
@@ -19,15 +25,14 @@ interface TradeComposeInputProps {
   amountReplayKey: number
   amountError: string | null
   helperText?: string
-  isSubmitDisabled: boolean
-  showSplitSellToggle: boolean
-  splitSellEnabled: boolean
-  splitRecommendation: SplitRecommendation | null
+  sellMethod: SellMethod
+  minUnitInput: string
+  minUnitError: string | null
   onSideChange: (side: TradeSide) => void
   onAmountInputChange: (value: string) => void
   onQuickAmountSelect: (amount: number) => void
-  onSplitSellEnabledChange: (enabled: boolean) => void
-  onSubmit: () => void
+  onSellMethodChange: (value: string) => void
+  onMinUnitInputChange: (value: string) => void
 }
 
 function formatQuickAmountLabel(amount: number): string {
@@ -37,7 +42,9 @@ function formatQuickAmountLabel(amount: number): string {
   return `${formatAmountNumber(amount)}원`
 }
 
-/** TradeCompose — 금액 입력·구매/판매 전환·분할 토글·제출 CTA */
+const t = TRADE_COMPOSE_TYPOGRAPHY
+
+/** TradeCompose — 금액·판매 방식·최소 단위 (CTA는 Activity fixedBottom) */
 export function TradeComposeInput({
   side,
   amountKrw,
@@ -46,67 +53,63 @@ export function TradeComposeInput({
   amountReplayKey,
   amountError,
   helperText,
-  isSubmitDisabled,
-  showSplitSellToggle,
-  splitSellEnabled,
-  splitRecommendation,
+  sellMethod,
+  minUnitInput,
+  minUnitError,
   onSideChange,
   onAmountInputChange,
   onQuickAmountSelect,
-  onSplitSellEnabledChange,
-  onSubmit,
+  onSellMethodChange,
+  onMinUnitInputChange,
 }: TradeComposeInputProps) {
-  const ctaLabel = !amountKrw
-    ? '금액을 입력해 주세요'
-    : side === 'BUY'
-      ? `${formatAmount(amountKrw)} 구매하기`
-      : `${formatAmount(amountKrw)} 판매 등록하기`
-
-  const splitDetail =
-    splitRecommendation &&
-    `${formatAmountNumber(splitRecommendation.unitAmount)}원씩 ${splitRecommendation.count}건으로 거래해요`
+  const heading = side === 'BUY' ? '얼마를 구매할까요?' : '얼마를 판매할까요?'
+  const showSplitMethod = side === 'SELL'
+  const showMinUnit = showSplitMethod && sellMethod === 'split'
 
   return (
-    <VStack
-      bg="bg.layerDefault"
-      borderWidth="1"
-      borderColor="stroke.neutralWeak"
-      borderRadius="r5"
-      boxShadow="s2"
-    >
-      <VStack p="x5" gap="spacingY.componentDefault">
-        <HStack align="center" gap="x2">
-          <Box
-            width="7px"
-            height="7px"
-            flexShrink={0}
-            borderRadius="full"
-            bg="bg.brandSolid"
-          />
-          <Text textStyle="t7Bold" color="fg.neutral">
-            거래할 금액
+    <VStack gap="x5" width="full">
+      <SegmentedControl
+        value={side}
+        onValueChange={(value) => onSideChange(value as TradeSide)}
+        aria-label="거래 유형"
+        className="trade-compose-segmented"
+        style={{ width: '100%' }}
+      >
+        <TapSegmentedControlItem value="BUY">구매</TapSegmentedControlItem>
+        <TapSegmentedControlItem value="SELL">판매</TapSegmentedControlItem>
+      </SegmentedControl>
+
+      <VStack gap="spacingY.betweenText" width="full">
+        <VStack gap="x1" width="full">
+          <Text textStyle={t.heading} color="fg.neutral" className="typo-title-tight">
+            {heading}
           </Text>
-        </HStack>
+          {helperText && !amountError && side === 'SELL' && (
+            <Text textStyle={t.helper} color="fg.neutralMuted">
+              {helperText}
+            </Text>
+          )}
+        </VStack>
 
-        <SegmentedControl
-          value={side}
-          onValueChange={(value) => onSideChange(value as TradeSide)}
-          aria-label="거래 유형"
-        >
-          <TapSegmentedControlItem value="BUY">구매</TapSegmentedControlItem>
-          <TapSegmentedControlItem value="SELL">판매</TapSegmentedControlItem>
-        </SegmentedControl>
+        <VStack gap="x2" width="full">
+          <AmountHeroField
+            variant="hero"
+            value={amountInput}
+            onValueChange={onAmountInputChange}
+            amountKrw={amountKrw}
+            startValue={amountStartKrw}
+            replayKey={amountReplayKey}
+            placeholder="금액을 입력하세요"
+            errorMessage={amountError ?? undefined}
+            invalid={!!amountError}
+          />
 
-        <AmountHeroField
-          value={amountInput}
-          onValueChange={onAmountInputChange}
-          amountKrw={amountKrw}
-          startValue={amountStartKrw}
-          replayKey={amountReplayKey}
-          description={helperText}
-          errorMessage={amountError ?? undefined}
-          invalid={!!amountError}
-        />
+          {helperText && !amountError && side === 'BUY' && (
+            <Text textStyle={t.helper} color="fg.neutralMuted">
+              {helperText}
+            </Text>
+          )}
+        </VStack>
 
         <HStack gap="x2" flexWrap="wrap">
           {QUICK_AMOUNTS.map((amount) => (
@@ -120,38 +123,59 @@ export function TradeComposeInput({
             </MotionChipButton>
           ))}
         </HStack>
-
-        {showSplitSellToggle && splitDetail && (
-          <VStack
-            width="full"
-            bg="bg.layerDefault"
-            borderWidth="1"
-            borderColor="stroke.neutralWeak"
-            borderRadius="r4"
-          >
-            <List width="full" itemBorderRadius="r2" aria-label="분할 판매 설정">
-              <ListSwitchItem
-                title="나눠서 판매하기"
-                detail={splitDetail}
-                checked={splitSellEnabled}
-                onCheckedChange={onSplitSellEnabledChange}
-              />
-            </List>
-          </VStack>
-        )}
-
-        <VStack pt="x1">
-          <BottomActionButton
-            size="large"
-            variant="brandSolid"
-            disabled={isSubmitDisabled}
-            onClick={onSubmit}
-            className="tabular-nums"
-          >
-            {ctaLabel}
-          </BottomActionButton>
-        </VStack>
       </VStack>
+
+      {side === 'BUY' && (
+        <Callout
+          tone="informative"
+          prefixIcon={<IconQuestionmarkCircleFill />}
+          description={TRADE_COMPOSE_MATCHING_TIP.BUY}
+        />
+      )}
+
+      {showSplitMethod && (
+        <VStack gap="spacingY.betweenText" width="full">
+          <Text textStyle={t.heading} color="fg.neutral" className="typo-title-tight">
+            어떻게 판매할까요?
+          </Text>
+
+          <RadioSelectBoxRoot
+            value={sellMethod}
+            onValueChange={onSellMethodChange}
+            aria-label="판매 방식"
+          >
+            <RadioSelectBoxItem
+              value="once"
+              label="한번에 판매"
+              description="한 명의 구매자와 전체 금액을 판매해요."
+              suffix={<RadioSelectBoxRadiomark tone="brand" />}
+            />
+            <RadioSelectBoxItem
+              value="split"
+              label="나누어 판매"
+              description="전체 매칭이 없으면 여러 거래로 나누어 제안해요."
+              suffix={<RadioSelectBoxRadiomark tone="brand" />}
+            />
+          </RadioSelectBoxRoot>
+        </VStack>
+      )}
+
+      {showMinUnit && (
+        <VStack gap="spacingY.betweenText" width="full">
+          <Text textStyle={t.heading} color="fg.neutral" className="typo-title-tight">
+            한 거래당 최소 금액
+          </Text>
+          <AmountHeroField
+            variant="field"
+            value={minUnitInput}
+            onValueChange={onMinUnitInputChange}
+            amountKrw={null}
+            placeholder="금액을 입력하세요"
+            errorMessage={minUnitError ?? undefined}
+            invalid={!!minUnitError}
+          />
+        </VStack>
+      )}
     </VStack>
   )
 }

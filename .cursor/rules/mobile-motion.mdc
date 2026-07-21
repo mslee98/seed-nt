@@ -33,9 +33,13 @@ alwaysApply: false
 - Lottie는 번들 import → `/lotties/` runtime rule 없음
 - dev: SW 활성 시 에셋 교체는 **파일명 vN bump**로 검증
 
-## 접근성
+## 접근성 / prefers-reduced-motion
 
-- `prefers-reduced-motion`: APNG 미렌더, Lottie autoplay/loop off
+- **현재 제품 결정 B (의도적 예외)**: OS 「동작 줄이기」여도 **APNG·Lottie는 풀 재생**한다.
+  - 이유: iOS 저전력/동작 줄이기에서 상태 그래픽이 비면 거래·가입 문맥이 끊김. APNG는 CSS로 루프만 끄기 어렵고 정적 포스터 미비.
+  - 구현: [`ApngPlayer`](src/shared/components/ApngPlayer.tsx), [`LottiePlayer`](src/shared/components/LottiePlayer.tsx) — reduce 분기 없음 (주석에 리스크·탈출 경로 명시)
+  - 범위 외: 금액(`AnimatedAmount`), 탭 스케일, 일부 CSS `@media (prefers-reduced-motion)` 는 기존처럼 reduce 존중
+- **이후 후보**: A(정적 포스터 표시·루프 off) / C(앱 내 모션 토글)
 - 화면당 핵심 모션 1곳 — [consumer-ux.mdc](consumer-ux.mdc) 그래픽 섹션
 
 ## breeze AnimateNumber (금액)

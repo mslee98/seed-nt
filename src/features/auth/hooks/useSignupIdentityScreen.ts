@@ -26,6 +26,8 @@ export function useSignupIdentityScreen() {
 
   const canGoNext = canProceedIdentityStep(activeStep, draft)
   const showBottomCta = activeStep !== 'carrier'
+  /** 첫 step은 플로우 종료(Close), 이후는 History Back */
+  const leftAction = PREV_IDENTITY_STEP[activeStep] ? 'back' : 'close'
 
   const advanceStep = () => {
     const next = NEXT_IDENTITY_STEP[activeStep]
@@ -79,6 +81,7 @@ export function useSignupIdentityScreen() {
     exitDialogOpen,
     canGoNext,
     showBottomCta,
+    leftAction,
     setName,
     setRrnFront7,
     setPhone,

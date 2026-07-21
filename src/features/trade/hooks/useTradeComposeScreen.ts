@@ -53,6 +53,7 @@ export function useTradeComposeScreen() {
       side: tradeInput.side,
       amountKrw: tradeInput.amountKrw,
       splitMode: tradeInput.splitMode,
+      unitAmountKrw: tradeInput.unitAmountKrw,
     })
 
     if (result.splitGroupId) {
@@ -67,6 +68,7 @@ export function useTradeComposeScreen() {
     tradeInput.isSubmitDisabled,
     tradeInput.side,
     tradeInput.splitMode,
+    tradeInput.unitAmountKrw,
   ])
 
   const handleConfirmOpenChange = useCallback(

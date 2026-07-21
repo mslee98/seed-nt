@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 
+import { COIN_TO_KRW } from '../../../shared/constants/money'
 import { useAmountReplay } from '../../../shared/hooks/useAmountReplay'
 import {
+  formatAmount,
   formatAmountInputDisplay,
   formatAmountNumber,
   formatCoinUnit,
@@ -9,9 +11,12 @@ import {
   krwToCoin,
   parseAmountInput,
 } from '../../../shared/utils/formatAmount'
-import { getSplitRecommendation } from '../../home/utils/splitRecommendation'
+import { SPLIT_POLICY } from '../../home/utils/splitRecommendation'
 import { TRADE_LIMITS } from '../constants/tradeCompose'
 import type { SplitMode, TradeSide } from '../types'
+import { buildSplitPlanWithUnit } from '../utils/splitPlan'
+
+export type SellMethod = 'once' | 'split'
 
 interface UseTradeInputStateOptions {
   coinBalance: number
@@ -45,10 +50,34 @@ function getAmountError(
   return null
 }
 
+function getMinUnitError(
+  minUnitKrw: number | null,
+  amountKrw: number | null,
+): string | null {
+  if (minUnitKrw === null) return null
+
+  if (!isManwonUnitAmount(minUnitKrw)) {
+    return '10,000원 단위로 입력해 주세요'
+  }
+
+  if (minUnitKrw < SPLIT_POLICY.minSplitUnit) {
+    return `${formatAmountNumber(SPLIT_POLICY.minSplitUnit)}원 이상부터 나눌 수 있어요`
+  }
+
+  if (amountKrw !== null && minUnitKrw > amountKrw) {
+    return '총 판매 금액보다 클 수 없어요'
+  }
+
+  if (amountKrw !== null && !buildSplitPlanWithUnit(amountKrw, minUnitKrw)) {
+    return '이 금액으로는 나눠 판매하기 어려워요'
+  }
+
+  return null
+}
+
 /**
  * 거래 금액 입력 상태.
- * 라이브 천 단위 콤마 + 검증 실패 시 경고·CTA 비활성만 (값은 자르지 않음).
- * SELL + 100만 원 이상일 때만 `splitSellEnabled` 토글을 노출합니다 (기본 켜짐).
+ * SELL은 한번에/나누어 방식 + 나누어일 때 최소 단위 금액을 다룹니다.
  */
 export function useTradeInputState({
   coinBalance,
@@ -58,41 +87,44 @@ export function useTradeInputState({
   const [amountKrw, setAmountKrw] = useState<number | null>(null)
   const [amountInput, setAmountInput] = useState('')
   const [amountStartKrw, setAmountStartKrw] = useState(0)
-  const [splitSellEnabled, setSplitSellEnabled] = useState(true)
+  const [sellMethod, setSellMethod] = useState<SellMethod>('once')
+  const [minUnitKrw, setMinUnitKrw] = useState<number | null>(null)
+  const [minUnitInput, setMinUnitInput] = useState('')
   const { replayKey: amountReplayKey, triggerReplay: triggerAmountReplay } = useAmountReplay()
 
-  const splitRecommendation = useMemo(
-    () => (amountKrw ? getSplitRecommendation(amountKrw) : null),
-    [amountKrw],
-  )
-
-  const showSplitSellToggle = side === 'SELL' && splitRecommendation !== null
-
-  const splitMode: SplitMode =
-    showSplitSellToggle && splitSellEnabled ? 'AUTO' : 'NONE'
+  const availableKrw = coinBalance * COIN_TO_KRW
 
   const amountError = useMemo(
     () => getAmountError(amountKrw, side, coinBalance),
     [amountKrw, side, coinBalance],
   )
 
+  const minUnitError = useMemo(() => {
+    if (side !== 'SELL' || sellMethod !== 'split') return null
+    return getMinUnitError(minUnitKrw, amountKrw)
+  }, [side, sellMethod, minUnitKrw, amountKrw])
+
   const helperText = useMemo(() => {
     if (amountError) return undefined
 
+    if (side === 'SELL') {
+      return `사용가능 금액 ${formatAmount(availableKrw)}`
+    }
+
     if (!amountKrw) {
-      return side === 'BUY'
-        ? '10,000원 단위로 입력하면 예상 코인을 보여드릴게요'
-        : '10,000원 단위로 입력하면 판매할 코인을 보여드릴게요'
+      return '10,000원 단위로 입력하면 예상 코인을 보여드릴게요'
     }
 
-    const coinAmount = krwToCoin(amountKrw)
-    if (side === 'BUY') {
-      return `예상 코인 ${formatCoinUnit(coinAmount)}`
-    }
-    return `판매할 코인 ${formatCoinUnit(coinAmount)}`
-  }, [amountKrw, amountError, side])
+    return `예상 코인 ${formatCoinUnit(krwToCoin(amountKrw))}`
+  }, [amountKrw, amountError, side, availableKrw])
 
-  const isSubmitDisabled = !amountKrw || !!amountError
+  const splitMode: SplitMode =
+    side === 'SELL' && sellMethod === 'split' ? 'CUSTOM' : 'NONE'
+
+  const isSubmitDisabled =
+    !amountKrw ||
+    !!amountError ||
+    (splitMode === 'CUSTOM' && (!minUnitKrw || !!minUnitError))
 
   const handleAmountInputChange = (value: string) => {
     const digitsOnly = parseAmountInput(value)
@@ -115,22 +147,54 @@ export function useTradeInputState({
     triggerAmountReplay()
   }
 
+  const handleSellMethodChange = (value: string) => {
+    const next = value === 'split' ? 'split' : 'once'
+    setSellMethod(next)
+    if (next === 'split' && minUnitKrw === null) {
+      const preset = SPLIT_POLICY.recommendedUnit
+      setMinUnitKrw(preset)
+      setMinUnitInput(formatAmountNumber(preset))
+    }
+  }
+
+  const handleMinUnitInputChange = (value: string) => {
+    const digitsOnly = parseAmountInput(value)
+    setMinUnitInput(formatAmountInputDisplay(digitsOnly))
+
+    if (!digitsOnly) {
+      setMinUnitKrw(null)
+      return
+    }
+
+    setMinUnitKrw(Number(digitsOnly))
+  }
+
+  const handleSideChange = (next: TradeSide) => {
+    setSide(next)
+    if (next === 'BUY') {
+      setSellMethod('once')
+    }
+  }
+
   return {
     side,
-    setSide,
+    setSide: handleSideChange,
     amountKrw,
     amountInput,
     amountStartKrw,
     amountReplayKey,
+    sellMethod,
+    minUnitKrw,
+    minUnitInput,
+    minUnitError,
     splitMode,
-    splitSellEnabled,
-    setSplitSellEnabled,
-    showSplitSellToggle,
-    splitRecommendation,
+    unitAmountKrw: splitMode === 'CUSTOM' ? minUnitKrw ?? undefined : undefined,
     amountError,
     helperText,
     isSubmitDisabled,
     handleAmountInputChange,
     handleQuickAmountSelect,
+    handleSellMethodChange,
+    handleMinUnitInputChange,
   }
 }

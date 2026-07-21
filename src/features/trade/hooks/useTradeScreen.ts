@@ -1,9 +1,11 @@
-import { useActivity, useActivityParams, useFlow } from '@stackflow/react'
+import { useActivity, useActivityParams, useFlow, useStack } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 import { showSnackbar } from '../../../shared/utils/showSnackbar'
+import { navigateToRootHome } from '../../../stackflow/navigateToRootHome'
 import {
+  cancelTrade,
   focusSplitLegTrade,
   getActiveSplitGroup,
   getSplitGroupById,
@@ -28,6 +30,7 @@ export function useTradeScreen() {
   const { isActive } = useActivity()
   const { tradeId, splitGroupId, focusLeg } = useActivityParams<'Trade'>()
   const { push, replace } = useFlow()
+  const { activities } = useStack()
   const snackbar = useSnackbarAdapter()
 
   const [paymentSheetTradeId, setPaymentSheetTradeId] = useState<string | null>(null)
@@ -80,6 +83,22 @@ export function useTradeScreen() {
     setDisputeSheetLeg(leg)
   }, [])
 
+  const handleOpenBuyerDispute = useCallback(() => {
+    if (!tradeId) return
+    const trade = tradesById.get(tradeId)
+    if (!trade) return
+
+    openDisputeSheet({
+      index: trade.splitLegIndex ?? 1,
+      tradeId: trade.id,
+      amountKrw: trade.amountKrw,
+      uiPhase: 'payment_confirm',
+      primaryAction: 'OPEN_DISPUTE',
+      counterpartyNickname: null,
+      statusLine: '입금 확인 대기',
+    })
+  }, [openDisputeSheet, tradeId, tradesById])
+
   const closePaymentSheet = useCallback(() => {
     setPaymentSheetTradeId(null)
   }, [])
@@ -129,8 +148,32 @@ export function useTradeScreen() {
   }, [push])
 
   const handleGoHome = useCallback(() => {
-    replace('Home', {}, { animate: true })
-  }, [replace])
+    setPaymentSheetTradeId(null)
+    setDisputeSheetLeg(null)
+    navigateToRootHome(activities.length)
+  }, [activities.length])
+
+  const handleChangeMatchingConditions = useCallback(async () => {
+    if (!tradeId) return
+
+    const trade = getTradeDetail(tradeId)
+    if (!trade) return
+
+    await cancelTrade(trade.id, trade.version)
+    replace('TradeCompose', { side: trade.side }, { animate: true })
+  }, [replace, tradeId])
+
+  const handleStopMatching = useCallback(async () => {
+    if (!tradeId) return
+
+    const trade = getTradeDetail(tradeId)
+    if (!trade) return
+
+    await cancelTrade(trade.id, trade.version)
+    setPaymentSheetTradeId(null)
+    setDisputeSheetLeg(null)
+    navigateToRootHome(activities.length)
+  }, [activities.length, tradeId])
 
   const handleCopyAccount = useCallback(async () => {
     const targetId = tradeId ?? paymentSheetTradeId
@@ -245,14 +288,18 @@ export function useTradeScreen() {
     handleBrowseStore,
     handleBrowseCommunity,
     handleGoHome,
+    handleChangeMatchingConditions,
+    handleStopMatching,
     handleCopyAccount,
     handleCopyAccountFailed,
     handleContactSupport,
+    handleOpenBuyerDispute,
     openPaymentSheet,
     acceptOpen: acceptSheet.acceptOpen,
     acceptCandidate: acceptSheet.acceptCandidate,
     onAcceptOpenChange: acceptSheet.onAcceptOpenChange,
     onAcceptConfirm: acceptSheet.onAcceptConfirm,
+    onAcceptSkip: acceptSheet.onAcceptSkip,
     openAcceptForCandidate: acceptSheet.openAcceptForCandidate,
   }
 }

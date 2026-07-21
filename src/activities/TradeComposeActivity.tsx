@@ -10,19 +10,42 @@ import { Text, VStack } from '@seed-design/react'
 import { ActivityScreenLayout } from '../app/layouts/ActivityScreenLayout'
 import { TradeComposeInput } from '../features/trade/components/TradeComposeInput'
 import { TradeConfirmAlertDialog } from '../features/trade/components/TradeConfirmAlertDialog'
+import { TRADE_COMPOSE_TYPOGRAPHY } from '../features/trade/constants/tradeComposeTypography'
 import { useTradeComposeScreen } from '../features/trade/hooks/useTradeComposeScreen'
+import { BottomActionButton } from '../shared/ui/BottomActionButton'
 
 const TradeComposeActivity: ActivityComponentType<'TradeCompose'> = () => {
   const screen = useTradeComposeScreen()
-  const title = screen.tradeInput.side === 'BUY' ? '구매하기' : '판매하기'
+  const isSubmitDisabled =
+    screen.tradeInput.isSubmitDisabled || screen.hasBlockingTrade
 
   return (
     <>
       {screen.authRequiredDialog}
-      <ActivityScreenLayout title={title}>
-        <VStack px="spacingX.globalGutter" pt="x4" pb="x6" gap="x4">
+      <ActivityScreenLayout
+        title="구매/판매"
+        bottomCTABehavior="keyboardAdaptive"
+        fixedBottom={
+          <BottomActionButton
+            size="large"
+            variant="brandSolid"
+            disabled={isSubmitDisabled}
+            onClick={screen.handleSubmit}
+          >
+            다음
+          </BottomActionButton>
+        }
+      >
+        <VStack
+          px="spacingX.globalGutter"
+          pt="x4"
+          pb="x2"
+          gap="x4"
+          flexGrow
+          minHeight="full"
+        >
           {screen.hasBlockingTrade && (
-            <Text textStyle="t4Regular" color="fg.neutralMuted">
+            <Text textStyle={TRADE_COMPOSE_TYPOGRAPHY.notice} color="fg.neutralMuted">
               진행 중인 거래가 끝나면 새 거래를 시작할 수 있어요.
             </Text>
           )}
@@ -38,17 +61,14 @@ const TradeComposeActivity: ActivityComponentType<'TradeCompose'> = () => {
                 ? '진행 중인 거래가 끝나면 새 거래를 시작할 수 있어요.'
                 : screen.tradeInput.helperText
             }
-            isSubmitDisabled={
-              screen.tradeInput.isSubmitDisabled || screen.hasBlockingTrade
-            }
-            showSplitSellToggle={screen.tradeInput.showSplitSellToggle}
-            splitSellEnabled={screen.tradeInput.splitSellEnabled}
-            splitRecommendation={screen.tradeInput.splitRecommendation}
+            sellMethod={screen.tradeInput.sellMethod}
+            minUnitInput={screen.tradeInput.minUnitInput}
+            minUnitError={screen.tradeInput.minUnitError}
             onSideChange={screen.tradeInput.setSide}
             onAmountInputChange={screen.tradeInput.handleAmountInputChange}
             onQuickAmountSelect={screen.tradeInput.handleQuickAmountSelect}
-            onSplitSellEnabledChange={screen.tradeInput.setSplitSellEnabled}
-            onSubmit={screen.handleSubmit}
+            onSellMethodChange={screen.tradeInput.handleSellMethodChange}
+            onMinUnitInputChange={screen.tradeInput.handleMinUnitInputChange}
           />
         </VStack>
       </ActivityScreenLayout>
@@ -60,6 +80,7 @@ const TradeComposeActivity: ActivityComponentType<'TradeCompose'> = () => {
           side={screen.tradeInput.side}
           amountKrw={screen.tradeInput.amountKrw}
           splitMode={screen.tradeInput.splitMode}
+          unitAmountKrw={screen.tradeInput.unitAmountKrw}
           onConfirm={screen.handleConfirmTrade}
         />
       )}
