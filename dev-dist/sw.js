@@ -81,19 +81,28 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "/index.html",
-    "revision": "0.mofurd902c8"
+    "revision": "0.81fcc25n214"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/index.html"), {
     allowlist: [/^\/$/]
   }));
   workbox.registerRoute(/\/motion\/.+\.apng$/i, new workbox.CacheFirst({
-    "cacheName": "brit-motion",
+    "cacheName": "brit-motion-v2",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 24,
       maxAgeSeconds: 2592000
     }), new workbox.CacheableResponsePlugin({
-      statuses: [0, 200]
+      statuses: [200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\/apng\/.+\.png$/i, new workbox.CacheFirst({
+    "cacheName": "brit-motion-v2",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 24,
+      maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [200]
     })]
   }), 'GET');
 

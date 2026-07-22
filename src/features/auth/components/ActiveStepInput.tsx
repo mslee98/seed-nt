@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNod
 import { Text, VStack } from '@seed-design/react'
 import { motion } from 'motion/react'
 import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
-import { FieldButton } from 'seed-design/ui/field-button'
 import { SplitRrnFirst7Field } from 'seed-design/ui/split-rrn-first7-field'
 
 import type { SignupIdentityStep } from '../constants'
@@ -15,6 +14,7 @@ import {
 } from '../constants'
 import { formatPhoneInput } from '../utils/formatPhone'
 import { CarrierSelectSheet } from './CarrierSelectSheet'
+import { PhoneWithCarrierField } from './PhoneWithCarrierField'
 import type { CarrierCode } from '../constants'
 
 interface ActiveStepInputProps {
@@ -31,8 +31,8 @@ interface ActiveStepInputProps {
   canSubmit?: boolean
 }
 
-/** 최근 단계가 위로 쌓이도록 역순 렌더 */
-const FIELD_STACK_ORDER: SignupIdentityStep[] = ['phone', 'carrier', 'rrn', 'name']
+/** 최근 단계가 위로 쌓이도록 역순. carrier+phone은 한 컴포넌트로 묶어 'phone' 키로 렌더 */
+const FIELD_STACK_ORDER: Array<'phone' | 'rrn' | 'name'> = ['phone', 'rrn', 'name']
 
 function RevealedField({ children, animate }: { children: ReactNode; animate?: boolean }) {
   if (!animate) {
@@ -72,6 +72,8 @@ export function ActiveStepInput({
 
   const carrierLabel = CARRIERS.find((c) => c.code === carrier)?.label ?? ''
   const activeCopy = IDENTITY_STEP_COPY[activeStep]
+  const phoneCopy = IDENTITY_STEP_COPY.phone
+  const carrierCopy = IDENTITY_STEP_COPY.carrier
 
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -109,58 +111,45 @@ export function ActiveStepInput({
     prevActiveStepRef.current = activeStep
   }, [activeStep])
 
-  const isStepActive = (step: SignupIdentityStep) => step === activeStep
-  const isStepLocked = (step: SignupIdentityStep) =>
-    isIdentityStepRevealed(activeStep, step) && step !== activeStep
+  const isPhoneBlockActive = activeStep === 'carrier' || activeStep === 'phone'
+  const isPhoneBlockLocked = isIdentityStepRevealed(activeStep, 'phone') && activeStep !== 'phone' && activeStep !== 'carrier'
 
-  const renderFieldSection = (step: SignupIdentityStep) => {
-    if (!isIdentityStepRevealed(activeStep, step)) return null
+  const renderFieldSection = (step: 'phone' | 'rrn' | 'name') => {
+    if (step === 'phone') {
+      // 통신사 단계부터 한 줄 필드를 노출
+      if (!isIdentityStepRevealed(activeStep, 'carrier')) return null
+    } else if (!isIdentityStepRevealed(activeStep, step)) {
+      return null
+    }
 
-    const copy = IDENTITY_STEP_COPY[step]
-    const animate = isStepActive(step) && step !== 'name'
-    const showFieldDescription = isStepActive(step)
-    const locked = isStepLocked(step)
+    const animate =
+      (step === 'phone' && isPhoneBlockActive && activeStep === 'carrier') ||
+      (step !== 'phone' && step === activeStep && step !== 'name')
 
     switch (step) {
       case 'phone':
         return (
           <RevealedField key="phone" animate={animate}>
-            <TextField
-              label={copy.fieldLabel}
-              description={showFieldDescription ? copy.fieldDescription : undefined}
-              value={formatPhoneInput(phone)}
-              onValueChange={({ value }) => onPhoneChange(value)}
-            >
-              <TextFieldInput
-                ref={phoneInputRef}
-                placeholder={copy.placeholder}
-                inputMode="tel"
-                enterKeyHint="done"
-                maxLength={13}
-                readOnly={locked}
-                tabIndex={locked ? -1 : 0}
-              />
-            </TextField>
-          </RevealedField>
-        )
-
-      case 'carrier':
-        return (
-          <RevealedField key="carrier" animate={animate}>
-            <FieldButton
-              ref={carrierButtonRef}
-              label={copy.fieldLabel}
-              description={showFieldDescription ? copy.fieldDescription : undefined}
-              buttonProps={{
-                'aria-label': copy.fieldLabel,
-                type: 'button',
-                onClick: () => setCarrierSheetOpen(true),
-                disabled: locked,
-                tabIndex: locked ? -1 : 0,
-              }}
-            >
-              {carrierLabel || copy.placeholder}
-            </FieldButton>
+            <PhoneWithCarrierField
+              label="휴대폰번호"
+              description={
+                isPhoneBlockActive
+                  ? activeStep === 'carrier'
+                    ? carrierCopy.fieldDescription
+                    : phoneCopy.fieldDescription
+                  : undefined
+              }
+              carrierLabel={carrierLabel}
+              carrierPlaceholder={carrierCopy.placeholder}
+              phoneDisplay={formatPhoneInput(phone)}
+              phonePlaceholder={phoneCopy.placeholder}
+              onPhoneChange={onPhoneChange}
+              onCarrierClick={() => setCarrierSheetOpen(true)}
+              carrierButtonRef={carrierButtonRef}
+              phoneInputRef={phoneInputRef}
+              carrierDisabled={isPhoneBlockLocked}
+              phoneReadOnly={isPhoneBlockLocked || activeStep === 'carrier'}
+            />
             <CarrierSelectSheet
               open={carrierSheetOpen}
               onOpenChange={setCarrierSheetOpen}
@@ -175,14 +164,14 @@ export function ActiveStepInput({
           <RevealedField key="rrn" animate={animate}>
             <SplitRrnFirst7Field
               ref={rrnInputRef}
-              label={copy.fieldLabel}
-              description={showFieldDescription ? copy.fieldDescription : undefined}
+              label="주민등록번호"
+              description={
+                activeStep === 'rrn' ? IDENTITY_STEP_COPY.rrn.fieldDescription : undefined
+              }
               value={rrnFront7}
               onValueChange={onRrnChange}
-              onGenderComplete={isStepActive('rrn') ? handleRrnGenderComplete : undefined}
-              readOnly={locked}
-              birthPlaceholder="000000"
-              genderPlaceholder="0"
+              onGenderComplete={activeStep === 'rrn' ? handleRrnGenderComplete : undefined}
+              readOnly={isIdentityStepRevealed(activeStep, 'rrn') && activeStep !== 'rrn'}
             />
           </RevealedField>
         )
@@ -192,18 +181,22 @@ export function ActiveStepInput({
           <RevealedField key="name" animate={false}>
             <TextField
               variant="underline"
-              label={copy.fieldLabel}
-              description={showFieldDescription ? copy.fieldDescription : undefined}
+              label={IDENTITY_STEP_COPY.name.fieldLabel}
+              description={
+                activeStep === 'name' ? IDENTITY_STEP_COPY.name.fieldDescription : undefined
+              }
               value={name}
               onValueChange={({ value }) => onNameChange(value)}
-              readOnly={locked}
+              readOnly={isIdentityStepRevealed(activeStep, 'name') && activeStep !== 'name'}
             >
               <TextFieldInput
                 ref={nameInputRef}
-                placeholder={copy.placeholder}
+                placeholder="이름 입력"
                 enterKeyHint="next"
-                readOnly={locked}
-                tabIndex={locked ? -1 : 0}
+                readOnly={isIdentityStepRevealed(activeStep, 'name') && activeStep !== 'name'}
+                tabIndex={
+                  isIdentityStepRevealed(activeStep, 'name') && activeStep !== 'name' ? -1 : 0
+                }
               />
             </TextField>
           </RevealedField>
