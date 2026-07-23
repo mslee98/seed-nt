@@ -31,6 +31,7 @@ import {
   revokeSessionMock,
   sendSmsCodeMock,
   signInAfterSignupMock,
+  checkNicknameMock,
   verifyAccountMock,
   verifySmsCodeMock,
 } from './adapters/auth.mock'
@@ -90,6 +91,14 @@ export async function verifyAccount(payload: {
 }): Promise<{ verified: true; holderName: string }> {
   if (shouldUseHttpApi()) return verifyAccountHttp(payload)
   return verifyAccountMock(payload)
+}
+
+export async function checkNickname(nickname: string): Promise<{ available: boolean }> {
+  if (shouldUseHttpApi()) {
+    const { httpPost } = await import('../../../shared/api/httpClient')
+    return httpPost<{ available: boolean }>('/v1/auth/nickname/check', { nickname })
+  }
+  return checkNicknameMock(nickname)
 }
 
 /** @deprecated 가입 완료용 아님 — 거래 PIN 변경은 changeTransactionPin 사용 */

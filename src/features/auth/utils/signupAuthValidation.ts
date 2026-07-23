@@ -3,6 +3,7 @@ import {
   NICKNAME_MIN_LENGTH,
   NICKNAME_PATTERN,
   LOGIN_PASSWORD_MIN_LENGTH,
+  LOGIN_PASSWORD_MAX_LENGTH,
 } from '../constants'
 
 export function isValidNickname(nickname: string): boolean {
@@ -15,6 +16,7 @@ export function isValidNickname(nickname: string): boolean {
 
 export function isValidLoginPassword(password: string): boolean {
   if (password.length < LOGIN_PASSWORD_MIN_LENGTH) return false
+  if (password.length > LOGIN_PASSWORD_MAX_LENGTH) return false
   const hasLetter = /[a-zA-Z]/.test(password)
   const hasNumber = /\d/.test(password)
   return hasLetter && hasNumber

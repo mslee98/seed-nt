@@ -11,6 +11,7 @@ import type { ActivityAppBarLeftAction } from '../../../app/layouts/ActivityScre
 import type { CarrierCode, SignupIdentityStep } from '../constants'
 import { NEXT_IDENTITY_STEP, PREV_IDENTITY_STEP } from '../constants'
 import { resetSignupDraft } from '../stores/signupDraft.store'
+import { resetSignupSecrets } from '../stores/signupSecrets.store'
 import { formatPhoneInput } from '../utils/formatPhone'
 import { canProceedIdentityStep, useSignupForm } from './useSignupForm'
 
@@ -45,6 +46,7 @@ export function useSignupIdentityScreen() {
 
   const handleConfirmExit = () => {
     resetSignupDraft()
+    resetSignupSecrets()
     pop()
   }
 

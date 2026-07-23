@@ -7,7 +7,7 @@ import AccountRecoveryActivity from '../activities/auth/AccountRecoveryActivity'
 import LoginActivity from '../activities/auth/LoginActivity'
 import SecuritySettingsActivity from '../activities/auth/SecuritySettingsActivity'
 import SignupAccountActivity from '../activities/auth/SignupAccountActivity'
-import SignupAuthActivity from '../activities/auth/SignupAuthActivity'
+import SignupCredentialsActivity from '../activities/auth/SignupCredentialsActivity'
 import SignupCompleteActivity from '../activities/auth/SignupCompleteActivity'
 import SignupIdentityActivity from '../activities/auth/SignupIdentityActivity'
 import SignupPinActivity from '../activities/auth/SignupPinActivity'
@@ -39,8 +39,8 @@ export const { Stack, actions } = stackflow({
     SignupIdentity: SignupIdentityActivity,
     SignupSms: SignupSmsActivity,
     SignupAccount: SignupAccountActivity,
+    SignupCredentials: SignupCredentialsActivity,
     SignupPin: SignupPinActivity,
-    SignupAuth: SignupAuthActivity,
     SignupComplete: SignupCompleteActivity,
     Login: LoginActivity,
     SecuritySettings: SecuritySettingsActivity,

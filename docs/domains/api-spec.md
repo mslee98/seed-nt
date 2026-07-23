@@ -165,7 +165,7 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 
 ### `POST /v1/auth/signup` (Edge `signup`)
 
-최종 가입. Pin 화면이 아니라 **SignupAuth 닉네임 확정 후** 호출합니다.
+최종 가입. **SignupPin confirm**에서 호출합니다.
 
 **Request**
 
@@ -188,8 +188,9 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 
 1. phone → E.164 (`+821012345678`)
 2. `auth.admin.createUser({ phone, password, phone_confirm: true })`
-3. `user_profiles` INSERT (`nickname` NOT NULL UNIQUE, `transaction_pin_hash` bcrypt, verified_at…)
+3. `user_profiles` INSERT (`nickname` NOT NULL UNIQUE, `transaction_pin_hash` 서버 해시, verified_at…)
 4. `user_roles` INSERT `CONSUMER`
+5. 실패 시 Auth 유저 보상 삭제
 
 **Response `200`**
 
@@ -211,7 +212,28 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 | 400 | `INVALID_PIN` / `INVALID_NICKNAME` / `INVALID_PASSWORD` |
 | 409 | `PHONE_EXISTS` / `NICKNAME_TAKEN` / `IDENTITY_EXISTS` |
 
+가입 체인: Identity → Sms → Account → Credentials(닉네임·로그인 비번) → Pin(제출) → Complete  
+패스키는 Complete/SecuritySettings에서 선택 등록.
+
 Fixture: [docs/fixtures/auth/signup-complete.json](../fixtures/auth/signup-complete.json)
+
+---
+
+### `POST /v1/auth/nickname/check`
+
+닉네임 사용 가능 여부 선검사 (UX). 최종 확정은 signup UNIQUE.
+
+**Request**
+
+```json
+{ "nickname": "브릿러4821" }
+```
+
+**Response `200`**
+
+```json
+{ "available": true }
+```
 
 ---
 

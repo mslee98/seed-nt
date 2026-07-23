@@ -15,10 +15,10 @@ flowchart LR
     Identity[SignupIdentity]
     Sms[SignupSms]
     Account[SignupAccount]
+    Credentials[SignupCredentials]
     Pin[SignupPin]
-    Auth[SignupAuth]
     Complete[SignupComplete]
-    Identity --> Sms --> Account --> Pin --> Auth --> Complete
+    Identity --> Sms --> Account --> Credentials --> Pin --> Complete
   end
   subgraph tradeFlow [Trade]
     Home[Home]
@@ -31,7 +31,7 @@ flowchart LR
 
 | 플로우 | Activity 순서 | 상세 문서 |
 |--------|---------------|-----------|
-| 가입 | Identity → Sms → Account → Pin → Auth → Complete | [auth.md](../domains/auth.md) |
+| 가입 | Identity → Sms → Account → Credentials → Pin → Complete | [auth.md](../domains/auth.md) |
 | 로그인 | Login (패스키 우선 / 휴대폰+비번) | [auth.md](../domains/auth.md) |
 | 거래 | Home → TradeCompose → Trade | [trade.md](../domains/trade.md) |
 | DEV | `SmsSchemePoc` (`/poc/sms`) — 프로덕션 UX 아님 | DEV Fab |
@@ -77,8 +77,8 @@ flowchart LR
 | `SignupIdentity` | `/auth/signup/identity` | — |
 | `SignupSms` | `/auth/signup/sms` | `phone: string` |
 | `SignupAccount` | `/auth/signup/account` | `step?: SignupAccountStep` |
+| `SignupCredentials` | `/auth/signup/credentials` | `step?: SignupCredentialsStep` |
 | `SignupPin` | `/auth/signup/pin` | `step?: SignupPinStep` |
-| `SignupAuth` | `/auth/signup/auth` | `step?: SignupAuthStep` |
 | `SignupComplete` | `/auth/signup/complete` | — |
 | `Login` | `/auth/login` | `mode?: 'passkey' \| 'password'` |
 | `SecuritySettings` | `/auth/security` | — |

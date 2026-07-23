@@ -49,6 +49,9 @@ const LoginActivity: ActivityComponentType<'Login'> = () => {
             >
               로그인
             </BottomActionButton>
+            <BottomActionButton size="large" variant="neutralOutline" onClick={screen.goSignup}>
+              아직 계정이 없어요
+            </BottomActionButton>
             <BottomActionButton size="large" variant="neutralOutline" onClick={screen.goRecovery}>
               로그인에 문제가 있나요?
             </BottomActionButton>

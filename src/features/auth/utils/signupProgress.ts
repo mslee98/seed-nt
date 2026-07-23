@@ -1,19 +1,19 @@
 import type {
   SignupAccountStep,
-  SignupAuthStep,
+  SignupCredentialsStep,
   SignupIdentityStep,
   SignupPinStep,
 } from '../constants'
 import { getIdentityStepIndex } from '../constants'
 
-export const SIGNUP_PROGRESS_TOTAL = 12
+export const SIGNUP_PROGRESS_TOTAL = 11
 
 export type SignupProgressInput =
   | { type: 'identity'; step: SignupIdentityStep }
   | { type: 'sms' }
   | { type: 'account'; step: SignupAccountStep }
+  | { type: 'credentials'; step: SignupCredentialsStep }
   | { type: 'pin'; step: SignupPinStep }
-  | { type: 'auth'; step: SignupAuthStep }
 
 const SIGNUP_STEP_LABELS = [
   '이름',
@@ -23,11 +23,10 @@ const SIGNUP_STEP_LABELS = [
   '기기인증',
   '계좌 선택',
   '계좌번호',
-  '환전 비밀번호',
-  '비밀번호 확인',
-  '로그인 비밀번호',
   '닉네임',
-  '패스키',
+  '로그인 비밀번호',
+  '거래 PIN',
+  'PIN 확인',
 ] as const
 
 export function getSignupProgressStep(input: SignupProgressInput): number {
@@ -38,12 +37,10 @@ export function getSignupProgressStep(input: SignupProgressInput): number {
       return 5
     case 'account':
       return input.step === 'bank' ? 6 : 7
+    case 'credentials':
+      return input.step === 'nickname' ? 8 : 9
     case 'pin':
-      return input.step === 'create' ? 8 : 9
-    case 'auth':
-      if (input.step === 'password') return 10
-      if (input.step === 'nickname') return 11
-      return 12
+      return input.step === 'create' ? 10 : 11
     default:
       return 1
   }

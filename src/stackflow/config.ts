@@ -4,7 +4,7 @@ import type {
   AccountRecoveryStep,
   LoginMode,
   SignupAccountStep,
-  SignupAuthStep,
+  SignupCredentialsStep,
   SignupPinStep,
 } from '../features/auth/constants'
 
@@ -29,11 +29,11 @@ declare module '@stackflow/config' {
     SignupAccount: {
       step?: SignupAccountStep
     }
+    SignupCredentials: {
+      step?: SignupCredentialsStep
+    }
     SignupPin: {
       step?: SignupPinStep
-    }
-    SignupAuth: {
-      step?: SignupAuthStep
     }
     SignupComplete: {}
     Login: {
@@ -79,12 +79,12 @@ export const config = defineConfig({
       route: '/auth/signup/account',
     },
     {
-      name: 'SignupPin',
-      route: '/auth/signup/pin',
+      name: 'SignupCredentials',
+      route: '/auth/signup/credentials',
     },
     {
-      name: 'SignupAuth',
-      route: '/auth/signup/auth',
+      name: 'SignupPin',
+      route: '/auth/signup/pin',
     },
     {
       name: 'SignupComplete',

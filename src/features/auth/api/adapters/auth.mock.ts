@@ -17,7 +17,17 @@ function randomDelay(min = 300, max = 800) {
   return delay(min + Math.floor(Math.random() * (max - min)))
 }
 
-const takenNicknames = new Set(['Brit유저', 'admin'])
+const takenNicknames = new Set(['Brit유저', 'admin', '브릿유저'])
+
+export async function checkNicknameMock(
+  nickname: string,
+): Promise<{ available: boolean }> {
+  await randomDelay(200, 450)
+  if (takenNicknames.has(nickname.trim())) {
+    return { available: false }
+  }
+  return { available: true }
+}
 
 export async function sendSmsCodeMock(phone: string): Promise<{ success: true }> {
   const mockCode = String(Math.floor(100000 + Math.random() * 900000))

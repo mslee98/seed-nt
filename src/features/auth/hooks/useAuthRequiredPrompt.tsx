@@ -5,13 +5,11 @@ import type { AuthRequiredReason } from '../constants/authRequiredCopy'
 import { isAuthenticated } from '../stores/authSession.store'
 
 interface UseAuthRequiredPromptOptions {
-  onNavigateToSignup: () => void
-  onNavigateToLogin?: () => void
+  onNavigateToLogin: () => void
   layerIndex?: number
 }
 
 export function useAuthRequiredPrompt({
-  onNavigateToSignup,
   onNavigateToLogin,
   layerIndex,
 }: UseAuthRequiredPromptOptions) {
@@ -35,7 +33,6 @@ export function useAuthRequiredPrompt({
       open={open}
       onOpenChange={setOpen}
       reason={reason}
-      onSignUp={onNavigateToSignup}
       onLogin={onNavigateToLogin}
       layerIndex={layerIndex}
     />

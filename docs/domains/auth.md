@@ -19,9 +19,9 @@
 | 본인확인 | `SignupIdentityActivity` | `useSignupIdentityScreen` | draft store |
 | OCTOMO | `SignupSmsActivity` | `useSignupOctomoVerify` | `octomo.api`, `startOctomoPolling` |
 | 계좌 | `SignupAccountActivity` | `useSignupAccountScreen` | `banks.api` |
-| 거래 PIN | `SignupPinActivity` | `useSignupPinFlow` | draft만 (제출 아님) |
-| 로그인 수단 | `SignupAuthActivity` | `useSignupAuthFlow` | `completeSignup`, passkey |
-| 완료 | `SignupCompleteActivity` | (Activity 내) | session |
+| 닉네임·로그인 비번 | `SignupCredentialsActivity` | `useSignupCredentialsFlow` | draft + secrets (제출 없음) |
+| 거래 PIN·최종 가입 | `SignupPinActivity` | `useSignupPinFlow` | `completeSignup` |
+| 완료 | `SignupCompleteActivity` | (Activity 내) | session · 패스키 설정 유도 |
 | 로그인 | `LoginActivity` | `useLoginScreen` | passkey / password |
 | 보안 설정 | `SecuritySettingsActivity` | `useSecuritySettingsScreen` | passkey list/관리 |
 | 계정 복구 | `AccountRecoveryActivity` | `useAccountRecoveryScreen` | recovery API |
@@ -38,6 +38,7 @@
 |------|------|
 | 상수·스텝 | `src/features/auth/constants.ts` |
 | 가입 draft | `src/features/auth/stores/signupDraft.store.ts` |
+| 가입 secrets | `src/features/auth/stores/signupSecrets.store.ts` (loginPassword·transactionPin, 메모리만) |
 | 세션 | `src/features/auth/stores/authSession.store.ts` |
 | API facade | `src/features/auth/api/auth.api.ts`, `banks.api.ts` |
 | API adapters | `src/features/auth/api/adapters/` (supabase / http / mock) |
@@ -76,9 +77,9 @@ Nest 이전을 대비해 hook/UI는 facade만 호출합니다. 인프라는 adap
 flowchart LR
   SignupIdentity --> SignupSms
   SignupSms --> SignupAccount
-  SignupAccount --> SignupPin
-  SignupPin --> SignupAuth
-  SignupAuth --> SignupComplete
+  SignupAccount --> SignupCredentials
+  SignupCredentials --> SignupPin
+  SignupPin --> SignupComplete
   SignupComplete --> Home
 ```
 
@@ -86,26 +87,31 @@ flowchart LR
 |----------|-------|--------|------|
 | `SignupIdentity` | `/auth/signup/identity` | — | 이름·주민번호·통신사·휴대폰 |
 | `SignupSms` | `/auth/signup/sms` | `phone` | OCTOMO 기기인증 |
-| `SignupAccount` | `/auth/signup/account` | `step?`: `bank` \| `accountNumber` | 금융기관·계좌 (`accountHolderName` draft 저장) |
-| `SignupPin` | `/auth/signup/pin` | `step?`: `create` \| `confirm` | 거래 PIN → draft만 |
-| `SignupAuth` | `/auth/signup/auth` | `step?`: `password` \| `nickname` \| `passkey` | 로그인 비번·닉네임·최종 제출·패스키 권장 |
-| `SignupComplete` | `/auth/signup/complete` | — | 완료 → Home |
+| `SignupAccount` | `/auth/signup/account` | `step?`: `bank` \| `accountNumber` | 금융기관·계좌 |
+| `SignupCredentials` | `/auth/signup/credentials` | `step?`: `nickname` \| `password` | 닉네임·로그인 비번 (제출 없음) |
+| `SignupPin` | `/auth/signup/pin` | `step?`: `create` \| `confirm` | 거래 PIN + **최종 completeSignup** |
+| `SignupComplete` | `/auth/signup/complete` | — | 완료 · 패스키는 설정 유도 |
 | `Login` | `/auth/login` | `mode?`: `passkey` \| `password` | 패스키 우선 / 휴대폰+비번 |
 | `SecuritySettings` | `/auth/security` | — | 패스키·세션 관리 |
-| `AccountRecovery` | `/auth/recovery` | `step?` | 복구 (OCTOMO만으로 비번 재설정 금지) |
+| `AccountRecovery` | `/auth/recovery` | `step?` | 복구 |
 
-### SignupAuth 내부
+### SignupCredentials 내부
 
 ```text
-password → nickname → create-account → passkey
+nickname → password
 ```
 
-- `password`: 로그인용 비밀번호 생성·확인 (거래 PIN과 구분)
-- `nickname`: 거래 공개 이름 (UNIQUE)
-- `create-account`: `completeSignup` → Auth user + profile + role → `signInWithPassword`
-- `passkey`: 세션 후 `registerPasskey` 권장 / **나중에 설정하기** 허용
+- `nickname`: debounce 선검사 → draft 저장 → password
+- `password`: secrets에 loginPassword 저장 → `push SignupPin`
+- 회원 생성하지 않음
 
-최종 제출 시점은 **닉네임 확정 직후**입니다. Pin confirm은 더 이상 가입 API를 호출하지 않습니다.
+### PIN flow (거래 PIN + 최종 제출)
+
+- `create` 4자리 → secrets.transactionPin → `replace confirm`
+- confirm 일치 → `completeSignup` → `signInAfterPassword` → `replace SignupComplete`
+- 뒤로: confirm → create / create → Credentials password
+
+최종 제출 시점은 **Pin confirm**입니다.
 
 ### OCTOMO 기기인증 (`SignupSms`)
 
@@ -142,9 +148,9 @@ READY → WAITING/CHECKING → VERIFIED → (0.8s) replace SignupAccount
 
 ## PIN flow (거래 PIN)
 
-- `create` 4자리 → draft 저장 → `replace('SignupPin', { step: 'confirm' })`
+- `create` 4자리 → secrets 저장 → `replace('SignupPin', { step: 'confirm' })`
 - confirm 불일치 → snackbar + 재입력
-- confirm 일치 → draft 저장 → `push('SignupAuth', { step: 'password' })` (**가입 API 호출 없음**)
+- confirm 일치 → `completeSignup` → 세션 → `SignupComplete`
 - 뒤로: confirm → `replace` create
 
 Hook: `src/features/auth/hooks/useSignupPinFlow.ts`
@@ -153,8 +159,8 @@ Hook: `src/features/auth/hooks/useSignupPinFlow.ts`
 
 `SignupProgressHeader` — Activity별 `type` + `step`:
 
-- `identity` / `sms` / `account` / `pin` / `auth`
-- 총 12스텝 (거래 PIN 확인 후 로그인 비번·닉네임·패스키)
+- `identity` / `sms` / `account` / `credentials` / `pin`
+- 총 11스텝 (Credentials 후 Pin이 마지막)
 
 ## 로그인
 
@@ -175,14 +181,16 @@ OCTOMO + (계좌 예금주 확인 | 이름·생년월일 | 기존 기기 승인 
 ## 인증 가드
 
 - `useRequireAuth(reason)` — 거래 등 인증 필요 액션
-- `useAuthRequiredPrompt` — 탭에서 가입/로그인 유도
-- `AuthRequiredAlertDialog` — dismiss **`닫기`**, 로그인·가입 CTA
+- `useAuthRequiredPrompt` — 탭에서 로그인 유도
+- `AuthRequiredAlertDialog` — **`닫기` / `로그인`만** (가입은 Login에서)
 - `assertSensitiveActionAllowed` — 복구 쿨다운 검사
+
+가입 진입: Login → `아직 계정이 없어요` → `SignupIdentity`
 
 ## Stack 밖 네비게이션
 
-- 탭에서 가입: `actions.push('SignupIdentity', {})` ([GlobalBottomNavigation](../../src/app/layouts/GlobalBottomNavigation.tsx))
-- 로그인: `actions.push('Login', {})`
+- 탭·가드에서 미인증: `actions.push('Login', {})` ([GlobalBottomNavigation](../../src/app/layouts/GlobalBottomNavigation.tsx))
+- 가입: Login → `아직 계정이 없어요` → `SignupIdentity`
 - 가입 완료: `actions.pop` + `actions.replace('Home')` ([SignupCompleteActivity](../../src/activities/auth/SignupCompleteActivity.tsx))
 
 ## Consumer UX
