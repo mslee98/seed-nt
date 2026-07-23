@@ -10,7 +10,7 @@ interface InstitutionTileProps {
 }
 
 export function InstitutionTile({ institution, selected = false, onSelect }: InstitutionTileProps) {
-  const iconUrl = getInstitutionIconUrl(institution.iconKey)
+  const iconUrl = institution.iconUrl || getInstitutionIconUrl(institution.iconKey)
   const disabled = institution.disabled
 
   return (

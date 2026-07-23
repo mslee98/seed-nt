@@ -11,20 +11,19 @@ import { List, ListButtonItem } from 'seed-design/ui/list'
 import { TextField, TextFieldInput } from 'seed-design/ui/text-field'
 
 import { useLayoutOverlay } from '../../../../app/layouts/useLayoutOverlay'
-import type { FinanceCategory, Institution } from '../../data/institutions'
-import { FINANCE_CATEGORY_LABELS, searchInstitutions } from '../../data/institutions'
+import type { Institution } from '../../data/institutions'
 import { getInstitutionIconUrl } from '../../utils/institutionIcons'
 
 interface InstitutionNotFoundSheetProps {
   open: boolean
-  category: FinanceCategory
+  institutions: Institution[]
   onOpenChange: (open: boolean) => void
   onSelect: (institution: Institution) => void
 }
 
 export function InstitutionNotFoundSheet({
   open,
-  category,
+  institutions,
   onOpenChange,
   onSelect,
 }: InstitutionNotFoundSheetProps) {
@@ -40,33 +39,34 @@ export function InstitutionNotFoundSheet({
     if (!open) setQuery('')
   }, [open])
 
-  const filteredInstitutions = useMemo(
-    () => searchInstitutions(query, category),
-    [category, query],
-  )
+  const filteredInstitutions = useMemo(() => {
+    const normalized = query.trim().toLowerCase()
+    if (!normalized) return institutions
+    return institutions.filter((item) => item.name.toLowerCase().includes(normalized))
+  }, [institutions, query])
 
   return (
     <BottomSheetRoot open={open} onOpenChange={onOpenChange}>
       <Portal container={portalContainerRef}>
         <BottomSheetContent
-          title="찾는 기관이 없나요?"
-          description={`${FINANCE_CATEGORY_LABELS[category]} 이름을 검색하거나 목록에서 선택해 주세요.`}
+          title="찾는 은행이 없나요?"
+          description="은행 이름을 검색하거나 목록에서 선택해 주세요."
           layerIndex={layerIndex}
           showHandle
         >
           <BottomSheetBody>
             <VStack gap="x4">
               <TextField
-                label="기관 이름 검색"
+                label="은행 이름 검색"
                 labelVisuallyHidden
                 value={query}
                 onValueChange={({ value }) => setQuery(value)}
               >
-                <TextFieldInput placeholder="기관 이름 검색" />
+                <TextFieldInput placeholder="은행 이름 검색" />
               </TextField>
               <List>
                 {filteredInstitutions.map((institution) => {
-                  const iconUrl = getInstitutionIconUrl(institution.iconKey)
+                  const iconUrl = institution.iconUrl || getInstitutionIconUrl(institution.iconKey)
 
                   return (
                     <ListButtonItem
