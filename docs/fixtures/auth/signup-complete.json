@@ -1,10 +1,6 @@
 {
   "success": true,
-  "accessToken": "at_mock_access_token",
-  "refreshToken": "rt_mock_refresh_token",
-  "user": {
-    "id": "user-1",
-    "nickname": "Brit유저",
-    "isVerified": true
-  }
+  "userId": "user-1",
+  "nickname": "브릿러4821",
+  "phoneE164": "+821012345678"
 }

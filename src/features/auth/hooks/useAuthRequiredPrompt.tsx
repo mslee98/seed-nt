@@ -6,11 +6,13 @@ import { isAuthenticated } from '../stores/authSession.store'
 
 interface UseAuthRequiredPromptOptions {
   onNavigateToSignup: () => void
+  onNavigateToLogin?: () => void
   layerIndex?: number
 }
 
 export function useAuthRequiredPrompt({
   onNavigateToSignup,
+  onNavigateToLogin,
   layerIndex,
 }: UseAuthRequiredPromptOptions) {
   const [open, setOpen] = useState(false)
@@ -34,6 +36,7 @@ export function useAuthRequiredPrompt({
       onOpenChange={setOpen}
       reason={reason}
       onSignUp={onNavigateToSignup}
+      onLogin={onNavigateToLogin}
       layerIndex={layerIndex}
     />
   )

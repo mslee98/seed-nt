@@ -1,6 +1,12 @@
 import { defineConfig } from '@stackflow/config'
 
-import type { SignupAccountStep, SignupPinStep } from '../features/auth/constants'
+import type {
+  AccountRecoveryStep,
+  LoginMode,
+  SignupAccountStep,
+  SignupAuthStep,
+  SignupPinStep,
+} from '../features/auth/constants'
 
 declare module '@stackflow/config' {
   interface Register {
@@ -26,7 +32,17 @@ declare module '@stackflow/config' {
     SignupPin: {
       step?: SignupPinStep
     }
+    SignupAuth: {
+      step?: SignupAuthStep
+    }
     SignupComplete: {}
+    Login: {
+      mode?: LoginMode
+    }
+    SecuritySettings: {}
+    AccountRecovery: {
+      step?: AccountRecoveryStep
+    }
     SmsSchemePoc: {}
     NotFound: {}
   }
@@ -67,8 +83,24 @@ export const config = defineConfig({
       route: '/auth/signup/pin',
     },
     {
+      name: 'SignupAuth',
+      route: '/auth/signup/auth',
+    },
+    {
       name: 'SignupComplete',
       route: '/auth/signup/complete',
+    },
+    {
+      name: 'Login',
+      route: '/auth/login',
+    },
+    {
+      name: 'SecuritySettings',
+      route: '/auth/security',
+    },
+    {
+      name: 'AccountRecovery',
+      route: '/auth/recovery',
     },
     {
       name: 'SmsSchemePoc',

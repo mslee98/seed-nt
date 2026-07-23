@@ -1,9 +1,36 @@
 # Auth Domain
 
-회원가입·본인인증·PIN·세션 도메인 요약입니다.
+회원가입·본인인증·로그인(패스키/비밀번호)·거래 PIN·세션 도메인 요약입니다.
+
+## 인증 계층 (섞지 않음)
+
+| 구분 | 용도 | 저장 |
+|------|------|------|
+| 패스키 | 기본 로그인 | Supabase Auth |
+| 로그인 비밀번호 | 패스키 불가 환경 보조 | Supabase Auth |
+| 휴대폰 | Auth 식별자 | `auth.users.phone` (E.164) + `user_profiles.phone_number` |
+| 거래 PIN | 거래·환전·계좌 변경 | `user_profiles.transaction_pin_hash` (서버 bcrypt) |
+| 닉네임 | 거래 공개 이름 | `user_profiles.nickname` (가입 시 입력, 로그인 ID 아님) |
+
+## 시작 파일
+
+| 작업 | Activity | Hook | API / 유틸 |
+|------|----------|------|------------|
+| 본인확인 | `SignupIdentityActivity` | `useSignupIdentityScreen` | draft store |
+| OCTOMO | `SignupSmsActivity` | `useSignupOctomoVerify` | `octomo.api`, `startOctomoPolling` |
+| 계좌 | `SignupAccountActivity` | `useSignupAccountScreen` | `banks.api` |
+| 거래 PIN | `SignupPinActivity` | `useSignupPinFlow` | draft만 (제출 아님) |
+| 로그인 수단 | `SignupAuthActivity` | `useSignupAuthFlow` | `completeSignup`, passkey |
+| 완료 | `SignupCompleteActivity` | (Activity 내) | session |
+| 로그인 | `LoginActivity` | `useLoginScreen` | passkey / password |
+| 보안 설정 | `SecuritySettingsActivity` | `useSecuritySettingsScreen` | passkey list/관리 |
+| 계정 복구 | `AccountRecoveryActivity` | `useAccountRecoveryScreen` | recovery API |
+
+화면 순서: [docs/stackflow/README.md](../stackflow/README.md) 「화면 지도」
 
 **API 스펙:** [docs/domains/api-spec.md](./api-spec.md) §3 Auth API  
-**Fixture:** [docs/fixtures/auth/](../fixtures/auth/)
+**Fixture:** [docs/fixtures/auth/](../fixtures/auth/)  
+**스키마:** [supabase/migrations/20260723_user_profiles_auth_p0.sql](../../supabase/migrations/20260723_user_profiles_auth_p0.sql)
 
 ## 코드 위치
 
@@ -14,7 +41,8 @@
 | 세션 | `src/features/auth/stores/authSession.store.ts` |
 | API facade | `src/features/auth/api/auth.api.ts`, `banks.api.ts` |
 | API adapters | `src/features/auth/api/adapters/` (supabase / http / mock) |
-| mappers | `src/features/auth/mappers/` |
+| phone 정규화 | `src/features/auth/utils/phoneE164.ts` (표시용). **DB/Auth 변환은 서버 한곳** |
+| Edge | `supabase/functions/signup/`, `supabase/functions/octomo/` |
 | UI | `src/features/auth/components/` |
 | Activity | `src/activities/auth/` |
 
@@ -24,12 +52,23 @@ Nest 이전을 대비해 hook/UI는 facade만 호출합니다. 인프라는 adap
 
 | 레이어 | 책임 | 예 |
 |--------|------|-----|
-| facade | 도메인 함수 시그니처·어댑터 선택 | `fetchActiveBanks`, `sendSmsCode` |
-| adapters | Supabase / HTTP / mock 구현 | `banks.supabase.ts`, `auth.mock.ts` |
+| facade | 도메인 함수 시그니처·어댑터 선택 | `completeSignup`, `fetchActiveBanks` |
+| adapters | Supabase / HTTP / mock 구현 | `auth.supabase.ts`, `auth.mock.ts` |
 | mappers | DTO/row → 앱 타입 | `bank.mapper.ts` → `Institution` |
 
-- `VITE_API_BASE_URL`이 있으면 HTTP adapter, 없으면 banks는 Supabase·auth는 mock
+- `VITE_API_BASE_URL`이 있으면 HTTP adapter 우선
+- 없으면 banks는 Supabase, auth 가입/로그인은 Supabase Edge·Auth (불가 시 mock)
 - shared HTTP: `src/shared/api/httpClient.ts`, 에러: `src/shared/api/errors.ts`
+
+## Phone 정규화
+
+| 위치 | 형식 |
+|------|------|
+| 가입 draft / UI | `01012345678` (숫자만) |
+| `auth.users.phone` / signup Edge | E.164 `+821012345678` |
+| `user_profiles.phone_number` | Edge가 Auth와 **동일 E.164**로 저장 |
+
+변환은 **signup Edge Function 한곳**에서만 수행합니다. 프론트는 draft를 숫자로 유지합니다.
 
 ## 가입 Activity 체인
 
@@ -38,17 +77,35 @@ flowchart LR
   SignupIdentity --> SignupSms
   SignupSms --> SignupAccount
   SignupAccount --> SignupPin
-  SignupPin --> SignupComplete
+  SignupPin --> SignupAuth
+  SignupAuth --> SignupComplete
   SignupComplete --> Home
 ```
 
 | Activity | Route | Params | 설명 |
 |----------|-------|--------|------|
-| `SignupIdentity` | `/auth/signup/identity` | — | 이름·주민번호·통신사·휴대폰 (progressive form) |
-| `SignupSms` | `/auth/signup/sms` | `phone` | OCTOMO 기기인증 안내 (모바일 CTA / 데스크톱 QR) |
-| `SignupAccount` | `/auth/signup/account` | `step?`: `bank` \| `accountNumber` | 금융기관·계좌 |
-| `SignupPin` | `/auth/signup/pin` | `step?`: `create` \| `confirm` | PIN 설정·확인 |
-| `SignupComplete` | `/auth/signup/complete` | — | 완료 → Home `replace` |
+| `SignupIdentity` | `/auth/signup/identity` | — | 이름·주민번호·통신사·휴대폰 |
+| `SignupSms` | `/auth/signup/sms` | `phone` | OCTOMO 기기인증 |
+| `SignupAccount` | `/auth/signup/account` | `step?`: `bank` \| `accountNumber` | 금융기관·계좌 (`accountHolderName` draft 저장) |
+| `SignupPin` | `/auth/signup/pin` | `step?`: `create` \| `confirm` | 거래 PIN → draft만 |
+| `SignupAuth` | `/auth/signup/auth` | `step?`: `password` \| `nickname` \| `passkey` | 로그인 비번·닉네임·최종 제출·패스키 권장 |
+| `SignupComplete` | `/auth/signup/complete` | — | 완료 → Home |
+| `Login` | `/auth/login` | `mode?`: `passkey` \| `password` | 패스키 우선 / 휴대폰+비번 |
+| `SecuritySettings` | `/auth/security` | — | 패스키·세션 관리 |
+| `AccountRecovery` | `/auth/recovery` | `step?` | 복구 (OCTOMO만으로 비번 재설정 금지) |
+
+### SignupAuth 내부
+
+```text
+password → nickname → create-account → passkey
+```
+
+- `password`: 로그인용 비밀번호 생성·확인 (거래 PIN과 구분)
+- `nickname`: 거래 공개 이름 (UNIQUE)
+- `create-account`: `completeSignup` → Auth user + profile + role → `signInWithPassword`
+- `passkey`: 세션 후 `registerPasskey` 권장 / **나중에 설정하기** 허용
+
+최종 제출 시점은 **닉네임 확정 직후**입니다. Pin confirm은 더 이상 가입 API를 호출하지 않습니다.
 
 ### OCTOMO 기기인증 (`SignupSms`)
 
@@ -65,7 +122,7 @@ READY → WAITING/CHECKING → VERIFIED → (0.8s) replace SignupAccount
 - **QR**: Edge `POST octomo`로 QR 발급(`text` = SMS URI 전체). 실패 시 `qrcode.react` fallback. 표시 후 폴링 `[10s,15s,25s,40s]`
 - **exists**: `GET octomo?mobileNum=&text=&withinMinutes=` → `{ exists }`. `false`는 대기(WAITING), 오류 UI 금지
 - pending: `sessionStorage` (`brit:pending-octomo`, phone/message/startedAt, 10분 만료)
-- `exists: true` → VERIFIED → 800ms 후 `replace` SignupAccount (bank). AccountIntroSheet 생략
+- `exists: true` → VERIFIED → 800ms 후 `replace` SignupAccount (bank)
 - DELAYED: `다시 확인하기`(1회), SMS면 `문자 앱 다시 열기`, `번호 수정하기`→`pop()`
 - 폴링 유틸: `src/features/auth/utils/startOctomoPolling.ts` (hidden 시 스킵, visible 복귀 1.5s)
 - API facade: `features/auth/api/octomo.api.ts` → `createOctomoQr` / `checkOctomoMessage`
@@ -83,12 +140,12 @@ READY → WAITING/CHECKING → VERIFIED → (0.8s) replace SignupAccount
 - RRN: `SplitRrnFirst7Field` (생년월일 6 + 성별 1)
 - Progress 헤더: `SignupProgressHeader`
 
-## PIN flow
+## PIN flow (거래 PIN)
 
-- `create` 4자리 입력 완료 → draft 저장 → `replace('SignupPin', { step: 'confirm' })`
+- `create` 4자리 → draft 저장 → `replace('SignupPin', { step: 'confirm' })`
 - confirm 불일치 → snackbar + 재입력
-- confirm 일치 → `registerPin` → `SignupComplete`
-- 뒤로: confirm → `replace` create (pop 대신 히스토리 정리)
+- confirm 일치 → draft 저장 → `push('SignupAuth', { step: 'password' })` (**가입 API 호출 없음**)
+- 뒤로: confirm → `replace` create
 
 Hook: `src/features/auth/hooks/useSignupPinFlow.ts`
 
@@ -96,25 +153,44 @@ Hook: `src/features/auth/hooks/useSignupPinFlow.ts`
 
 `SignupProgressHeader` — Activity별 `type` + `step`:
 
-- `identity` / `account` / `pin` / `sms`
-- `ActivityScreenLayout`의 `progress` prop으로 주입
+- `identity` / `sms` / `account` / `pin` / `auth`
+- 총 12스텝 (거래 PIN 확인 후 로그인 비번·닉네임·패스키)
+
+## 로그인
+
+- 첫 화면: **패스키로 로그인** CTA → 보조로 휴대폰+비밀번호
+- `signInWithPasskey()` / `signInWithPassword({ phone: E.164, password })`
+- Supabase client: `auth.experimental.passkey: true`
+
+## 계정 복구 (P1)
+
+OCTOMO만으로 비밀번호를 즉시 재설정하지 않습니다. 최소 2요소:
+
+```text
+OCTOMO + (계좌 예금주 확인 | 이름·생년월일 | 기존 기기 승인 | 복구 이메일)
+```
+
+복구 후 `sensitive_actions_locked_until` 동안 계좌 변경·고액 거래·출금·거래 PIN 변경을 막습니다.
 
 ## 인증 가드
 
 - `useRequireAuth(reason)` — 거래 등 인증 필요 액션
-- `useAuthRequiredPrompt` — 탭(거래내역·프로필)에서 가입 유도
-- `AuthRequiredAlertDialog` — dismiss **`닫기`**
+- `useAuthRequiredPrompt` — 탭에서 가입/로그인 유도
+- `AuthRequiredAlertDialog` — dismiss **`닫기`**, 로그인·가입 CTA
+- `assertSensitiveActionAllowed` — 복구 쿨다운 검사
 
 ## Stack 밖 네비게이션
 
 - 탭에서 가입: `actions.push('SignupIdentity', {})` ([GlobalBottomNavigation](../../src/app/layouts/GlobalBottomNavigation.tsx))
+- 로그인: `actions.push('Login', {})`
 - 가입 완료: `actions.pop` + `actions.replace('Home')` ([SignupCompleteActivity](../../src/activities/auth/SignupCompleteActivity.tsx))
 
 ## Consumer UX
 
 - 가입 이탈: `SignupExitAlertDialog` (명시적 뒤로가기에서만)
-- 카피 해요체 (`constants.ts` IDENTITY_STEP_COPY)
+- 카피 해요체 (`constants.ts`)
 - AlertDialog 왼쪽: `닫기`
+- 패스키 skip: **나중에 설정하기**
 
 ## 관련 문서
 

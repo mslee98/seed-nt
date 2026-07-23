@@ -5,6 +5,37 @@ Activity = 한 화면(또는 한 URL) 단위 컴포넌트입니다.
 
 공식 문서: https://stackflow.so/ko
 
+## 화면 지도
+
+폴더 순서가 아니라 **아래 플로우**가 Activity 순서의 정본입니다. route·params는 [화면 맵](#화면-맵-activity--route) 참고.
+
+```mermaid
+flowchart LR
+  subgraph signup [Signup]
+    Identity[SignupIdentity]
+    Sms[SignupSms]
+    Account[SignupAccount]
+    Pin[SignupPin]
+    Auth[SignupAuth]
+    Complete[SignupComplete]
+    Identity --> Sms --> Account --> Pin --> Auth --> Complete
+  end
+  subgraph tradeFlow [Trade]
+    Home[Home]
+    Compose[TradeCompose]
+    Trade[Trade]
+    Home --> Compose --> Trade
+  end
+  Complete --> Home
+```
+
+| 플로우 | Activity 순서 | 상세 문서 |
+|--------|---------------|-----------|
+| 가입 | Identity → Sms → Account → Pin → Auth → Complete | [auth.md](../domains/auth.md) |
+| 로그인 | Login (패스키 우선 / 휴대폰+비번) | [auth.md](../domains/auth.md) |
+| 거래 | Home → TradeCompose → Trade | [trade.md](../domains/trade.md) |
+| DEV | `SmsSchemePoc` (`/poc/sms`) — 프로덕션 UX 아님 | DEV Fab |
+
 ## 개념
 
 | 개념 | 설명 | 이 프로젝트 위치 |
@@ -47,7 +78,12 @@ flowchart LR
 | `SignupSms` | `/auth/signup/sms` | `phone: string` |
 | `SignupAccount` | `/auth/signup/account` | `step?: SignupAccountStep` |
 | `SignupPin` | `/auth/signup/pin` | `step?: SignupPinStep` |
+| `SignupAuth` | `/auth/signup/auth` | `step?: SignupAuthStep` |
 | `SignupComplete` | `/auth/signup/complete` | — |
+| `Login` | `/auth/login` | `mode?: 'passkey' \| 'password'` |
+| `SecuritySettings` | `/auth/security` | — |
+| `AccountRecovery` | `/auth/recovery` | `step?: AccountRecoveryStep` |
+| `SmsSchemePoc` | `/poc/sms` | — (DEV 전용) |
 | `NotFound` | `/404` | — |
 
 가입 플로우 상세: [docs/domains/auth.md](../domains/auth.md)

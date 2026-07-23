@@ -8,6 +8,7 @@ export function useRequireAuth(reason: AuthRequiredReason = 'trade') {
   const { push } = useFlow()
   const { promptAuth, authRequiredDialog } = useAuthRequiredPrompt({
     onNavigateToSignup: () => push('SignupIdentity', {}),
+    onNavigateToLogin: () => push('Login', {}),
   })
 
   const requireAuth = useCallback(

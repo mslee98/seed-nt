@@ -39,11 +39,12 @@ export function useSignupAccountScreen() {
     if (!canSubmit || isVerifying) return
     setIsVerifying(true)
     try {
-      await verifyAccount({
+      const result = await verifyAccount({
         name: draft.name,
         bankCode: draft.bankCode,
         accountNumber: draft.accountNumber,
       })
+      updateSignupDraft({ accountHolderName: result.holderName })
       showSnackbar(snackbar, '계좌를 확인했어요')
       push('SignupPin', { step: 'create' })
     } finally {

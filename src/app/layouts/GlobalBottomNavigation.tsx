@@ -53,6 +53,7 @@ export function GlobalBottomNavigation() {
   const activeTrade = useActiveTrade()
   const { promptAuth, authRequiredDialog, authRequiredOpen } = useAuthRequiredPrompt({
     onNavigateToSignup: () => actions.push('SignupIdentity', {}),
+    onNavigateToLogin: () => actions.push('Login', {}),
     layerIndex: CHROME_ALERT_DIALOG_LAYER_INDEX,
   })
 
