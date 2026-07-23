@@ -1,7 +1,7 @@
 /**
  * SmsSchemePocActivity
  *
- * 책임: sms:/smsto: URI·QR로 문자 앱 자동 작성 가능 범위만 검증
+ * 책임: Android/iOS를 구분해 방식 A(·보조 URI) 재검증 — 모바일은 버튼, 데스크톱은 QR
  * 비책임: OCTOMO API, 인증 세션, 회원가입 연동
  *
  * @see docs/stackflow/README.md
@@ -12,48 +12,161 @@ import { QRCodeSVG } from 'qrcode.react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
+import { useIsDesktopViewport } from '../../app/layouts/useIsDesktopViewport'
+import { useDeviceContext } from '../../features/pwa/hooks/useDeviceContext'
+import { useRuntimeEnvironment } from '../../features/pwa/hooks/useRuntimeEnvironment'
+import type { RuntimeEnvironment } from '../../features/pwa/services/detectDeviceContext'
 import { showSnackbar } from '../../shared/utils/showSnackbar'
 
 const OCTOMO_PHONE = '16663538'
 const DISPLAY_PHONE = '1666-3538'
 const MESSAGE = 'BRIT-205364'
+const ENCODED_BODY = encodeURIComponent(MESSAGE)
 
-type SmsTestCase = {
+/** 1차 성공안 — iOS·Android 공통 재확인 대상 */
+const SCHEME_A = `sms:${OCTOMO_PHONE}?body=${ENCODED_BODY}`
+/** iOS 보조 재확인 (이전 PoC에서 성공) */
+const SCHEME_B = `sms:${OCTOMO_PHONE}&body=${ENCODED_BODY}`
+/** Android 보조 재확인 */
+const SCHEME_C = `smsto:${OCTOMO_PHONE}?body=${ENCODED_BODY}`
+
+type SmsCase = {
   id: string
   title: string
   description: string
   href: string
+  primary?: boolean
 }
 
-const SMS_TEST_CASES: SmsTestCase[] = [
+type OsSection = {
+  os: 'ios' | 'android'
+  title: string
+  subtitle: string
+  cases: SmsCase[]
+}
+
+const OS_SECTIONS: OsSection[] = [
   {
-    id: 'sms-question-body',
-    title: '방식 A · ?body',
-    description: 'Android 및 일부 브라우저에서 사용되는 형태',
-    href: `sms:${OCTOMO_PHONE}?body=${encodeURIComponent(MESSAGE)}`,
+    os: 'ios',
+    title: 'iOS 재확인',
+    subtitle: 'iPhone Safari / Chrome / 설치 PWA에서 각각 기록해 주세요.',
+    cases: [
+      {
+        id: 'ios-a',
+        title: 'iOS · 방식 A (?body)',
+        description: '1차 성공안. Android와 동일한 URI로 한 번 더 확인해요.',
+        href: SCHEME_A,
+        primary: true,
+      },
+      {
+        id: 'ios-b',
+        title: 'iOS · 방식 B (&body)',
+        description: '이전 PoC에서 성공했던 보조 형태예요.',
+        href: SCHEME_B,
+      },
+    ],
   },
   {
-    id: 'sms-ampersand-body',
-    title: '방식 B · &body',
-    description: '일부 iOS Safari 환경에서 알려진 비표준 형태',
-    href: `sms:${OCTOMO_PHONE}&body=${encodeURIComponent(MESSAGE)}`,
-  },
-  {
-    id: 'smsto-question-body',
-    title: '방식 C · smsto',
-    description: 'Android 문자 앱 연결 검증용',
-    href: `smsto:${OCTOMO_PHONE}?body=${encodeURIComponent(MESSAGE)}`,
-  },
-  {
-    id: 'sms-recipient-only',
-    title: '방식 D · 수신번호만',
-    description: 'iOS 공식 지원 범위에 가까운 안전한 대체 방식',
-    href: `sms:${OCTOMO_PHONE}`,
+    os: 'android',
+    title: 'Android 재확인',
+    subtitle: 'Android Chrome / Samsung Internet / 설치 PWA에서 각각 기록해 주세요.',
+    cases: [
+      {
+        id: 'android-a',
+        title: 'Android · 방식 A (?body)',
+        description: '1차 성공안. iOS와 동일한 URI로 한 번 더 확인해요.',
+        href: SCHEME_A,
+        primary: true,
+      },
+      {
+        id: 'android-c',
+        title: 'Android · 방식 C (smsto)',
+        description: 'Android 문자 앱 보조 형태예요.',
+        href: SCHEME_C,
+      },
+    ],
   },
 ]
 
+function runtimeLabel(runtime: RuntimeEnvironment): string {
+  if (runtime === 'ios') return 'iOS'
+  if (runtime === 'android') return 'Android'
+  return '데스크톱'
+}
+
+function SmsCaseCard({
+  testCase,
+  showQr,
+  showButton,
+}: {
+  testCase: SmsCase
+  showQr: boolean
+  showButton: boolean
+}) {
+  return (
+    <div
+      className="rounded-r4 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x4"
+      style={
+        testCase.primary
+          ? { borderColor: 'var(--seed-color-stroke-brand-weak)' }
+          : undefined
+      }
+    >
+      <VStack gap="x4">
+        <VStack gap="x1">
+          <Text textStyle="t5Bold" color="fg.neutral">
+            {testCase.title}
+            {testCase.primary ? ' · 권장' : ''}
+          </Text>
+          <Text textStyle="t3Regular" color="fg.neutralMuted">
+            {testCase.description}
+          </Text>
+        </VStack>
+
+        <div className="flex flex-wrap items-center gap-x5">
+          {showQr ? (
+            <div className="rounded-r3 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x3">
+              <QRCodeSVG value={testCase.href} size={144} level="M" includeMargin />
+            </div>
+          ) : null}
+
+          <VStack gap="x2" style={{ flex: 1, minWidth: 200 }}>
+            {showButton ? (
+              <a
+                href={testCase.href}
+                className="block rounded-r3 bg-fg-neutral px-x4 py-x3 text-center no-underline"
+              >
+                <Text textStyle="t4Bold" color="fg.neutralInverted">
+                  문자 앱 열기
+                </Text>
+              </a>
+            ) : (
+              <Text textStyle="t3Regular" color="fg.neutralMuted">
+                데스크톱에서는 QR을 휴대폰 카메라로 스캔해 주세요.
+              </Text>
+            )}
+            <Text
+              textStyle="t1Regular"
+              color="fg.neutralSubtle"
+              style={{ overflowWrap: 'anywhere' }}
+            >
+              {testCase.href}
+            </Text>
+          </VStack>
+        </div>
+      </VStack>
+    </div>
+  )
+}
+
 const SmsSchemePocActivity: ActivityComponentType<'SmsSchemePoc'> = () => {
   const snackbar = useSnackbarAdapter()
+  const isDesktopViewport = useIsDesktopViewport()
+  const runtime = useRuntimeEnvironment()
+  const device = useDeviceContext()
+
+  const showQr = isDesktopViewport || runtime === 'desktop'
+  const showButton = !showQr
 
   const copyMessage = async () => {
     try {
@@ -65,23 +178,37 @@ const SmsSchemePocActivity: ActivityComponentType<'SmsSchemePoc'> = () => {
   }
 
   return (
-    <ActivityScreenLayout title="문자 앱 연결 테스트">
+    <ActivityScreenLayout title="문자 앱 재확인">
       <VStack px="spacingX.globalGutter" py="x4" gap="x6" pb="x16">
         <VStack gap="spacingY.betweenText">
           <Text textStyle="t4Regular" color="fg.neutralMuted">
-            BRIT 회원가입 PoC
+            BRIT 회원가입 PoC · 2차 확인
           </Text>
           <Text textStyle="screenTitle" color="fg.neutral">
-            문자 앱 연결 테스트
+            Android / iOS 구분 재확인
           </Text>
           <Text textStyle="t3Regular" color="fg.neutralMuted">
-            각 방식을 실행하고 수신번호와 본문이 어디까지 입력되는지 확인해 주세요. OCTOMO·인증
-            API는 포함하지 않아요.
+            같은 방식 A라도 OS별로 결과를 따로 기록해요. 모바일은 버튼, 데스크톱은 QR만 보여요.
           </Text>
         </VStack>
 
         <div className="rounded-r4 border border-solid border-stroke-neutral-weak bg-bg-neutral-weak p-x4">
           <VStack gap="x3">
+            <VStack gap="x1">
+              <Text textStyle="t2Regular" color="fg.neutralMuted">
+                감지된 환경
+              </Text>
+              <Text textStyle="t5Bold" color="fg.neutral">
+                {runtimeLabel(runtime)}
+                {device?.isPwaStandalone ? ' · PWA' : ''}
+                {showQr ? ' · QR 모드' : ' · 버튼 모드'}
+              </Text>
+              {device ? (
+                <Text textStyle="t2Regular" color="fg.neutralSubtle">
+                  {device.osFamily} / {device.browserFamily} / {device.category}
+                </Text>
+              ) : null}
+            </VStack>
             <VStack gap="x1">
               <Text textStyle="t2Regular" color="fg.neutralMuted">
                 받는 번호
@@ -110,49 +237,34 @@ const SmsSchemePocActivity: ActivityComponentType<'SmsSchemePoc'> = () => {
           </VStack>
         </div>
 
-        <VStack gap="x4">
-          {SMS_TEST_CASES.map((testCase) => (
-            <div
-              key={testCase.id}
-              className="rounded-r4 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x4"
-            >
-              <VStack gap="x4">
-                <VStack gap="x1">
-                  <Text textStyle="t5Bold" color="fg.neutral">
-                    {testCase.title}
-                  </Text>
-                  <Text textStyle="t3Regular" color="fg.neutralMuted">
-                    {testCase.description}
-                  </Text>
-                </VStack>
+        {OS_SECTIONS.map((section) => {
+          const isCurrentOs =
+            (section.os === 'ios' && runtime === 'ios') ||
+            (section.os === 'android' && runtime === 'android')
 
-                <div className="flex flex-wrap items-center gap-x5">
-                  <div className="rounded-r3 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x3">
-                    <QRCodeSVG value={testCase.href} size={144} level="M" includeMargin />
-                  </div>
-
-                  <VStack gap="x2" style={{ flex: 1, minWidth: 200 }}>
-                    <a
-                      href={testCase.href}
-                      className="block rounded-r3 bg-fg-neutral px-x4 py-x3 text-center no-underline"
-                    >
-                      <Text textStyle="t4Bold" color="fg.neutralInverted">
-                        문자 앱 열기
-                      </Text>
-                    </a>
-                    <Text
-                      textStyle="t1Regular"
-                      color="fg.neutralSubtle"
-                      style={{ overflowWrap: 'anywhere' }}
-                    >
-                      {testCase.href}
-                    </Text>
-                  </VStack>
-                </div>
+          return (
+            <VStack key={section.os} gap="x3">
+              <VStack gap="x1">
+                <Text textStyle="t6Bold" color={isCurrentOs ? 'fg.brand' : 'fg.neutral'}>
+                  {section.title}
+                  {isCurrentOs ? ' · 현재 기기' : ''}
+                </Text>
+                <Text textStyle="t3Regular" color="fg.neutralMuted">
+                  {section.subtitle}
+                </Text>
               </VStack>
-            </div>
-          ))}
-        </VStack>
+
+              {section.cases.map((testCase) => (
+                <SmsCaseCard
+                  key={testCase.id}
+                  testCase={testCase}
+                  showQr={showQr}
+                  showButton={showButton}
+                />
+              ))}
+            </VStack>
+          )
+        })}
       </VStack>
     </ActivityScreenLayout>
   )

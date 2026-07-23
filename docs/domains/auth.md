@@ -45,10 +45,20 @@ flowchart LR
 | Activity | Route | Params | 설명 |
 |----------|-------|--------|------|
 | `SignupIdentity` | `/auth/signup/identity` | — | 이름·주민번호·통신사·휴대폰 (progressive form) |
-| `SignupSms` | `/auth/signup/sms` | `phone` | SMS 인증번호 |
+| `SignupSms` | `/auth/signup/sms` | `phone` | OCTOMO 기기인증 안내 (모바일 CTA / 데스크톱 QR) |
 | `SignupAccount` | `/auth/signup/account` | `step?`: `bank` \| `accountNumber` | 금융기관·계좌 |
 | `SignupPin` | `/auth/signup/pin` | `step?`: `create` \| `confirm` | PIN 설정·확인 |
 | `SignupComplete` | `/auth/signup/complete` | — | 완료 → Home `replace` |
+
+### OCTOMO 기기인증 (`SignupSms`)
+
+- 모바일: Bottom CTA `인증 메시지 보내기` → `sms:?body=` (방식 A)
+- 데스크톱: 동일 URI QR
+- 샘플 그래픽: `public/octomo/octomo-sample.png`
+- 전송 후: `문자 보냈어요` → Edge Function `verify-octomo` (`features/auth/api/octomo.api.ts`)
+- `verified: true` → `AccountIntroSheet` → 계좌
+- URI 유틸: `src/features/auth/utils/createOctomoSmsUrl.ts`
+- `OCTOMO_API_KEY`는 Supabase Secrets만 (프론트 `VITE_` 금지)
 
 ## Identity progressive form
 

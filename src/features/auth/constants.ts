@@ -51,7 +51,7 @@ export const CTA_LABEL_BY_IDENTITY_STEP: Record<SignupIdentityStep, string> = {
   name: '주민등록번호 입력하기',
   rrn: '통신사 선택하기',
   carrier: '휴대폰 번호 입력하기',
-  phone: '인증번호 받기',
+  phone: '기기인증하기',
 }
 
 export interface IdentityStepCopy {
@@ -86,9 +86,9 @@ export const IDENTITY_STEP_COPY: Record<SignupIdentityStep, IdentityStepCopy> = 
   },
   phone: {
     screenTitle: '휴대폰 번호',
-    screenSubtitle: '인증번호를 받을 번호를 입력해 주세요.',
+    screenSubtitle: '본인 명의 휴대폰 번호를 입력해 주세요.',
     fieldLabel: '휴대폰 번호',
-    fieldDescription: '본인 명의 번호만 등록할 수 있어요.',
+    fieldDescription: '기기인증에 사용할 번호예요.',
     placeholder: '010-0000-0000',
   },
 }
