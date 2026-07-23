@@ -72,7 +72,7 @@ export function AccountIntroSheet({
             </VStack>
           </BottomSheetBody>
           <BottomSheetFooter>
-            <BottomActionButton size="large" variant="brandSolid" width="full" onClick={onConfirm}>
+            <BottomActionButton size="large" variant="brandSolid" flexGrow onClick={onConfirm}>
               확인했어요
             </BottomActionButton>
           </BottomSheetFooter>

@@ -270,8 +270,7 @@ export const SplitRrnFirst7Field = React.forwardRef<HTMLInputElement, SplitRrnFi
           }}
         >
           <HStack align="center" gap="x3" width="full" height="full" minHeight="36px">
-            <Box
-              as="button"
+            <button
               type="button"
               onClick={focusBirth}
               disabled={readOnly || disabled}
@@ -289,14 +288,13 @@ export const SplitRrnFirst7Field = React.forwardRef<HTMLInputElement, SplitRrnFi
               {Array.from({ length: 6 }, (_, i) => (
                 <DotSlot key={i} tone={i < birth6.length ? 'filled' : 'empty'} />
               ))}
-            </Box>
+            </button>
 
             <Text textStyle="t5Regular" color="fg.neutralMuted" aria-hidden>
               -
             </Text>
 
-            <Box
-              as="button"
+            <button
               type="button"
               onClick={focusGender}
               disabled={readOnly || disabled}
@@ -315,7 +313,7 @@ export const SplitRrnFirst7Field = React.forwardRef<HTMLInputElement, SplitRrnFi
               {Array.from({ length: RRN_TAIL_SLOT_COUNT }, (_, i) => (
                 <DotSlot key={i} tone="masked" />
               ))}
-            </Box>
+            </button>
           </HStack>
 
           <input
