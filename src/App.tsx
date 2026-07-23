@@ -7,6 +7,7 @@ import { LayoutProvider } from './app/layouts/LayoutContext'
 import { MobileFrame } from './app/layouts/MobileFrame'
 import { KeyboardInsetProvider } from './app/providers/KeyboardInsetProvider'
 import { NotificationBootstrap } from './features/notifications/components/NotificationBootstrap'
+import { DeviceContextDevFab } from './features/pwa/components/DeviceContextDevFab'
 import { useTradePushNavigation } from './features/pwa/hooks/useTradePushNavigation'
 import { GlobalActiveTradeBanner } from './features/trade/components/GlobalActiveTradeBanner'
 import { detectTheme } from './shared/utils/detectTheme'
@@ -32,6 +33,7 @@ export default function App() {
                 <Stack initialContext={{ theme: detectTheme() }} />
               </div>
               <GlobalBottomNavigation />
+              <DeviceContextDevFab />
               <div id="app-frame-portal" />
             </MobileFrame>
           </LayoutProvider>

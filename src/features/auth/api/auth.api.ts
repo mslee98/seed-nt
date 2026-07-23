@@ -1,44 +1,49 @@
-function delay(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms))
-}
+/**
+ * auth.api
+ *
+ * 책임: 가입·본인인증·계좌·PIN 도메인 facade
+ * 비책임: mock/HTTP 구현 (→ adapters)
+ */
+import {
+  registerPinHttp,
+  sendSmsCodeHttp,
+  verifyAccountHttp,
+  verifySmsCodeHttp,
+} from './adapters/auth.http'
+import {
+  registerPinMock,
+  sendSmsCodeMock,
+  verifyAccountMock,
+  verifySmsCodeMock,
+} from './adapters/auth.mock'
 
-function randomDelay(min = 300, max = 800) {
-  return delay(min + Math.floor(Math.random() * (max - min)))
+function useHttpApi() {
+  return Boolean(import.meta.env.VITE_API_BASE_URL)
 }
 
 export async function sendSmsCode(phone: string): Promise<{ success: true }> {
-  const mockCode = String(Math.floor(100000 + Math.random() * 900000))
-  if (import.meta.env.DEV) {
-    console.info(`[mock] SMS code for ${phone}: ${mockCode}`)
-  }
-  await randomDelay()
-  return { success: true }
+  if (useHttpApi()) return sendSmsCodeHttp(phone)
+  return sendSmsCodeMock(phone)
 }
 
 export async function verifySmsCode(
-  _phone: string,
+  phone: string,
   code: string,
 ): Promise<{ verified: true }> {
-  await randomDelay(400, 700)
-  if (!/^\d{6}$/.test(code)) {
-    throw new Error('INVALID_CODE')
-  }
-  return { verified: true }
+  if (useHttpApi()) return verifySmsCodeHttp(phone, code)
+  return verifySmsCodeMock(phone, code)
 }
 
-export async function verifyAccount(_payload: {
+export async function verifyAccount(payload: {
   name: string
   bankCode: string
   accountNumber: string
 }): Promise<{ verified: true; holderName: string }> {
-  await randomDelay(600, 1200)
-  return { verified: true, holderName: _payload.name }
+  if (useHttpApi()) return verifyAccountHttp(payload)
+  return verifyAccountMock(payload)
 }
 
-export async function registerPin(_pin: string): Promise<{ success: true }> {
-  await randomDelay(300, 600)
-  if (!/^\d{4}$/.test(_pin)) {
-    throw new Error('INVALID_PIN')
-  }
-  return { success: true }
+export async function registerPin(pin: string): Promise<{ success: true }> {
+  if (useHttpApi()) return registerPinHttp(pin)
+  return registerPinMock(pin)
 }

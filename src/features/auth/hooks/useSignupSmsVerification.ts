@@ -119,7 +119,6 @@ export function useSignupSmsVerification() {
     handleResend,
     handleIntroSheetOpenChange,
     handleIntroConfirm: navigateToAccount,
-    handleIntroSkip: navigateToAccount,
     handleContinueToAccount: navigateToAccount,
     handleDigit,
     handleBackspace,

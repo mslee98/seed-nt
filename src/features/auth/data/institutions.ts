@@ -6,9 +6,12 @@ export interface Institution {
   name: string
   category: FinanceCategory
   iconKey: string
+  /** Supabase Storage 등 원격 아이콘. 있으면 로컬 iconKey 맵보다 우선 */
+  iconUrl?: string
   disabled?: boolean
   /** 그리드에 노출할 주요 기관 여부 */
   featured?: boolean
+  maintenanceNote?: string
 }
 
 export const FINANCE_CATEGORY_LABELS: Record<FinanceCategory, string> = {

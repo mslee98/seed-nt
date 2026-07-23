@@ -12,9 +12,24 @@
 | 상수·스텝 | `src/features/auth/constants.ts` |
 | 가입 draft | `src/features/auth/stores/signupDraft.store.ts` |
 | 세션 | `src/features/auth/stores/authSession.store.ts` |
-| API | `src/features/auth/api/auth.api.ts` |
+| API facade | `src/features/auth/api/auth.api.ts`, `banks.api.ts` |
+| API adapters | `src/features/auth/api/adapters/` (supabase / http / mock) |
+| mappers | `src/features/auth/mappers/` |
 | UI | `src/features/auth/components/` |
 | Activity | `src/activities/auth/` |
+
+## API 레이어
+
+Nest 이전을 대비해 hook/UI는 facade만 호출합니다. 인프라는 adapter로 교체합니다.
+
+| 레이어 | 책임 | 예 |
+|--------|------|-----|
+| facade | 도메인 함수 시그니처·어댑터 선택 | `fetchActiveBanks`, `sendSmsCode` |
+| adapters | Supabase / HTTP / mock 구현 | `banks.supabase.ts`, `auth.mock.ts` |
+| mappers | DTO/row → 앱 타입 | `bank.mapper.ts` → `Institution` |
+
+- `VITE_API_BASE_URL`이 있으면 HTTP adapter, 없으면 banks는 Supabase·auth는 mock
+- shared HTTP: `src/shared/api/httpClient.ts`, 에러: `src/shared/api/errors.ts`
 
 ## 가입 Activity 체인
 

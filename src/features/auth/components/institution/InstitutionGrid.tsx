@@ -13,7 +13,7 @@ export function InstitutionGrid({ items, selectedId, onSelect }: InstitutionGrid
   return (
     <VStack
       role="radiogroup"
-      aria-label="금융기관 선택"
+      aria-label="은행 선택"
       px="spacingX.globalGutter"
       py="x4"
       gap="x4"

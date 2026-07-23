@@ -23,7 +23,6 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
     handleResend,
     handleIntroSheetOpenChange,
     handleIntroConfirm,
-    handleIntroSkip,
     handleContinueToAccount,
     handleDigit,
     handleBackspace,
@@ -82,7 +81,6 @@ const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
           open={introSheetOpen}
           onOpenChange={handleIntroSheetOpenChange}
           onConfirm={handleIntroConfirm}
-          onSkip={handleIntroSkip}
         />
       )}
     </>

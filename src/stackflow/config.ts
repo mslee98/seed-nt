@@ -27,6 +27,7 @@ declare module '@stackflow/config' {
       step?: SignupPinStep
     }
     SignupComplete: {}
+    SmsSchemePoc: {}
     NotFound: {}
   }
 }
@@ -68,6 +69,10 @@ export const config = defineConfig({
     {
       name: 'SignupComplete',
       route: '/auth/signup/complete',
+    },
+    {
+      name: 'SmsSchemePoc',
+      route: '/poc/sms',
     },
     {
       name: 'NotFound',
