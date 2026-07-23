@@ -10,6 +10,7 @@ import {
 import { useLayoutOverlay } from '../../../app/layouts/useLayoutOverlay'
 import { CHROME_ALERT_DIALOG_LAYER_INDEX } from '../../../shared/constants/app-layout'
 import { BottomActionButton } from '../../../shared/ui/BottomActionButton'
+import { actions } from '../../../stackflow/stackflow'
 import { DeviceContextDevDetails } from './DeviceContextDevPanel'
 
 interface DeviceContextDevSheetProps {
@@ -24,6 +25,11 @@ export function DeviceContextDevSheet({ open, onOpenChange }: DeviceContextDevSh
   )
 
   useLayoutOverlay(open)
+
+  const openSmsPoc = () => {
+    onOpenChange(false)
+    actions.push('SmsSchemePoc', {})
+  }
 
   return (
     <BottomSheetRoot open={open} onOpenChange={onOpenChange}>
@@ -43,6 +49,9 @@ export function DeviceContextDevSheet({ open, onOpenChange }: DeviceContextDevSh
             <HStack gap="x2" width="full">
               <BottomActionButton variant="neutralWeak" onClick={() => onOpenChange(false)}>
                 닫기
+              </BottomActionButton>
+              <BottomActionButton variant="brandSolid" flexGrow onClick={openSmsPoc}>
+                SMS PoC
               </BottomActionButton>
             </HStack>
           </BottomSheetFooter>

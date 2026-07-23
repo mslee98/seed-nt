@@ -1,5 +1,7 @@
 import { Text, VStack } from '@seed-design/react'
 
+import { TextLinkButton } from '../../../shared/components/TextLinkButton'
+import { actions } from '../../../stackflow/stackflow'
 import { useDeviceContext } from '../hooks/useDeviceContext'
 import { useRuntimeEnvironment } from '../hooks/useRuntimeEnvironment'
 
@@ -49,6 +51,10 @@ export function DeviceContextDevDetails() {
       <Text textStyle="t2Regular" color="fg.neutralSubtle">
         브라우저 힌트이며 개발자 도구로 변경할 수 있어요. 보안 증거로 쓰지 않아요.
       </Text>
+
+      <TextLinkButton onClick={() => actions.push('SmsSchemePoc', {})}>
+        SMS 문자 앱 PoC 열기
+      </TextLinkButton>
     </VStack>
   )
 }

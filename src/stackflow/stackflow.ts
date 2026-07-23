@@ -11,6 +11,7 @@ import SignupSmsActivity from '../activities/auth/SignupSmsActivity'
 import DetailActivity from '../activities/DetailActivity'
 import HomeActivity from '../activities/HomeActivity'
 import NotFoundActivity from '../activities/NotFoundActivity'
+import SmsSchemePocActivity from '../activities/poc/SmsSchemePocActivity'
 import TradeActivity from '../activities/TradeActivity'
 import TradeComposeActivity from '../activities/TradeComposeActivity'
 import { detectTheme } from '../shared/utils/detectTheme'
@@ -36,6 +37,7 @@ export const { Stack, actions } = stackflow({
     SignupAccount: SignupAccountActivity,
     SignupPin: SignupPinActivity,
     SignupComplete: SignupCompleteActivity,
+    SmsSchemePoc: SmsSchemePocActivity,
     NotFound: NotFoundActivity,
   },
   plugins: [
