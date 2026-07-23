@@ -1,16 +1,13 @@
 /**
  * useSignupIdentityScreen
  *
- * 책임: 본인확인 step 머신·SMS 전송·가입 이탈 dialog
- * 비책임: 폼 필드 UI (→ SignupProgressiveForm)
+ * 책임: 본인확인 step 머신·가입 이탈 dialog·OCTOMO 안내 진입
+ * 비책임: 폼 필드 UI (→ SignupProgressiveForm), OCTOMO 문자 URI
  */
 import { useFlow } from '@stackflow/react'
 import { useState, type MouseEvent } from 'react'
-import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 import type { ActivityAppBarLeftAction } from '../../../app/layouts/ActivityScreenLayout'
-import { showSnackbar } from '../../../shared/utils/showSnackbar'
-import { sendSmsCode } from '../api/auth.api'
 import type { CarrierCode, SignupIdentityStep } from '../constants'
 import { NEXT_IDENTITY_STEP, PREV_IDENTITY_STEP } from '../constants'
 import { resetSignupDraft } from '../stores/signupDraft.store'
@@ -19,7 +16,6 @@ import { canProceedIdentityStep, useSignupForm } from './useSignupForm'
 
 export function useSignupIdentityScreen() {
   const { push, pop } = useFlow()
-  const snackbar = useSnackbarAdapter()
   const { draft, setName, setRrnFront7, setCarrier, setPhone } = useSignupForm()
   const [activeStep, setActiveStep] = useState<SignupIdentityStep>('name')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -58,13 +54,11 @@ export function useSignupIdentityScreen() {
   }
 
   const goNext = async () => {
-    if (!canGoNext) return
+    if (!canGoNext || isSubmitting) return
 
     if (activeStep === 'phone') {
       setIsSubmitting(true)
       try {
-        await sendSmsCode(draft.phone)
-        showSnackbar(snackbar, '인증번호를 전송했어요')
         push('SignupSms', { phone: formatPhoneInput(draft.phone) })
       } finally {
         setIsSubmitting(false)
