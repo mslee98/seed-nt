@@ -52,12 +52,26 @@ flowchart LR
 
 ### OCTOMO 기기인증 (`SignupSms`)
 
-- 모바일: Bottom CTA `인증 메시지 보내기` → `sms:?body=` (방식 A)
-- 데스크톱: 동일 URI QR
-- 샘플 그래픽: `public/octomo/octomo-sample.png`
-- 전송 후: `문자 보냈어요` → Edge Function `verify-octomo` (`features/auth/api/octomo.api.ts`)
-- `verified: true` → `AccountIntroSheet` → 계좌
+상태 모델 (모바일·데스크톱 공통):
+
+```text
+READY → WAITING/CHECKING → VERIFIED → (0.8s) replace SignupAccount
+                 ↘ DELAYED (폴링 소진) → 수동 1회 확인
+                 ↘ ERROR (API 실패 안내, 폴링은 계속 가능)
+```
+
+- **기본 방법**: 데스크톱 추천 → `qr`, 그 외 → `sms`. 사용자가 `문자 앱`/`QR`로 전환 가능 (PWA 설치 여부로 분기하지 않음)
+- **SMS**: CTA `문자 앱 열기` → 방식 A (`sms:?body=`) → **복귀 후**에만 적응형 폴링 `[2s,4s,8s,15s,30s]`
+- **QR**: Edge `POST octomo`로 QR 발급(`text` = SMS URI 전체). 실패 시 `qrcode.react` fallback. 표시 후 폴링 `[10s,15s,25s,40s]`
+- **exists**: `GET octomo?mobileNum=&text=&withinMinutes=` → `{ exists }`. `false`는 대기(WAITING), 오류 UI 금지
+- pending: `sessionStorage` (`brit:pending-octomo`, phone/message/startedAt, 10분 만료)
+- `exists: true` → VERIFIED → 800ms 후 `replace` SignupAccount (bank). AccountIntroSheet 생략
+- DELAYED: `다시 확인하기`(1회), SMS면 `문자 앱 다시 열기`, `번호 수정하기`→`pop()`
+- 폴링 유틸: `src/features/auth/utils/startOctomoPolling.ts` (hidden 시 스킵, visible 복귀 1.5s)
+- API facade: `features/auth/api/octomo.api.ts` → `createOctomoQr` / `checkOctomoMessage`
+- Edge 소스: `supabase/functions/octomo/index.ts`
 - URI 유틸: `src/features/auth/utils/createOctomoSmsUrl.ts`
+- 기기 힌트: `DeviceContextProvider` (UX/DEV용, OCTOMO 키·PII 없음)
 - `OCTOMO_API_KEY`는 Supabase Secrets만 (프론트 `VITE_` 금지)
 
 ## Identity progressive form

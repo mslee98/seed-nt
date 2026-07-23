@@ -1,17 +1,17 @@
 /**
  * SignupSmsActivity — OCTOMO 기기인증 안내
  *
- * 책임: 문자 앱 자동 작성 안내·모바일 CTA / 데스크톱 QR
- * 비책임: OCTOMO API·폴링 (→ 추후), 계좌 등록 UI
+ * 책임: 상태·방법(문자/QR)별 UI·복구 CTA
+ * 비책임: Edge Function / 폴링 스케줄
  *
  * @see docs/domains/auth.md
  */
 import type { ActivityComponentType } from '@stackflow/react'
 import { Text, VStack } from '@seed-design/react'
+import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 import { ActivityScreenLayout } from '../../app/layouts/ActivityScreenLayout'
-import { AccountIntroSheet } from '../../features/auth/components/AccountIntroSheet'
 import { SignupProgressHeader } from '../../features/auth/components/SignupProgressBar'
 import { useSignupOctomoVerify } from '../../features/auth/hooks/useSignupOctomoVerify'
 import {
@@ -23,137 +23,267 @@ import { BottomActionButton } from '../../shared/ui/BottomActionButton'
 
 const OCTOMO_SAMPLE_SRC = '/octomo/octomo-sample.png'
 
-const GUIDE_STEPS_MOBILE = [
-  '하단 [인증 메시지 보내기]를 눌러 주세요',
+const GUIDE_STEPS_SMS = [
+  '하단 [문자 앱 열기]를 눌러 주세요',
   '메시지 작성 창에서, 인증 메시지가 자동으로 입력되어 있어요',
-  '인증 메시지를 그대로 보내 주세요',
+  '인증 메시지를 그대로 보낸 뒤 이 화면으로 돌아와 주세요',
 ] as const
 
-const GUIDE_STEPS_DESKTOP = [
+const GUIDE_STEPS_QR = [
   '아래 QR을 휴대폰 카메라로 스캔해 주세요',
   '메시지 작성 창에서, 인증 메시지가 자동으로 입력되어 있어요',
-  '인증 메시지를 그대로 보내 주세요',
+  '인증 메시지를 그대로 보내면 이 화면에서 자동으로 확인해요',
 ] as const
 
 const SignupSmsActivity: ActivityComponentType<'SignupSms'> = () => {
   const {
     phone,
-    isActive,
-    showQr,
+    maskedPhone,
+    authMethod,
+    setAuthMethod,
+    state,
     smsHref,
-    introSheetOpen,
-    showContinueToAccount,
+    qrDataUrl,
+    qrFallback,
+    qrLoading,
+    showSoftWaitingCopy,
     isChecking,
-    handleVerifySent,
-    handleIntroSheetOpenChange,
-    handleIntroConfirm,
-    handleContinueToAccount,
+    handlePrepareSmsOpen,
+    handleManualRecheck,
+    handleEditPhone,
+    copyPhone,
+    copyMessage,
   } = useSignupOctomoVerify()
 
-  const fixedBottom = showContinueToAccount ? (
-    <BottomActionButton
-      size="large"
-      variant="brandSolid"
-      flexGrow
-      onClick={handleContinueToAccount}
-    >
-      계좌 등록하기
-    </BottomActionButton>
-  ) : showQr ? undefined : (
-    <a
-      href={smsHref}
-      className="flex w-full items-center justify-center rounded-r3 no-underline"
-      style={{
-        minHeight: 52,
-        backgroundColor: 'var(--seed-color-bg-brand-solid)',
-        color: 'var(--seed-color-fg-neutral-inverted)',
-      }}
-    >
-      <Text textStyle="t5Bold" color="fg.neutralInverted">
-        인증 메시지 보내기
-      </Text>
-    </a>
-  )
+  const [manualOpen, setManualOpen] = useState(false)
+  const isVerified = state === 'VERIFIED'
+  const isDelayed = state === 'DELAYED'
+  const isWaitingLike = state === 'WAITING' || state === 'CHECKING' || state === 'ERROR'
+  const showSmsReady = authMethod === 'sms' && state === 'READY'
+  const showQrSurface = authMethod === 'qr' && !isVerified
+
+  const statusCopy = (() => {
+    if (isVerified) return '휴대폰 확인이 끝났어요'
+    if (state === 'CHECKING') return '문자를 확인하고 있어요…'
+    if (state === 'ERROR') return '잠시 연결이 불안정해요. 곧 다시 확인할게요.'
+    if (isDelayed) return '아직 문자가 확인되지 않았어요'
+    if (isWaitingLike) {
+      return showSoftWaitingCopy
+        ? '문자가 조금 늦게 도착할 수 있어요. 잠시만 기다려 주세요.'
+        : '문자를 기다리고 있어요'
+    }
+    return null
+  })()
+
+  const fixedBottom = (() => {
+    if (isVerified) return undefined
+
+    if (isDelayed) {
+      return (
+        <VStack gap="x2" width="full">
+          <BottomActionButton
+            size="large"
+            variant="brandSolid"
+            flexGrow
+            disabled={isChecking}
+            onClick={() => void handleManualRecheck()}
+          >
+            {isChecking ? '확인하고 있어요' : '다시 확인하기'}
+          </BottomActionButton>
+          {authMethod === 'sms' ? (
+            <a
+              href={smsHref}
+              onClick={handlePrepareSmsOpen}
+              className="flex w-full items-center justify-center rounded-r3 no-underline"
+              style={{
+                minHeight: 52,
+                backgroundColor: 'var(--seed-color-bg-neutral-weak)',
+                color: 'var(--seed-color-fg-neutral)',
+              }}
+            >
+              <Text textStyle="t5Bold" color="fg.neutral">
+                문자 앱 다시 열기
+              </Text>
+            </a>
+          ) : null}
+        </VStack>
+      )
+    }
+
+    if (
+      authMethod === 'sms' &&
+      (state === 'READY' || state === 'WAITING' || state === 'CHECKING' || state === 'ERROR')
+    ) {
+      return (
+        <a
+          href={smsHref}
+          onClick={handlePrepareSmsOpen}
+          className="flex w-full items-center justify-center rounded-r3 no-underline"
+          style={{
+            minHeight: 52,
+            backgroundColor: 'var(--seed-color-bg-brand-solid)',
+            color: 'var(--seed-color-fg-neutral-inverted)',
+          }}
+        >
+          <Text textStyle="t5Bold" color="fg.neutralInverted">
+            문자 앱 열기
+          </Text>
+        </a>
+      )
+    }
+
+    return undefined
+  })()
 
   return (
-    <>
-      <ActivityScreenLayout
-        title="기기인증 안내"
-        progress={<SignupProgressHeader type="sms" />}
-        bottomCTABehavior="fixed"
-        fixedBottom={fixedBottom}
-      >
-        <VStack px="spacingX.globalGutter" py="x4" gap="x6" pb="x4">
+    <ActivityScreenLayout
+      title="기기인증 안내"
+      progress={<SignupProgressHeader type="sms" />}
+      bottomCTABehavior="fixed"
+      fixedBottom={fixedBottom}
+    >
+      <VStack px="spacingX.globalGutter" py="x4" gap="x6" pb="x4">
+        {isVerified ? (
           <VStack gap="spacingY.betweenText">
             <Text textStyle="screenTitle" color="fg.neutral">
-              기기인증 안내
+              휴대폰 확인이 끝났어요
             </Text>
             <Text textStyle="t3Regular" color="fg.neutralMuted">
-              {phone} 번호로 본인 확인을 진행해요.
+              {maskedPhone} 번호로 확인했어요. 잠시 후 다음 단계로 이동해요.
             </Text>
           </VStack>
-
-          <VStack gap="x3">
-            {(showQr ? GUIDE_STEPS_DESKTOP : GUIDE_STEPS_MOBILE).map((step, index) => (
-              <Text key={step} textStyle="t4Regular" color="fg.neutral">
-                {index + 1}. {step}
+        ) : (
+          <>
+            <VStack gap="spacingY.betweenText">
+              <Text textStyle="screenTitle" color="fg.neutral">
+                {authMethod === 'qr'
+                  ? '휴대폰으로 인증해 주세요'
+                  : '문자로 휴대폰을 확인해 주세요'}
               </Text>
-            ))}
-          </VStack>
-
-          {showQr ? (
-            <VStack gap="x4" align="center" py="x4">
-              <Text textStyle="t4Regular" color="fg.neutralMuted" align="center">
-                휴대폰 카메라로 QR을 스캔하면 문자 작성 화면으로 이동해요.
+              <Text textStyle="t3Regular" color="fg.neutralMuted">
+                {authMethod === 'qr'
+                  ? 'QR을 휴대폰으로 스캔하고 문자를 전송해 주세요.'
+                  : `${phone} 번호로 본인 확인을 진행해요.`}
               </Text>
-              <div className="rounded-r4 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x4">
-                <QRCodeSVG value={smsHref} size={200} level="M" includeMargin />
-              </div>
-              <VStack gap="x1" align="center">
-                <Text textStyle="t2Regular" color="fg.neutralMuted">
-                  받는 번호 {OCTOMO_SMS_DISPLAY_PHONE}
-                </Text>
-                <Text textStyle="t2Regular" color="fg.neutralMuted">
-                  보낼 내용 {OCTOMO_SMS_MESSAGE}
-                </Text>
+            </VStack>
+
+            {(showSmsReady || (authMethod === 'sms' && isWaitingLike)) && (
+              <VStack gap="x3">
+                {GUIDE_STEPS_SMS.map((step, index) => (
+                  <Text key={step} textStyle="t4Regular" color="fg.neutral">
+                    {index + 1}. {step}
+                  </Text>
+                ))}
               </VStack>
-            </VStack>
-          ) : (
-            <VStack gap="x3" align="center">
-              <img
-                src={OCTOMO_SAMPLE_SRC}
-                alt="문자 앱에 인증 메시지가 자동으로 입력된 예시"
-                width={280}
-                height={320}
-                className="max-w-full object-contain"
-                style={{ maxHeight: 320 }}
-              />
-            </VStack>
-          )}
+            )}
 
-          <Text textStyle="t2Regular" color="fg.neutralSubtle">
-            · 이용 중인 통신 요금제에 따라 문자 메시지 발송 비용이 청구될 수 있어요.
-          </Text>
+            {showQrSurface && (
+              <VStack gap="x3">
+                {GUIDE_STEPS_QR.map((step, index) => (
+                  <Text key={step} textStyle="t4Regular" color="fg.neutral">
+                    {index + 1}. {step}
+                  </Text>
+                ))}
+              </VStack>
+            )}
 
-          <VStack gap="x2" align="center">
-            <TextLinkButton onClick={() => void handleVerifySent()} disabled={isChecking}>
-              {isChecking ? '문자를 확인하고 있어요' : '문자 보냈어요'}
-            </TextLinkButton>
-            <Text textStyle="t1Regular" color="fg.neutralSubtle" align="center">
-              인증 문자를 보낸 뒤 이 버튼을 눌러 주세요.
+            {authMethod === 'sms' ? (
+              <VStack gap="x3" align="center">
+                <img
+                  src={OCTOMO_SAMPLE_SRC}
+                  alt="문자 앱에 인증 메시지가 자동으로 입력된 예시"
+                  width={280}
+                  height={320}
+                  className="max-w-full object-contain"
+                  style={{ maxHeight: 320 }}
+                />
+                {statusCopy ? (
+                  <Text textStyle="t3Regular" color="fg.neutralMuted" align="center">
+                    {statusCopy}
+                  </Text>
+                ) : (
+                  <Text textStyle="t3Regular" color="fg.neutralMuted" align="center">
+                    문자를 전송한 뒤 이 화면으로 돌아오면 자동으로 확인할게요.
+                  </Text>
+                )}
+              </VStack>
+            ) : (
+              <VStack gap="x4" align="center" py="x2">
+                <div className="rounded-r4 border border-solid border-stroke-neutral-weak bg-bg-layer-default p-x4">
+                  {qrLoading ? (
+                    <Text textStyle="t3Regular" color="fg.neutralMuted">
+                      QR을 준비하고 있어요…
+                    </Text>
+                  ) : qrDataUrl && !qrFallback ? (
+                    <img src={qrDataUrl} alt="문자 인증 QR 코드" width={200} height={200} />
+                  ) : (
+                    <QRCodeSVG value={smsHref} size={200} level="M" includeMargin />
+                  )}
+                </div>
+                <VStack gap="x1" align="center">
+                  <Text textStyle="t2Regular" color="fg.neutralMuted">
+                    받는 번호 {OCTOMO_SMS_DISPLAY_PHONE}
+                  </Text>
+                  <Text textStyle="t2Regular" color="fg.neutralMuted">
+                    보낼 내용 {OCTOMO_SMS_MESSAGE}
+                  </Text>
+                </VStack>
+                {statusCopy ? (
+                  <Text textStyle="t3Regular" color="fg.neutralMuted" align="center">
+                    {statusCopy}
+                  </Text>
+                ) : null}
+              </VStack>
+            )}
+
+            {isDelayed ? (
+              <VStack gap="x2" align="center">
+                <Text textStyle="t3Regular" color="fg.neutralMuted" align="center">
+                  문자를 보내지 않았다면 다시 열어 주세요. 이미 보냈다면 다시 확인해 주세요.
+                </Text>
+                <TextLinkButton onClick={handleEditPhone}>번호 수정하기</TextLinkButton>
+              </VStack>
+            ) : null}
+
+            <Text textStyle="t2Regular" color="fg.neutralSubtle">
+              · 이용 중인 통신 요금제에 따라 문자 메시지 발송 비용이 청구될 수 있어요.
             </Text>
-          </VStack>
-        </VStack>
-      </ActivityScreenLayout>
 
-      {isActive && (
-        <AccountIntroSheet
-          open={introSheetOpen}
-          onOpenChange={handleIntroSheetOpenChange}
-          onConfirm={handleIntroConfirm}
-        />
-      )}
-    </>
+            {!isDelayed && !isVerified ? (
+              <VStack gap="x2" align="center">
+                {authMethod === 'sms' ? (
+                  <TextLinkButton onClick={() => setAuthMethod('qr')}>
+                    QR 코드로 인증하기
+                  </TextLinkButton>
+                ) : (
+                  <>
+                    <TextLinkButton onClick={() => setAuthMethod('sms')}>
+                      문자 앱으로 인증하기
+                    </TextLinkButton>
+                    <TextLinkButton onClick={() => setManualOpen((prev) => !prev)}>
+                      QR을 사용할 수 없어요
+                    </TextLinkButton>
+                    {manualOpen ? (
+                      <VStack gap="x2" align="center" pt="x2">
+                        <Text textStyle="t3Regular" color="fg.neutralMuted" align="center">
+                          받는 번호와 보낼 내용을 복사해 문자로 보내 주세요.
+                        </Text>
+                        <TextLinkButton onClick={() => void copyPhone()}>
+                          번호 복사하기 ({OCTOMO_SMS_DISPLAY_PHONE})
+                        </TextLinkButton>
+                        <TextLinkButton onClick={() => void copyMessage()}>
+                          내용 복사하기 ({OCTOMO_SMS_MESSAGE})
+                        </TextLinkButton>
+                      </VStack>
+                    ) : null}
+                  </>
+                )}
+              </VStack>
+            ) : null}
+          </>
+        )}
+      </VStack>
+    </ActivityScreenLayout>
   )
 }
 

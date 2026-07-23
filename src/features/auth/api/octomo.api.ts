@@ -1,17 +1,25 @@
 /**
  * octomo.api
  *
- * 책임: OCTOMO 문자 인증 확인 facade
- * 비책임: Edge Function / OCTOMO secret (→ adapters, Supabase Secrets)
+ * 책임: OCTOMO QR 발급·문자 exists 조회 facade
+ * 비책임: Edge Function / OCTOMO secret
  */
 import {
-  verifyOctomoFromSupabase,
-  type VerifyOctomoInput,
-  type VerifyOctomoResponse,
+  checkOctomoMessageFromSupabase,
+  createOctomoQrFromSupabase,
+  type CheckOctomoResult,
 } from './adapters/octomo.supabase'
 
-export type { VerifyOctomoInput, VerifyOctomoResponse }
+export type { CheckOctomoResult }
 
-export async function verifyOctomo(input: VerifyOctomoInput): Promise<VerifyOctomoResponse> {
-  return verifyOctomoFromSupabase(input)
+export async function createOctomoQr(text: string): Promise<string> {
+  return createOctomoQrFromSupabase(text)
+}
+
+export async function checkOctomoMessage(input: {
+  mobileNum: string
+  text: string
+  withinMinutes?: number
+}): Promise<CheckOctomoResult> {
+  return checkOctomoMessageFromSupabase(input)
 }
