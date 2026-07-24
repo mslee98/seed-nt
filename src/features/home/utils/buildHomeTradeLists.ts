@@ -24,6 +24,8 @@ export interface HomeTradeListItem {
   detail?: string
   badge?: string
   attentionAction?: HomeAttentionAction
+  /** 진행 중 행 leading 아이콘 방향 */
+  progressSide?: 'BUY' | 'SELL'
   tradeId?: string
   splitGroupId?: string
 }
@@ -63,15 +65,19 @@ function joinMeta(primary: string, secondary?: string | null): string {
   return secondary ? `${primary} · ${secondary}` : primary
 }
 
+function shortSideLabel(role: TradeRole): string {
+  return role === 'BUYER' ? '구매' : '판매'
+}
+
 function buildAttentionCopy(trade: TradeRecord, matchingSession: MatchingSession | null) {
-  const side = sideLabel(trade.role)
+  const amount = formatAmount(trade.amountKrw)
   const remaining = formatRemainingMinutes(trade.paymentDeadline)
 
   if (trade.role === 'BUYER' && trade.status === 'PAYMENT_PENDING') {
     return {
-      title: `${formatAmount(trade.amountKrw)} 입금이 필요해요`,
-      meta: joinMeta(side, remaining),
-      metaPrimary: side,
+      title: '입금이 필요해요',
+      meta: joinMeta(amount, remaining),
+      metaPrimary: amount,
       metaSecondary: remaining ?? undefined,
       metaSecondaryTone: remaining ? ('warning' as const) : undefined,
       detail: '입금하면 바로 다음 단계로 진행돼요',
@@ -81,9 +87,9 @@ function buildAttentionCopy(trade: TradeRecord, matchingSession: MatchingSession
 
   if (trade.role === 'SELLER' && trade.status === 'PAYMENT_REPORTED') {
     return {
-      title: `${formatAmount(trade.amountKrw)} 입금을 확인해 주세요`,
-      meta: joinMeta(side, '구매자 입금 완료'),
-      metaPrimary: side,
+      title: '입금 확인이 필요해요',
+      meta: joinMeta(amount, '구매자 입금 완료'),
+      metaPrimary: amount,
       metaSecondary: '구매자 입금 완료',
       metaSecondaryTone: 'muted' as const,
       detail: '확인 후 Coin 이전이 진행돼요',
@@ -102,8 +108,8 @@ function buildAttentionCopy(trade: TradeRecord, matchingSession: MatchingSession
 
   return {
     title: fallback.title,
-    meta: joinMeta(side, fallback.badge),
-    metaPrimary: side,
+    meta: joinMeta(sideLabel(trade.role), fallback.badge),
+    metaPrimary: sideLabel(trade.role),
     metaSecondary: fallback.badge,
     metaSecondaryTone: 'brand' as const,
     detail: fallback.description,
@@ -112,47 +118,53 @@ function buildAttentionCopy(trade: TradeRecord, matchingSession: MatchingSession
 }
 
 function buildInProgressCopy(trade: TradeRecord) {
-  const sideBadge = trade.role === 'BUYER' ? '구매' : '판매'
+  const side = shortSideLabel(trade.role)
+  const progressSide = trade.role === 'BUYER' ? ('BUY' as const) : ('SELL' as const)
 
   if (trade.role === 'BUYER' && trade.status === 'PAYMENT_REPORTED') {
     return {
-      title: `받을 예정 ${formatCoinUnit(trade.coinAmount)}`,
-      meta: '판매자 확인 대기',
-      badge: sideBadge,
+      title: `${side} · 확인 대기`,
+      meta: `${formatCoinUnit(trade.coinAmount)} 받을 예정`,
+      detail: '상대방의 확인을 기다려요',
+      progressSide,
     }
   }
 
   if (trade.status === 'MATCHING') {
     return {
-      title: `${formatAmount(trade.amountKrw)} ${trade.role === 'BUYER' ? '구매' : '판매'} 매칭 중`,
-      meta: trade.role === 'BUYER' ? '판매자를 찾고 있어요' : '구매자를 찾고 있어요',
-      badge: sideBadge,
+      title: `${side} · 매칭 중`,
+      meta: formatAmount(trade.amountKrw),
+      detail: trade.role === 'BUYER' ? '판매자를 찾고 있어요' : '구매자를 찾고 있어요',
+      progressSide,
     }
   }
 
   if (trade.role === 'SELLER' && trade.status === 'PAYMENT_PENDING') {
     return {
-      title: `${formatAmount(trade.amountKrw)} 입금 대기`,
-      meta: '구매자 입금을 기다리고 있어요',
-      badge: sideBadge,
+      title: `${side} · 입금 대기`,
+      meta: formatAmount(trade.amountKrw),
+      detail: '구매자 입금을 기다리고 있어요',
+      progressSide,
     }
   }
 
   return {
-    title: `${formatAmount(trade.amountKrw)} 거래 진행 중`,
-    meta: sideLabel(trade.role),
-    badge: sideBadge,
+    title: `${side} · 진행 중`,
+    meta: formatAmount(trade.amountKrw),
+    detail: sideLabel(trade.role),
+    progressSide,
   }
 }
 
 function buildSplitInProgressItem(splitGroup: SplitGroup): HomeTradeListItem {
-  const sideLabelText = splitGroup.side === 'BUY' ? '구매' : '판매'
+  const side = splitGroup.side === 'BUY' ? '구매' : '판매'
   return {
     id: `split-${splitGroup.id}`,
     kind: 'inProgress',
-    title: `${formatAmount(splitGroup.totalAmountKrw)} ${sideLabelText} 진행 중`,
-    meta: `${splitGroup.completedLegs}/${splitGroup.totalLegs}건 완료`,
-    badge: `${sideLabelText} ${splitGroup.totalLegs}건`,
+    title: `${side} · 진행 중`,
+    meta: `${formatAmount(splitGroup.totalAmountKrw)} · ${splitGroup.completedLegs}/${splitGroup.totalLegs}건 완료`,
+    detail: `${side} ${splitGroup.totalLegs}건으로 나눠 진행해요`,
+    progressSide: splitGroup.side,
     splitGroupId: splitGroup.id,
   }
 }
@@ -225,7 +237,8 @@ export function buildHomeTradeLists(input: {
       kind: 'inProgress',
       title: copy.title,
       meta: copy.meta,
-      badge: copy.badge,
+      detail: copy.detail,
+      progressSide: copy.progressSide,
       tradeId: trade.id,
     })
   }

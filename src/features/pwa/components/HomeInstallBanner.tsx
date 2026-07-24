@@ -56,15 +56,15 @@ export function HomeInstallBanner() {
           justify="space-between"
           gap="x3"
           px="spacingX.globalGutter"
-          py="x3"
+          py="x2"
         >
           <Box
             as="button"
             display="flex"
             alignItems="center"
             justifyContent="center"
-            width="44px"
-            height="44px"
+            width="40px"
+            height="40px"
             borderRadius="r2"
             color="fg.neutralSubtle"
             aria-label="설치 배너 닫기"
@@ -74,8 +74,8 @@ export function HomeInstallBanner() {
           </Box>
 
           <Box flexGrow style={{ minWidth: 0 }}>
-            <Text textStyle="t5Bold" color="fg.neutral">
-              앱처럼 더 편하게 거래해요
+            <Text textStyle="t4Bold" color="fg.neutral">
+              앱으로 더 빠르게 거래해요
             </Text>
           </Box>
 

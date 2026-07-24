@@ -43,7 +43,7 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
               <VStack gap="x0" style={{ paddingBottom: 'var(--home-body-bottom-padding)' }}>
                 <HomeInstallBanner />
                 <VStack px="spacingX.globalGutter" gap="x0" pt={HOME_COMPACT.layout.headerBottomPb}>
-                  <VStack gap="x3">
+                  <VStack gap={HOME_COMPACT.layout.balanceToPrimaryGap}>
                     <HomeBalanceCard
                       availableCoin={wallet.availableCoin}
                       coinBalance={wallet.coinBalance}
@@ -64,9 +64,9 @@ const HomeActivity: ActivityComponentType<'Home'> = () => {
                       onItemClick={screen.handleTradeListItemClick}
                     />
                   </VStack>
-                </VStack>
-                <VStack px="spacingX.globalGutter" pt="x6">
-                  <HomeSafetyBanner />
+                  <VStack pt={HOME_COMPACT.layout.sectionGap}>
+                    <HomeSafetyBanner />
+                  </VStack>
                 </VStack>
               </VStack>
             </AppScreenContent>
