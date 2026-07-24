@@ -12,6 +12,10 @@ export function getSupabaseClient(): SupabaseClient {
     throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY가 필요합니다.')
   }
 
-  client = createClient(supabaseUrl, supabasePublishableKey)
+  client = createClient(supabaseUrl, supabasePublishableKey, {
+    auth: {
+      experimental: { passkey: true },
+    } as never,
+  })
   return client
 }

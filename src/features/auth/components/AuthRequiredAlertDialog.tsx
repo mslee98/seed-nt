@@ -21,7 +21,7 @@ interface AuthRequiredAlertDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   reason?: AuthRequiredReason
-  onSignUp: () => void
+  onLogin: () => void
   /** Stack 밖(바텀 nav 등)에서 사용 시 명시 */
   layerIndex?: number
 }
@@ -30,7 +30,7 @@ export function AuthRequiredAlertDialog({
   open,
   onOpenChange,
   reason = 'default',
-  onSignUp,
+  onLogin,
   layerIndex: layerIndexProp,
 }: AuthRequiredAlertDialogProps) {
   const portalContainerRef = useRef<HTMLElement | null>(
@@ -56,11 +56,11 @@ export function AuthRequiredAlertDialog({
               <AlertDialogAction
                 variant="brandSolid"
                 onClick={() => {
-                  onSignUp()
+                  onLogin()
                   onOpenChange(false)
                 }}
               >
-                가입하기
+                로그인
               </AlertDialogAction>
             </ResponsivePair>
           </AlertDialogFooter>

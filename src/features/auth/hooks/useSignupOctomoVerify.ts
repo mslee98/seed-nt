@@ -1,102 +1,354 @@
 /**
  * useSignupOctomoVerify
  *
- * 책임: OCTOMO 기기인증 안내·문자 앱/QR·verify-octomo 확인 후 계좌 intro
- * 비책임: OCTOMO API 키·Edge Function 구현
+ * 책임: OCTOMO READY/WAITING/CHECKING/VERIFIED/DELAYED 상태머신·방법 전환·적응형 폴링
+ * 비책임: Edge Function / OCTOMO secret, PWA 설치 여부로 인증 분기
  */
-import { useActivity, useActivityParams, useFlow } from '@stackflow/react'
+import { useActivityParams, useFlow } from '@stackflow/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnackbarAdapter } from 'seed-design/ui/snackbar'
 
 import { useIsDesktopViewport } from '../../../app/layouts/useIsDesktopViewport'
 import { showSnackbar } from '../../../shared/utils/showSnackbar'
+import { useDeviceContext } from '../../pwa/hooks/useDeviceContext'
 import { useRuntimeEnvironment } from '../../pwa/hooks/useRuntimeEnvironment'
-import { verifyOctomo } from '../api/octomo.api'
-import { OCTOMO_SMS_MESSAGE, createOctomoSmsHref } from '../utils/createOctomoSmsUrl'
+import { checkOctomoMessage, createOctomoQr } from '../api/octomo.api'
+import {
+  OCTOMO_SMS_MESSAGE,
+  OCTOMO_SMS_PHONE,
+  createOctomoSmsHref,
+} from '../utils/createOctomoSmsUrl'
+import {
+  clearPendingOctomo,
+  savePendingOctomo,
+} from '../utils/pendingOctomoStorage'
+import {
+  OCTOMO_QR_POLL_DELAYS_MS,
+  OCTOMO_SMS_POLL_DELAYS_MS,
+  startOctomoPolling,
+} from '../utils/startOctomoPolling'
 import { useSignupForm } from './useSignupForm'
+
+export type OctomoAuthMethod = 'sms' | 'qr'
+export type OctomoVerifyState =
+  | 'READY'
+  | 'WAITING'
+  | 'CHECKING'
+  | 'VERIFIED'
+  | 'DELAYED'
+  | 'ERROR'
+
+const VERIFIED_NAVIGATE_MS = 800
+const WAITING_SOFT_COPY_MS = 20_000
+
+function recommendAuthMethod(isDesktop: boolean): OctomoAuthMethod {
+  return isDesktop ? 'qr' : 'sms'
+}
+
+function maskPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length < 10) return raw
+  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`
+}
+
+function toQrDataUrl(qrCode: string): string {
+  return qrCode.startsWith('data:') ? qrCode : `data:image/png;base64,${qrCode}`
+}
 
 export function useSignupOctomoVerify() {
   const { phone: phoneParam } = useActivityParams<'SignupSms'>()
-  const { isActive } = useActivity()
-  const { push } = useFlow()
+  const { replace, pop } = useFlow()
   const snackbar = useSnackbarAdapter()
   const { draft } = useSignupForm()
   const isDesktopViewport = useIsDesktopViewport()
   const runtime = useRuntimeEnvironment()
-
-  const [introSheetOpen, setIntroSheetOpen] = useState(false)
-  const [introDismissed, setIntroDismissed] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
-  const [isChecking, setIsChecking] = useState(false)
-  const hasNavigatedRef = useRef(false)
+  const device = useDeviceContext()
 
   const phone = draft.phone || phoneParam.replace(/\D/g, '')
-  const showQr = isDesktopViewport || runtime === 'desktop'
+  const isDesktop =
+    isDesktopViewport ||
+    runtime === 'desktop' ||
+    device?.runtimeEnvironment === 'desktop'
+
   const smsHref = createOctomoSmsHref()
   const verificationMessage = OCTOMO_SMS_MESSAGE
 
-  useEffect(() => {
-    if (!isActive) {
-      setIntroSheetOpen(false)
+  const [authMethod, setAuthMethodState] = useState<OctomoAuthMethod>(() =>
+    recommendAuthMethod(isDesktop),
+  )
+  const [state, setState] = useState<OctomoVerifyState>('READY')
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  const [qrFallback, setQrFallback] = useState(false)
+  const [qrLoading, setQrLoading] = useState(false)
+  const [showSoftWaitingCopy, setShowSoftWaitingCopy] = useState(false)
+  const [manualChecking, setManualChecking] = useState(false)
+
+  const verifiedRef = useRef(false)
+  const smsOpenedRef = useRef(false)
+  const methodOverrideRef = useRef(false)
+  const desktopHintAppliedRef = useRef(false)
+  const pollingActiveRef = useRef(false)
+  const pollingStopRef = useRef<(() => void) | null>(null)
+  const softCopyTimerRef = useRef<number | undefined>(undefined)
+  const navigateTimerRef = useRef<number | undefined>(undefined)
+  const phoneRef = useRef(phone)
+  const snackbarRef = useRef(snackbar)
+  const replaceRef = useRef(replace)
+
+  phoneRef.current = phone
+  snackbarRef.current = snackbar
+  replaceRef.current = replace
+
+  const stopPolling = useCallback(() => {
+    pollingStopRef.current?.()
+    pollingStopRef.current = null
+    pollingActiveRef.current = false
+  }, [])
+
+  const clearSoftCopyTimer = useCallback(() => {
+    if (softCopyTimerRef.current !== undefined) {
+      window.clearTimeout(softCopyTimerRef.current)
+      softCopyTimerRef.current = undefined
     }
-  }, [isActive])
+  }, [])
 
-  const navigateToAccount = useCallback(() => {
-    if (hasNavigatedRef.current) return
-    hasNavigatedRef.current = true
-    setIntroSheetOpen(false)
-    setIntroDismissed(false)
-    push('SignupAccount', { step: 'bank' })
-  }, [push])
+  const persistPending = useCallback(() => {
+    const currentPhone = phoneRef.current
+    if (!currentPhone) return
+    savePendingOctomo({
+      phone: currentPhone,
+      message: verificationMessage,
+      startedAt: Date.now(),
+    })
+  }, [verificationMessage])
 
-  const handleVerifySent = async () => {
-    if (isChecking || hasNavigatedRef.current) return
+  const handleVerified = useCallback(() => {
+    if (verifiedRef.current) return
+    verifiedRef.current = true
+    stopPolling()
+    clearSoftCopyTimer()
+    clearPendingOctomo()
+    setState('VERIFIED')
 
-    setIsChecking(true)
+    navigateTimerRef.current = window.setTimeout(() => {
+      replaceRef.current('SignupAccount', { step: 'bank' })
+    }, VERIFIED_NAVIGATE_MS)
+  }, [clearSoftCopyTimer, stopPolling])
+
+  const startPolling = useCallback(
+    (method: OctomoAuthMethod) => {
+      const currentPhone = phoneRef.current
+      if (!currentPhone || verifiedRef.current || pollingActiveRef.current) return
+
+      stopPolling()
+      persistPending()
+      pollingActiveRef.current = true
+      setShowSoftWaitingCopy(false)
+      clearSoftCopyTimer()
+      softCopyTimerRef.current = window.setTimeout(() => {
+        setShowSoftWaitingCopy(true)
+      }, WAITING_SOFT_COPY_MS)
+      setState('WAITING')
+
+      pollingStopRef.current = startOctomoPolling({
+        mobileNum: currentPhone,
+        text: verificationMessage,
+        delaysMs:
+          method === 'sms' ? OCTOMO_SMS_POLL_DELAYS_MS : OCTOMO_QR_POLL_DELAYS_MS,
+        onCheckStart: () => {
+          if (!verifiedRef.current) setState('CHECKING')
+        },
+        onWaiting: () => {
+          if (!verifiedRef.current) setState('WAITING')
+        },
+        onVerified: handleVerified,
+        onTimeout: () => {
+          pollingActiveRef.current = false
+          pollingStopRef.current = null
+          if (!verifiedRef.current) {
+            setState('DELAYED')
+            clearSoftCopyTimer()
+          }
+        },
+        onError: () => {
+          if (!verifiedRef.current) setState('ERROR')
+        },
+      })
+    },
+    [
+      clearSoftCopyTimer,
+      handleVerified,
+      persistPending,
+      stopPolling,
+      verificationMessage,
+    ],
+  )
+
+  const setAuthMethod = useCallback(
+    (method: OctomoAuthMethod) => {
+      if (verifiedRef.current) return
+      methodOverrideRef.current = true
+      stopPolling()
+      clearSoftCopyTimer()
+      smsOpenedRef.current = false
+      setShowSoftWaitingCopy(false)
+      setQrDataUrl(null)
+      setQrFallback(false)
+      setState('READY')
+      setAuthMethodState(method)
+    },
+    [clearSoftCopyTimer, stopPolling],
+  )
+
+  // DeviceContext가 늦게 오면 1회만 기본 방법 반영 (사용자 전환 후엔 덮지 않음)
+  useEffect(() => {
+    if (methodOverrideRef.current || desktopHintAppliedRef.current) return
+    if (!isDesktop) return
+    desktopHintAppliedRef.current = true
+    setAuthMethodState('qr')
+  }, [isDesktop])
+
+  useEffect(() => {
+    if (authMethod !== 'qr' || verifiedRef.current) return
+
+    let cancelled = false
+
+    const run = async () => {
+      setQrLoading(true)
+      setQrFallback(false)
+      try {
+        const qrCode = await createOctomoQr(smsHref)
+        if (cancelled) return
+        setQrDataUrl(toQrDataUrl(qrCode))
+      } catch {
+        if (cancelled) return
+        setQrDataUrl(null)
+        setQrFallback(true)
+      } finally {
+        if (!cancelled) setQrLoading(false)
+      }
+
+      if (cancelled || verifiedRef.current) return
+      startPolling('qr')
+    }
+
+    void run()
+
+    return () => {
+      cancelled = true
+      stopPolling()
+    }
+  }, [authMethod, smsHref, startPolling, stopPolling])
+
+  useEffect(() => {
+    if (authMethod !== 'sms') return
+
+    const tryStartAfterReturn = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        smsOpenedRef.current &&
+        !verifiedRef.current &&
+        !pollingActiveRef.current
+      ) {
+        startPolling('sms')
+      }
+    }
+
+    document.addEventListener('visibilitychange', tryStartAfterReturn)
+    window.addEventListener('pageshow', tryStartAfterReturn)
+    window.addEventListener('focus', tryStartAfterReturn)
+
+    return () => {
+      document.removeEventListener('visibilitychange', tryStartAfterReturn)
+      window.removeEventListener('pageshow', tryStartAfterReturn)
+      window.removeEventListener('focus', tryStartAfterReturn)
+    }
+  }, [authMethod, startPolling])
+
+  useEffect(() => {
+    return () => {
+      stopPolling()
+      clearSoftCopyTimer()
+      if (navigateTimerRef.current !== undefined) {
+        window.clearTimeout(navigateTimerRef.current)
+      }
+    }
+  }, [clearSoftCopyTimer, stopPolling])
+
+  const handlePrepareSmsOpen = useCallback(() => {
+    persistPending()
+    smsOpenedRef.current = true
+    setState('WAITING')
+  }, [persistPending])
+
+  const handleManualRecheck = useCallback(async () => {
+    if (verifiedRef.current || manualChecking || !phoneRef.current) return
+
+    setManualChecking(true)
+    setState('CHECKING')
+
     try {
-      const result = await verifyOctomo({
-        phone,
-        message: verificationMessage,
+      const result = await checkOctomoMessage({
+        mobileNum: phoneRef.current,
+        text: verificationMessage,
+        withinMinutes: 5,
       })
 
-      if (!result.verified) {
-        showSnackbar(snackbar, result.message || '아직 문자가 확인되지 않았어요', 'default')
+      if (result.exists) {
+        handleVerified()
         return
       }
 
-      showSnackbar(snackbar, '휴대폰 번호가 확인됐어요')
-      setIsVerified(true)
-      setIntroDismissed(false)
-      setIntroSheetOpen(true)
+      showSnackbar(snackbarRef.current, '아직 문자가 확인되지 않았어요', 'default')
+      setState('DELAYED')
     } catch {
-      showSnackbar(snackbar, '문자 확인에 실패했어요. 다시 시도해 주세요', 'critical')
+      showSnackbar(snackbarRef.current, '잠시 후 다시 확인해 주세요', 'default')
+      setState('ERROR')
     } finally {
-      setIsChecking(false)
+      setManualChecking(false)
     }
-  }
+  }, [handleVerified, manualChecking, verificationMessage])
 
-  const handleIntroSheetOpenChange = (open: boolean) => {
-    if (hasNavigatedRef.current) return
-    setIntroSheetOpen(open)
-    if (!open && isVerified) {
-      setIntroDismissed(true)
+  const handleEditPhone = useCallback(() => {
+    stopPolling()
+    pop()
+  }, [pop, stopPolling])
+
+  const copyPhone = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(OCTOMO_SMS_PHONE)
+      showSnackbar(snackbar, '번호를 복사했어요')
+    } catch {
+      showSnackbar(snackbar, '복사하지 못했어요', 'default')
     }
-  }
+  }, [snackbar])
 
-  const showContinueToAccount = isVerified && introDismissed && !introSheetOpen
+  const copyMessage = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(verificationMessage)
+      showSnackbar(snackbar, '내용을 복사했어요')
+    } catch {
+      showSnackbar(snackbar, '복사하지 못했어요', 'default')
+    }
+  }, [snackbar, verificationMessage])
 
   return {
-    phone: phoneParam,
-    isActive,
-    showQr,
+    phone: phoneParam || phone,
+    maskedPhone: maskPhone(phoneParam || phone),
+    authMethod,
+    setAuthMethod,
+    state,
     smsHref,
     verificationMessage,
-    isChecking,
-    introSheetOpen,
-    showContinueToAccount,
-    handleVerifySent,
-    handleIntroSheetOpenChange,
-    handleIntroConfirm: navigateToAccount,
-    handleContinueToAccount: navigateToAccount,
+    qrDataUrl,
+    qrFallback,
+    qrLoading,
+    showSoftWaitingCopy,
+    isChecking: state === 'CHECKING' || manualChecking,
+    handlePrepareSmsOpen,
+    handleManualRecheck,
+    handleEditPhone,
+    copyPhone,
+    copyMessage,
   }
 }

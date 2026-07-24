@@ -14,6 +14,35 @@ export const CARRIERS: Array<{ code: CarrierCode; label: string }> = [
 export type SignupIdentityStep = 'name' | 'rrn' | 'carrier' | 'phone'
 export type SignupAccountStep = 'bank' | 'accountNumber'
 export type SignupPinStep = 'create' | 'confirm'
+export type SignupCredentialsStep = 'nickname' | 'password'
+export type AccountRecoveryStep = 'phone' | 'verify' | 'password' | 'done'
+export type LoginMode = 'passkey' | 'password'
+export type NicknameCheckState =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'duplicated'
+  | 'invalid'
+  | 'error'
+
+export const NICKNAME_MIN_LENGTH = 2
+export const NICKNAME_MAX_LENGTH = 12
+/** 한글·영문·숫자·밑줄 */
+export const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9_]{2,12}$/
+
+export const LOGIN_PASSWORD_MIN_LENGTH = 8
+export const LOGIN_PASSWORD_MAX_LENGTH = 72
+
+export const SIGNUP_CREDENTIALS_COPY = {
+  nickname: {
+    title: '거래에 사용할 닉네임을 정해 주세요',
+    description: '다른 사용자에게는 실명 대신 닉네임이 표시돼요.',
+  },
+  password: {
+    title: '로그인 비밀번호를 만들어 주세요',
+    description: '휴대폰 번호와 함께 BRIT에 로그인할 때 사용해요.',
+  },
+} as const
 
 export const IDENTITY_STEPS: SignupIdentityStep[] = ['name', 'rrn', 'carrier', 'phone']
 

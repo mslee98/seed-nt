@@ -1,40 +1,85 @@
-/* 월렛 카드 우측 장식 코인 — 읽히는 크기·대비 (텍스트 위계는 z-index로 유지) */
+/**
+ * 홈 월렛 히어로 — Primary(#3182F6)와 분리된 Hero Blue 토큰.
+ * 전역 brand는 유지하고, 자산 카드만 한 단계 진한 그라데이션을 씁니다.
+ */
+.home-balance-card {
+  --home-hero-start: #2b72ea;
+  --home-hero-middle: #0b66ee;
+  --home-hero-end: #005dea;
+  --home-hero-shadow: 0 12px 30px rgba(0, 95, 235, 0.18);
+  --home-hero-divider: rgba(255, 255, 255, 0.18);
+  --home-hero-badge-bg: rgba(255, 255, 255, 0.15);
+
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    var(--home-hero-start) 0%,
+    var(--home-hero-middle) 48%,
+    var(--home-hero-end) 100%
+  );
+  box-shadow: var(--home-hero-shadow);
+}
+
 .home-balance-card__coin-decor {
   position: absolute;
-  top: 40%;
-  right: -28px;
+  top: 13px;
+  right: 20px;
   z-index: 0;
-  width: 200px;
-  height: auto;
-  max-height: 200px;
+  width: 160px;
+  height: 160px;
   object-fit: contain;
   object-position: center;
-  transform: translateY(-50%);
-  opacity: 0.45;
+  opacity: 0.5;
   pointer-events: none;
+  user-select: none;
 }
 
-/*
- * 세로 Divider는 flex stretch 높이 필요.
- * 색은 Divider color="palette.staticWhiteAlpha300" (브랜드 블루용;
- * 기본 stroke.neutralMuted는 라이트 면 전용)
- */
+.home-balance-card__rate-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  height: 36px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  background: var(--home-hero-badge-bg);
+}
+
+.home-balance-card__rate-badge-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.home-balance-card__divider {
+  width: 100%;
+  height: 1px;
+  background: var(--home-hero-divider);
+  border: none;
+}
+
 .home-balance-card__divider--vertical {
   align-self: stretch;
+  width: 1px;
   height: auto;
+  background: var(--home-hero-divider);
+  border: none;
 }
 
-/* 파란 면 위 흰 글자 위계 — 금액만 100%, 라벨·설명·메타는 낮춤 */
 .home-balance-card__muted {
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
 .home-balance-card__meta-value {
-  opacity: 0.88;
+  opacity: 0.95;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-balance-card__coin-decor {
-    opacity: 0.38;
+    opacity: 0.1;
   }
 }

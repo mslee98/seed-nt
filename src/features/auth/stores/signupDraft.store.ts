@@ -10,7 +10,8 @@ export interface SignupDraft {
   bankCode: string
   bankName: string
   accountNumber: string
-  pin: string
+  accountHolderName: string
+  nickname: string
 }
 
 const initialDraft: SignupDraft = {
@@ -21,7 +22,8 @@ const initialDraft: SignupDraft = {
   bankCode: '',
   bankName: '',
   accountNumber: '',
-  pin: '',
+  accountHolderName: '',
+  nickname: '',
 }
 
 type Listener = () => void

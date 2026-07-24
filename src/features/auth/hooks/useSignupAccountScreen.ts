@@ -1,7 +1,7 @@
 /**
  * useSignupAccountScreen
  *
- * 책임: 금융기관·계좌번호 step·계좌 검증·PIN 진입
+ * 책임: 금융기관·계좌번호 step·계좌 검증·Credentials 진입
  * 비책임: InstitutionSelectPanel / 계좌 입력 UI
  */
 import { useActivityParams, useFlow } from '@stackflow/react'
@@ -39,13 +39,14 @@ export function useSignupAccountScreen() {
     if (!canSubmit || isVerifying) return
     setIsVerifying(true)
     try {
-      await verifyAccount({
+      const result = await verifyAccount({
         name: draft.name,
         bankCode: draft.bankCode,
         accountNumber: draft.accountNumber,
       })
+      updateSignupDraft({ accountHolderName: result.holderName })
       showSnackbar(snackbar, '계좌를 확인했어요')
-      push('SignupPin', { step: 'create' })
+      push('SignupCredentials', { step: 'nickname' })
     } finally {
       setIsVerifying(false)
     }

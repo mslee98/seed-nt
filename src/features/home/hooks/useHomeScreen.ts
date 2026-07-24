@@ -31,7 +31,7 @@ export function useHomeScreen() {
   const { isActive } = useActivity()
   const { push } = useFlow()
   const { promptAuth, authRequiredDialog } = useAuthRequiredPrompt({
-    onNavigateToSignup: () => push('SignupIdentity', {}),
+    onNavigateToLogin: () => push('Login', {}),
   })
   const viewModel = useHomeViewModel()
   const activeTrade = useActiveTrade()

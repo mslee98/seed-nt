@@ -22,10 +22,13 @@
 | 프론트 | 현재 mock/store | API |
 |--------|-----------------|-----|
 | 홈 | `homeViewModel.mock.ts`, `homeWallet.store` | `GET /v1/me/home` |
-| 가입 SMS | `auth.api.ts` | `POST /v1/auth/sms/send`, `POST /v1/auth/sms/verify` |
+| 가입 SMS (레거시) | `auth.api.ts` | `POST /v1/auth/sms/send`, `POST /v1/auth/sms/verify` |
+| OCTOMO | `octomo.api.ts` | Edge `octomo` |
 | 계좌 인증 | `auth.api.ts` | `POST /v1/auth/account/verify` |
-| PIN 등록 | `auth.api.ts` | `POST /v1/auth/pin` |
-| 세션 | `authSession.store` | `POST /v1/auth/pin` 응답 토큰, `GET /v1/me` |
+| 최종 가입 | `completeSignup` | Edge `signup` / `POST /v1/auth/signup` |
+| 로그인 | `loginWithPasskey` / `loginWithPassword` | Supabase Auth |
+| 거래 PIN 변경 | `changeTransactionPin` | `POST /v1/auth/pin` (가입 완료 아님) |
+| 세션 | `authSession.store` + Supabase session | Auth JWT |
 | 거래 진행 | `tradeSession.store` | `POST /v1/trade-orders`, `GET /v1/me/trades/active`, … |
 | 거래 상세 | `TradeDetailViewModel` | `GET /v1/trades/{id}` |
 | 분할 | `SplitGroup` | `GET /v1/split-groups/{id}` |
@@ -85,7 +88,14 @@ X-PIN-Token: {stepUpToken}     # confirm-payment 등 (향후)
 
 ## 3. Auth API
 
-현재 mock: `src/features/auth/api/auth.api.ts`
+현재 facade: `src/features/auth/api/auth.api.ts`  
+Edge: `supabase/functions/signup/`, `supabase/functions/octomo/`
+
+**계층**
+
+- 1차 로그인: 패스키 또는 휴대폰(E.164)+로그인 비밀번호 → Supabase Auth
+- 2차 거래 PIN: `user_profiles.transaction_pin_hash` (서버 bcrypt만)
+- Auth 식별자: 휴대폰. 닉네임은 거래 공개 이름만.
 
 ### `POST /v1/auth/sms/send`
 
@@ -102,6 +112,8 @@ X-PIN-Token: {stepUpToken}     # confirm-payment 등 (향후)
 ```
 
 DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드 노출.
+
+> 가입 본선은 OCTOMO Edge. SMS OTP는 레거시/보조.
 
 ---
 
@@ -131,7 +143,7 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 {
   "signupToken": "st_xxx",
   "name": "김브릿",
-  "bankCode": "KAKAO",
+  "bankCode": "090",
   "accountNumber": "3333012345673"
 }
 ```
@@ -147,14 +159,145 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 }
 ```
 
+프론트는 `holderName`을 `signupDraft.accountHolderName`에 저장합니다.
+
 ---
 
-### `POST /v1/auth/pin`
+### `POST /v1/auth/signup` (Edge `signup`)
+
+최종 가입. **SignupPin confirm**에서 호출합니다.
 
 **Request**
 
 ```json
-{ "signupToken": "st_xxx", "pin": "1234" }
+{
+  "name": "김브릿",
+  "rrnFront7": "9001011",
+  "mobileCarrier": "SKT",
+  "phone": "01012345678",
+  "bankCode": "090",
+  "accountNumber": "3333012345673",
+  "accountHolderName": "김브릿",
+  "transactionPin": "1234",
+  "loginPassword": "BritLogin!1",
+  "nickname": "브릿러4821"
+}
+```
+
+서버:
+
+1. phone → E.164 (`+821012345678`)
+2. `auth.admin.createUser({ phone, password, phone_confirm: true })`
+3. `user_profiles` INSERT (`nickname` NOT NULL UNIQUE, `transaction_pin_hash` 서버 해시, verified_at…)
+4. `user_roles` INSERT `CONSUMER`
+5. 실패 시 Auth 유저 보상 삭제
+
+**Response `200`**
+
+```json
+{
+  "success": true,
+  "userId": "uuid",
+  "nickname": "브릿러4821",
+  "phoneE164": "+821012345678"
+}
+```
+
+클라이언트는 응답 후 `signInWithPassword({ phone: phoneE164, password })`로 세션을 만듭니다.
+
+**Error**
+
+| HTTP | error |
+|------|--------|
+| 400 | `INVALID_PIN` / `INVALID_NICKNAME` / `INVALID_PASSWORD` |
+| 409 | `PHONE_EXISTS` / `NICKNAME_TAKEN` / `IDENTITY_EXISTS` |
+
+가입 체인: Identity → Sms → Account → Credentials(닉네임·로그인 비번) → Pin(제출) → Complete  
+패스키는 Complete/SecuritySettings에서 선택 등록.
+
+Fixture: [docs/fixtures/auth/signup-complete.json](../fixtures/auth/signup-complete.json)
+
+---
+
+### `POST /v1/auth/nickname/check`
+
+닉네임 사용 가능 여부 선검사 (UX). 최종 확정은 signup UNIQUE.
+
+**Request**
+
+```json
+{ "nickname": "브릿러4821" }
+```
+
+**Response `200`**
+
+```json
+{ "available": true }
+```
+
+---
+
+### `POST /v1/auth/pin` (거래 PIN 변경)
+
+가입 완료 API가 **아닙니다**. 로그인된 사용자의 거래 PIN 설정·변경용.
+
+**Request**
+
+```json
+{ "currentPin": "1234", "newPin": "5678" }
+```
+
+**Response `200`**
+
+```json
+{ "success": true }
+```
+
+**Error `400`:** `{ "error": "INVALID_PIN" }`  
+**Error `423`:** `{ "error": "SENSITIVE_LOCKED", "lockedUntil": "..." }` (복구 쿨다운)
+
+---
+
+### 로그인 (Supabase Auth)
+
+패스키 (Experimental, client `auth.experimental.passkey: true`):
+
+```ts
+await supabase.auth.signInWithPasskey()
+```
+
+휴대폰 + 로그인 비밀번호:
+
+```ts
+await supabase.auth.signInWithPassword({
+  phone: "+821012345678",
+  password: loginPassword,
+})
+```
+
+패스키 등록 (활성 세션 필요):
+
+```ts
+await supabase.auth.registerPasskey()
+```
+
+---
+
+### `POST /v1/auth/recovery`
+
+OCTOMO만으로 비밀번호를 재설정하지 않습니다. 최소 2요소.
+
+**Request (예시)**
+
+```json
+{
+  "phone": "01012345678",
+  "octomoVerified": true,
+  "accountNumberLast4": "5673",
+  "name": "김브릿",
+  "birthDate": "1990-01-01",
+  "newLoginPassword": "BritLogin!2"
+}
 ```
 
 **Response `200`**
@@ -162,17 +305,9 @@ DEV mock server: `X-Mock-Sms-Code` 헤더 또는 서버 로그로 6자리 코드
 ```json
 {
   "success": true,
-  "accessToken": "at_xxx",
-  "refreshToken": "rt_xxx",
-  "user": {
-    "id": "user-1",
-    "nickname": "Brit유저",
-    "isVerified": true
-  }
+  "sensitiveActionsLockedUntil": "2026-07-24T15:00:00+09:00"
 }
 ```
-
-**Error `400`:** `{ "error": "INVALID_PIN" }`
 
 ---
 

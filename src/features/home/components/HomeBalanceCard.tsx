@@ -1,6 +1,7 @@
-import { Divider, HStack, Text, VStack } from '@seed-design/react'
+import { HStack, Text, VStack } from '@seed-design/react'
 
-import coinDecor from '../../../assets/home/31_exchange1_0.png'
+import coinRateBadge from '../../../assets/home/coin-rate-badge.png'
+import { COIN_TO_KRW } from '../../../shared/constants/money'
 import { AnimatedAmount } from '../../../shared/ui/AnimatedAmount'
 import { formatAmountNumber } from '../../../shared/utils/formatAmount'
 import { HOME_COMPACT } from '../constants/homeCompact'
@@ -16,7 +17,7 @@ interface HomeBalanceCardProps {
   balanceAnimated?: boolean
 }
 
-/** 홈 월렛 히어로 — 금액 앵커, 라벨·메타는 muted (Toss 월렛 위계) */
+/** 홈 월렛 히어로 — Hero Blue 그라데이션 + 3단 정보 밀도 */
 export function HomeBalanceCard({
   availableCoin,
   coinBalance,
@@ -33,47 +34,63 @@ export function HomeBalanceCard({
     <VStack
       position="relative"
       p={hero.padding}
-      gap="x2"
-      bg="bg.brandSolid"
+      gap={hero.blockGap}
       borderRadius={hero.radius}
       color="fg.neutralInverted"
-      className="overflow-hidden"
+      className="home-balance-card"
+      style={{
+        minHeight: hasBalance ? hero.minHeight : undefined,
+        justifyContent: hasBalance ? 'space-between' : undefined,
+      }}
     >
       <img
-        src={coinDecor}
+        src={coinRateBadge}
         alt=""
         aria-hidden
         className="home-balance-card__coin-decor"
       />
 
-      <VStack position="relative" gap="x2" style={{ zIndex: 1 }}>
+      <VStack position="relative" gap={hero.blockGap} style={{ zIndex: 1, flexGrow: 1 }}>
         {hasBalance ? (
-          <VStack gap="x1" pr="x16">
-            <Text
-              textStyle={t.heroAvailableLabel}
-              color="fg.neutralInverted"
-              className="home-balance-card__muted"
-            >
-              사용 가능 Coin
-            </Text>
-            <HStack gap="x1" style={{ alignItems: 'baseline' }}>
-              <AnimatedAmount
-                value={availableCoin}
-                startValue={startCoinBalance}
-                replayKey={replayKey}
-                animated={balanceAnimated}
-                locale="ko-KR"
-                useGrouping
-                variant="balance"
-                textColor="fg.neutralInverted"
-              />
-              <Text textStyle={t.heroUnit} color="fg.neutralInverted">
-                Coin
+          <VStack gap={hero.amountToBadgeGap} style={{ flexGrow: 1 }}>
+            <VStack gap={hero.labelGap}>
+              <Text
+                textStyle={t.heroAvailableLabel}
+                color="fg.neutralInverted"
+                className="home-balance-card__muted"
+              >
+                사용 가능한 Coin
               </Text>
-            </HStack>
+              <HStack gap="x1" style={{ alignItems: 'baseline' }}>
+                <AnimatedAmount
+                  value={availableCoin}
+                  startValue={startCoinBalance}
+                  replayKey={replayKey}
+                  animated={balanceAnimated}
+                  locale="ko-KR"
+                  useGrouping
+                  variant="balance"
+                  textColor="fg.neutralInverted"
+                />
+                <Text textStyle={t.heroUnit} color="fg.neutralInverted">
+                  Coin
+                </Text>
+              </HStack>
+            </VStack>
+            <div className="home-balance-card__rate-badge">
+              <img
+                src={coinRateBadge}
+                alt=""
+                aria-hidden
+                className="home-balance-card__rate-badge-icon"
+              />
+              <Text textStyle={t.heroRateBadge} color="fg.neutralInverted">
+                1 Coin = {formatAmountNumber(COIN_TO_KRW)} KRW
+              </Text>
+            </div>
           </VStack>
         ) : (
-          <VStack gap="x1" pr="x16">
+          <VStack gap={hero.labelGap}>
             <Text textStyle={t.heroEmptyTitle} color="fg.neutralInverted">
               필요한 Coin을 구매해 보세요
             </Text>
@@ -88,22 +105,22 @@ export function HomeBalanceCard({
         )}
 
         {hasBalance && (
-          <>
-            <Divider
-              as="div"
-              aria-hidden
-              orientation="horizontal"
-              thickness={1}
-              color="palette.staticWhiteAlpha300"
-            />
-            <HStack align="stretch" justify="space-between" gap="x4" width="full">
-              <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
+          <VStack gap="x0" width="full">
+            <div aria-hidden className="home-balance-card__divider" />
+            <HStack
+              align="stretch"
+              justify="space-between"
+              gap="x4"
+              width="full"
+              pt={hero.metaPt}
+            >
+              <VStack gap="x1" flexGrow style={{ minWidth: 0 }}>
                 <Text
                   textStyle={t.metaLabel}
                   color="fg.neutralInverted"
                   className="home-balance-card__muted"
                 >
-                  총 보유
+                  전체 보유
                 </Text>
                 <Text
                   textStyle={t.metaValue}
@@ -113,21 +130,14 @@ export function HomeBalanceCard({
                   {formatAmountNumber(coinBalance)} Coin
                 </Text>
               </VStack>
-              <Divider
-                as="div"
-                aria-hidden
-                orientation="vertical"
-                thickness={1}
-                color="palette.staticWhiteAlpha300"
-                className="home-balance-card__divider--vertical"
-              />
-              <VStack gap="x0_5" flexGrow style={{ minWidth: 0 }}>
+              <div aria-hidden className="home-balance-card__divider--vertical" />
+              <VStack gap="x1" flexGrow style={{ minWidth: 0 }}>
                 <Text
                   textStyle={t.metaLabel}
                   color="fg.neutralInverted"
                   className="home-balance-card__muted"
                 >
-                  거래 보류
+                  거래 중
                 </Text>
                 <Text
                   textStyle={t.metaValue}
@@ -138,7 +148,7 @@ export function HomeBalanceCard({
                 </Text>
               </VStack>
             </HStack>
-          </>
+          </VStack>
         )}
       </VStack>
     </VStack>

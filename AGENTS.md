@@ -12,7 +12,7 @@ Cursor 등 AI 에이전트가 Brit 코드베이스에서 작업할 때 따를 �
 
 1. [docs/architecture/overview.md](docs/architecture/overview.md)
 2. [docs/architecture/trade-platform-summary.md](docs/architecture/trade-platform-summary.md) — 거래·C2B 종합
-3. [docs/stackflow/README.md](docs/stackflow/README.md)
+3. [docs/stackflow/README.md](docs/stackflow/README.md) — **화면 순서(가입·거래)는 여기 「화면 지도」**
 4. 변경 도메인: [docs/domains/trade.md](docs/domains/trade.md), [docs/domains/merchant.md](docs/domains/merchant.md), [docs/domains/auth.md](docs/domains/auth.md)
 5. API·fixture: [docs/domains/api-spec.md](docs/domains/api-spec.md), [docs/fixtures/](docs/fixtures/)
 6. 시나리오·백엔드: [docs/porcess/trade-scenarios.md](docs/porcess/trade-scenarios.md), [docs/porcess/trade-api.md](docs/porcess/trade-api.md), [docs/porcess/trade-disputes.md](docs/porcess/trade-disputes.md), [docs/porcess/trade-payment-ux.md](docs/porcess/trade-payment-ux.md)
@@ -54,6 +54,9 @@ features/{domain}/
 | 히스토리 정리 | `replace` (예: PIN confirm) |
 | Stack 밖 (탭, 배너) | `actions` from `src/stackflow/stackflow.ts` |
 | params 타입 | `src/stackflow/config.ts` → `Register` |
+
+가입: Identity → Sms → Account → **Credentials**(닉네임·로그인 비번) → **Pin**(최종 제출) → Complete  
+로그인: `Login` (패스키 우선 / 휴대폰+비번) — [docs/domains/auth.md](docs/domains/auth.md)
 
 ## Consumer UX (차단급)
 

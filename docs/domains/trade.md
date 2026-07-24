@@ -10,6 +10,17 @@ Brit P2P 거래(매칭·결제·분할) 도메인 요약입니다.
 API 스펙 (req/res·fixture): [docs/domains/api-spec.md](./api-spec.md)  
 거래 API·매칭·Redis: [docs/porcess/trade-api.md](../porcess/trade-api.md)
 
+## 시작 파일
+
+| 작업 | Activity | Hook | 비고 |
+|------|----------|------|------|
+| 홈→금액 | `HomeActivity` | `useHomeScreen` | `push TradeCompose` |
+| 금액 입력 | `TradeComposeActivity` | `useTradeComposeScreen` | `replace Trade` |
+| 매칭·결제 | `TradeActivity` | `useTradeScreen` | split/단건 분기 |
+| 단건 상세 | (동일 Trade) | `useTradeDetail` | `tradeId` 있을 때 |
+
+화면 순서: [docs/stackflow/README.md](../stackflow/README.md) 「화면 지도」
+
 ## 확정 정책 (MVP)
 
 | 항목 | 결정 |
