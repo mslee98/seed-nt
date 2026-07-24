@@ -75,7 +75,7 @@ function ActionIcon({
       justifyContent="center"
       borderRadius="full"
       bg={isPrimary ? 'bg.brandSolid' : 'bg.brandWeak'}
-      shrink={0}
+      flexShrink={0}
       style={{ width: size, height: size }}
     >
       <Icon
